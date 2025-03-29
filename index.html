@@ -159,6 +159,13 @@
             margin: 1.5rem 0;
         }
         
+        .form-label {
+            color: var(--accent);
+            font-weight: 500;
+            font-size: 1.1rem;
+            margin-bottom: 0.8rem;
+        }
+        
         .form-range::-webkit-slider-thumb {
             background: var(--accent);
         }
@@ -601,16 +608,67 @@
                 });
             });
             
-            // Nasłuchiwacz zdarzenia dla suwaka głośności
-            volumeSlider.addEventListener('input', function() {
-                const volume = parseFloat(this.value);
-                console.log("Zmiana głośności:", volume);
+            // Funkcja do bezpośredniego ustawiania głośności
+            function setVolume(value) {
+                const volumeValue = parseFloat(value);
+                if (isNaN(volumeValue)) return;
                 
-                // Upewnij się, że wartość jest w zakresie 0-1
-                if (currentAudio && !isNaN(volume)) {
-                    // Ustaw głośność aktualnie odtwarzanego dźwięku
-                    currentAudio.volume = volume;
-                    console.log("Ustawiono głośność:", volume, "dla dźwięku:", currentSound);
+                console.log("Funkcja setVolume wywołana z wartością:", volumeValue);
+                
+                if (currentAudio) {
+                    try {
+                        // Najpierw sprawdźmy aktualną głośność
+                        console.log("Aktualna głośność przed zmianą:", currentAudio.volume);
+                        
+                        // Ustaw nową głośność bezpośrednio
+                        currentAudio.volume = volumeValue;
+                        
+                        // Sprawdź, czy głośność faktycznie się zmieniła
+                        console.log("Głośność po zmianie:", currentAudio.volume);
+                        
+                        // Dodatkowe potwierdzenie
+                        setTimeout(() => {
+                            console.log("Głośność po timeout:", currentAudio.volume);
+                        }, 100);
+                    } catch (error) {
+                        console.error("Błąd podczas ustawiania głośności:", error);
+                    }
+                } else {
+                    console.log("Brak aktywnego dźwięku do zmiany głośności");
+                }
+            }
+            
+            // Nasłuchiwacze zdarzeń dla suwaka głośności - używamy wielu zdarzeń dla pewności
+            volumeSlider.addEventListener('input', function() {
+                setVolume(this.value);
+            });
+            
+            volumeSlider.addEventListener('change', function() {
+                setVolume(this.value);
+            });
+            
+            // Dodatkowy przycisk do ręcznego zastosowania głośności
+            const volumeControlsDiv = document.createElement('div');
+            volumeControlsDiv.className = 'text-center mt-2';
+            volumeControlsDiv.innerHTML = `
+                <button class="sound-btn" id="apply-volume-btn">
+                    <i class="fas fa-check"></i> Zastosuj głośność
+                </button>
+            `;
+            
+            // Wstawienie przycisku po suwaku głośności
+            const sliderContainer = document.querySelector('.slider-container');
+            sliderContainer.appendChild(volumeControlsDiv);
+            
+            // Obsługa przycisku
+            document.getElementById('apply-volume-btn').addEventListener('click', function() {
+                if (currentAudio) {
+                    const manualValue = parseFloat(volumeSlider.value);
+                    currentAudio.volume = manualValue;
+                    console.log("Ręcznie ustawiono głośność:", manualValue);
+                    alert("Głośność ustawiona na: " + Math.round(manualValue * 100) + "%");
+                } else {
+                    alert("Najpierw wybierz dźwięk do odtworzenia");
                 }
             });
             
