@@ -26,6 +26,12 @@
             --radius-sm: 12px;
         }
 
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
             background: linear-gradient(135deg, #190e2e 0%, #2c1752 100%);
             color: var(--text);
@@ -34,7 +40,6 @@
             position: relative;
             overflow-x: hidden;
             line-height: 1.6;
-            margin: 0;
         }
 
         /* ---------- Tło, animacje i efekty ---------- */
@@ -44,7 +49,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: -1;
+            z-index: 0;
             pointer-events: none;
             overflow: hidden;
         }
@@ -108,6 +113,7 @@
             padding: 2.5rem 0 3rem;
             text-align: center;
             position: relative;
+            z-index: 1;
         }
 
         .logo-container {
@@ -163,6 +169,8 @@
             max-width: 900px;
             margin: 0 auto;
             padding: 0 1.5rem 3rem;
+            position: relative;
+            z-index: 1;
         }
 
         .section {
@@ -467,6 +475,8 @@
             font-size: 0.9rem;
             color: var(--text-secondary);
             background: linear-gradient(0deg, rgba(25, 14, 46, 0.9) 0%, rgba(25, 14, 46, 0) 100%);
+            position: relative;
+            z-index: 1;
         }
 
         .heart {
@@ -672,7 +682,7 @@
             const icon = document.getElementById('volume-icon');
             if (!icon) return;
             
-            icon.className = volume === 0 
+            icon.className = volume == 0 
                 ? 'fas fa-volume-mute volume-icon' 
                 : volume < 50 
                     ? 'fas fa-volume-down volume-icon' 
@@ -755,15 +765,11 @@
             logoSun.appendChild(rayFragment);
         }
         
-        // ---------- Inicjalizacja odtwarzacza dźwięków ----------
-        function initSoundPlayer() {
-            const soundGrid = document.getElementById('sound-grid');
-            const volumeSlider = document.getElementById('volume-slider');
+        // ---------- Tworzenie i inicjalizacja elementów audio ----------
+        function createAudioElements() {
             const audioContainer = document.getElementById('audio-container');
+            if (!audioContainer) return;
             
-            if (!soundGrid || !volumeSlider || !audioContainer) return;
-            
-            // Tworzenie elementów audio
             const audioFragment = document.createDocumentFragment();
             
             Object.entries(SOUNDS).forEach(([id, src]) => {
@@ -781,42 +787,57 @@
             });
             
             audioContainer.appendChild(audioFragment);
+        }
+        
+        // ---------- Inicjalizacja odtwarzacza dźwięków ----------
+        function setupSoundCards() {
+            // Najpierw tworzymy elementy audio
+            createAudioElements();
             
-            // Obsługa kliknięć na karty dźwięków
-            soundGrid.addEventListener('click', (e) => {
-                const soundCard = e.target.closest('.sound-card');
-                if (!soundCard) return;
-                
-                const soundType = soundCard.dataset.sound;
-                const sound = document.getElementById(`${soundType}-sound`);
-                if (!sound) return;
-                
-                // Jeśli już gramy ten dźwięk, zatrzymujemy go
-                if (currentSound === sound && !sound.paused) {
-                    sound.pause();
-                    setActiveElement(null, '.sound-card');
-                    currentSound = null;
-                    return;
-                }
-                
-                // Zatrzymujemy aktualnie grający dźwięk
-                if (currentSound) {
-                    currentSound.pause();
-                }
-                
-                // Odtwarzamy nowy dźwięk
-                sound.volume = volumeSlider.value / 100;
-                
-                // Użyj promise dla obsługi błędów
-                const playPromise = sound.play();
-                if (playPromise !== undefined) {
-                    playPromise.catch(error => {
-                        console.log('Autoplay prevented: Interaction required');
-                    });
-                }
-                
-                setActiveElement(soundCard, '.sound-card');
-                currentSound = sound;
+            const soundCards = document.querySelectorAll('.sound-card');
+            const volumeSlider = document.getElementById('volume-slider');
+            
+            if (!soundCards.length || !volumeSlider) return;
+            
+            // Przypisujemy zdarzenia kliknięcia do każdej karty dźwiękowej
+            soundCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    const soundType = this.getAttribute('data-sound');
+                    const sound = document.getElementById(`${soundType}-sound`);
+                    
+                    if (!sound) {
+                        console.error(`Nie znaleziono elementu audio dla ${soundType}`);
+                        return;
+                    }
+                    
+                    // Jeśli już gramy ten dźwięk, zatrzymujemy go
+                    if (currentSound === sound && !sound.paused) {
+                        sound.pause();
+                        this.classList.remove('active');
+                        currentSound = null;
+                        return;
+                    }
+                    
+                    // Zatrzymujemy aktualnie grający dźwięk
+                    if (currentSound) {
+                        currentSound.pause();
+                        const activeCard = document.querySelector('.sound-card.active');
+                        if (activeCard) activeCard.classList.remove('active');
+                    }
+                    
+                    // Odtwarzamy nowy dźwięk
+                    sound.volume = volumeSlider.value / 100;
+                    
+                    const playPromise = sound.play();
+                    if (playPromise !== undefined) {
+                        playPromise.catch(error => {
+                            console.log('Autoplay prevented: User interaction required', error);
+                        });
+                    }
+                    
+                    this.classList.add('active');
+                    currentSound = sound;
+                });
             });
             
             // Obsługa suwaka głośności
@@ -836,31 +857,32 @@
         }
         
         // ---------- Inicjalizacja timera ----------
-        function initTimer() {
+        function setupTimer() {
             const timerDisplay = document.getElementById('timer-display');
-            const timePresets = document.getElementById('time-presets');
+            const presetButtons = document.querySelectorAll('.preset-button');
             const startButton = document.getElementById('start-timer');
             const stopButton = document.getElementById('stop-timer');
             
-            if (!timerDisplay || !timePresets || !startButton || !stopButton) return;
+            if (!timerDisplay || !presetButtons.length || !startButton || !stopButton) return;
             
             // Przyciski wyboru czasu
-            timePresets.addEventListener('click', (e) => {
-                const presetButton = e.target.closest('.preset-button');
-                if (!presetButton) return;
-                
-                // Resetuj timer
-                if (timerInterval) {
-                    clearInterval(timerInterval);
-                    timerInterval = null;
-                    startButton.textContent = 'Start';
-                    startButton.style.background = 'linear-gradient(to right, #5b3899, #9d68e0)';
-                }
-                
-                // Ustaw nowy czas
-                setActiveElement(presetButton, '.preset-button');
-                remainingTime = parseInt(presetButton.dataset.time, 10) * 60;
-                timerDisplay.textContent = formatTime(remainingTime);
+            presetButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    if (timerInterval) {
+                        clearInterval(timerInterval);
+                        timerInterval = null;
+                        startButton.textContent = 'Start';
+                        startButton.style.background = 'linear-gradient(to right, #5b3899, #9d68e0)';
+                    }
+                    
+                    // Usuń klasę active z wszystkich przycisków czasu
+                    presetButtons.forEach(btn => btn.classList.remove('active'));
+                    // Dodaj klasę active do klikniętego przycisku
+                    this.classList.add('active');
+                    
+                    remainingTime = parseInt(this.dataset.time) * 60;
+                    timerDisplay.textContent = formatTime(remainingTime);
+                });
             });
             
             // Przycisk Start
@@ -874,7 +896,8 @@
                         // Czas upłynął - zatrzymujemy dźwięk i timer
                         if (currentSound) {
                             currentSound.pause();
-                            setActiveElement(null, '.sound-card');
+                            const activeCard = document.querySelector('.sound-card.active');
+                            if (activeCard) activeCard.classList.remove('active');
                             currentSound = null;
                         }
                         
@@ -910,10 +933,9 @@
         
         // ---------- Inicjalizacja strony ----------
         document.addEventListener('DOMContentLoaded', function() {
-            // Ogranicz liczbę operacji w DOM
             createBackgroundElements();
-            initSoundPlayer();
-            initTimer();
+            setupSoundCards();
+            setupTimer();
             
             // Obsługa trybu oszczędzania energii
             window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', (e) => {
