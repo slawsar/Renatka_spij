@@ -8,6 +8,16 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <!-- Dodatkowe ikony -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Opcjonalnie: Preload plików audio dla szybszego ładowania -->
+    <!-- Odkomentuj i zaktualizuj ścieżki po dodaniu plików dźwiękowych -->
+    <!--
+    <link rel="preload" href="sounds/ocean.mp3" as="audio">
+    <link rel="preload" href="sounds/rain.mp3" as="audio">
+    <link rel="preload" href="sounds/forest.mp3" as="audio">
+    <link rel="preload" href="sounds/night.mp3" as="audio">
+    <link rel="preload" href="sounds/whitenoise.mp3" as="audio">
+    -->
     <style>
         /* Główna kolorystyka i ogólne stylowanie */
         :root {
@@ -323,12 +333,16 @@
                         <p>Rozwijaj rytuały, które sygnalizują twojemu ciału, że czas się zrelaksować. Może to być czytanie książki, ciepła kąpiel, medytacja lub słuchanie kojącej muzyki.</p>
                     </div>
                     <div class="tip-item">
-                        <h4><i class="fas fa-coffee tip-icon"></i> Unikaj kofeiny i alkoholu</h4>
-                        <p>Kofeina może zakłócać sen nawet jeśli spożywasz ją wczesnym popołudniem. Alkohol może pomóc zasnąć, ale obniża jakość snu i prowadzi do częstszych przebudzeń.</p>
+                        <h4><i class="fas fa-mug-hot tip-icon"></i> Pij ziołowe herbaty przed snem</h4>
+                        <p>Ciepłe ziołowe napary, takie jak melisa, rumianek, lawenda czy lipa, pomagają się zrelaksować i przygotować ciało do snu. Wypijaj filiżankę około godzinę przed planowanym czasem snu.</p>
                     </div>
                     <div class="tip-item">
                         <h4><i class="fas fa-temperature-low tip-icon"></i> Komfortowa sypialnia</h4>
                         <p>Upewnij się, że twoja sypialnia jest ciemna, cicha i ma odpowiednią temperaturę (18-20°C). Wygodny materac i poduszki również są ważne dla jakości snu.</p>
+                    </div>
+                    <div class="tip-item">
+                        <h4><i class="fas fa-headphones tip-icon"></i> Personalizuj dźwięki do zasypiania</h4>
+                        <p>Wybieraj dźwięki, które osobiście działają na Ciebie uspokajająco. Możesz nagrać swoje ulubione odgłosy natury podczas spaceru, szum morza z wakacji, czy nawet znajome dźwięki domowe, które kojarzą Ci się z bezpieczeństwem i spokojem.</p>
                     </div>
                 </div>
             </div>
@@ -394,19 +408,7 @@
                 starsContainer.appendChild(cloud);
             }
             
-            // Elementy audio dla dźwięków - wykorzystanie generowanego dźwięku przez Web Audio API
-            let audioContext;
-            let gainNode;
-            let activeOscillators = {};
-            let currentSound = null;
-            
-            // Inicjalizacja Web Audio API
-            function initAudioContext() {
-                audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                gainNode = audioContext.createGain();
-                gainNode.gain.value = volumeSlider.value;
-                gainNode.connect(audioContext.destination);
-            }
+            // ========== SYSTEM ODTWARZANIA DŹWIĘKÓW ==========
             
             // Pobranie elementów DOM
             const soundButtons = document.querySelectorAll('.sound-btn[data-sound]');
@@ -418,288 +420,87 @@
             let timerInterval = null;
             let timerEndTime = null;
             
+            // Przechowywanie obecnego dźwięku
+            let currentSound = null;
+            let currentAudio = null;
+            
+            // ===== KONFIGURACJA DŹWIĘKÓW =====
+            // Aby dodać własne dźwięki:
+            // 1. Utwórz folder "sounds" w głównym katalogu strony
+            // 2. Dodaj pliki MP3 lub WAV do tego folderu
+            // 3. Zaktualizuj poniższe ścieżki, aby wskazywały na Twoje pliki
+            
+            const sounds = {
+                // Format: 'nazwa': 'ścieżka_do_pliku'
+                'ocean': 'sounds/ocean.mp3',  // Przykład: szum morza
+                'rain': 'sounds/rain.mp3',    // Przykład: deszcz
+                'forest': 'sounds/forest.mp3', // Przykład: las
+                'night': 'sounds/night.mp3',  // Przykład: noc
+                'whitenoise': 'sounds/whitenoise.mp3' // Przykład: biały szum
+                
+                // Możesz dodać więcej dźwięków tutaj
+                // 'nazwa_dźwięku': 'ścieżka/do/pliku.mp3',
+            };
+            
             // Funkcja odtwarzania dźwięku
             function playSound(soundName) {
-                // Zatrzymanie wszystkich dźwięków najpierw
+                // Zatrzymanie aktualnie odtwarzanego dźwięku
                 stopAllSounds();
                 
                 // Usunięcie klasy active ze wszystkich przycisków
                 soundButtons.forEach(btn => btn.classList.remove('active'));
                 
-                // Jeśli kliknęliśmy ten sam dźwięk, który aktualnie grał, to tylko go zatrzymujemy
+                // Jeśli kliknięto ten sam dźwięk, który był odtwarzany, tylko go zatrzymaj
                 if (currentSound === soundName) {
                     currentSound = null;
                     return;
                 }
                 
-                // Inicjalizacja kontekstu audio, jeśli nie został jeszcze utworzony
-                if (!audioContext) {
-                    initAudioContext();
-                } else if (audioContext.state === 'suspended') {
-                    audioContext.resume();
-                }
-                
-                // Ustawienie aktualnego dźwięku i dodanie klasy active do przycisku
-                currentSound = soundName;
-                document.querySelector(`.sound-btn[data-sound="${soundName}"]`).classList.add('active');
-                
-                // Tworzenie odpowiedniego dźwięku
-                switch(soundName) {
-                    case 'ocean':
-                        createOceanSound();
-                        break;
-                    case 'rain':
-                        createRainSound();
-                        break;
-                    case 'forest':
-                        createForestSound();
-                        break;
-                    case 'night':
-                        createNightSound();
-                        break;
-                    case 'whitenoise':
-                        createWhiteNoise();
-                        break;
+                try {
+                    // Sprawdź, czy ścieżka do dźwięku istnieje
+                    if (!sounds[soundName]) {
+                        console.error(`Brak pliku dźwiękowego dla: ${soundName}`);
+                        alert(`Brak pliku dźwiękowego dla: ${soundName}. Dodaj plik w folderze "sounds" i zaktualizuj ścieżkę w kodzie.`);
+                        return;
+                    }
+                    
+                    // Utwórz element audio
+                    const audio = new Audio(sounds[soundName]);
+                    
+                    // Ustawienia
+                    audio.loop = true; // Zapętlenie dźwięku
+                    audio.volume = volumeSlider.value; // Ustaw głośność
+                    
+                    // Obsługa błędów ładowania pliku
+                    audio.onerror = function() {
+                        console.error(`Błąd ładowania pliku: ${sounds[soundName]}`);
+                        alert(`Nie można załadować pliku: ${sounds[soundName]}. Sprawdź, czy plik istnieje.`);
+                    };
+                    
+                    // Rozpocznij odtwarzanie
+                    audio.play().catch(err => {
+                        console.error('Błąd odtwarzania:', err);
+                        alert('Błąd odtwarzania dźwięku. Sprawdź uprawnienia przeglądarki.');
+                    });
+                    
+                    // Zapisz referencje do aktualnego dźwięku
+                    currentSound = soundName;
+                    currentAudio = audio;
+                    
+                    // Dodaj klasę active do przycisku
+                    document.querySelector(`.sound-btn[data-sound="${soundName}"]`).classList.add('active');
+                } catch (error) {
+                    console.error('Błąd podczas odtwarzania dźwięku:', error);
                 }
             }
             
             // Zatrzymanie wszystkich dźwięków
             function stopAllSounds() {
-                if (!audioContext) return;
-                
-                // Rozłączenie i zatrzymanie wszystkich oscylatorów
-                Object.values(activeOscillators).forEach(osc => {
-                    if (osc && osc.stop) {
-                        try {
-                            osc.stop();
-                            osc.disconnect();
-                        } catch (e) {
-                            // Ignoruj błędy (np. gdy oscylator już zatrzymany)
-                        }
-                    }
-                });
-                
-                // Wyczyszczenie obiektu oscylatorów
-                activeOscillators = {};
-            }
-            
-            // Funkcje tworzenia różnych dźwięków
-            
-            // Szum morza (oscylatory o niskiej częstotliwości)
-            function createOceanSound() {
-                const osc1 = audioContext.createOscillator();
-                const osc2 = audioContext.createOscillator();
-                const lfo = audioContext.createOscillator();
-                
-                osc1.type = 'sine';
-                osc1.frequency.value = 60;
-                
-                osc2.type = 'triangle';
-                osc2.frequency.value = 65;
-                
-                lfo.type = 'sine';
-                lfo.frequency.value = 0.1;
-                
-                const lfoGain = audioContext.createGain();
-                lfoGain.gain.value = 10;
-                lfo.connect(lfoGain);
-                lfoGain.connect(osc1.frequency);
-                lfoGain.connect(osc2.frequency);
-                
-                const oscGain1 = audioContext.createGain();
-                const oscGain2 = audioContext.createGain();
-                
-                oscGain1.gain.value = 0.3;
-                oscGain2.gain.value = 0.2;
-                
-                osc1.connect(oscGain1);
-                osc2.connect(oscGain2);
-                
-                oscGain1.connect(gainNode);
-                oscGain2.connect(gainNode);
-                
-                osc1.start();
-                osc2.start();
-                lfo.start();
-                
-                activeOscillators.osc1 = osc1;
-                activeOscillators.osc2 = osc2;
-                activeOscillators.lfo = lfo;
-            }
-            
-            // Deszcz (filtrowany biały szum)
-            function createRainSound() {
-                const bufferSize = 2 * audioContext.sampleRate;
-                const noiseBuffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
-                const output = noiseBuffer.getChannelData(0);
-                
-                for (let i = 0; i < bufferSize; i++) {
-                    output[i] = Math.random() * 2 - 1;
+                if (currentAudio) {
+                    currentAudio.pause();
+                    currentAudio.currentTime = 0;
+                    currentAudio = null;
                 }
-                
-                const noise = audioContext.createBufferSource();
-                noise.buffer = noiseBuffer;
-                noise.loop = true;
-                
-                const filter = audioContext.createBiquadFilter();
-                filter.type = 'highpass';
-                filter.frequency.value = 400;
-                filter.Q.value = 0.9;
-                
-                const rainGain = audioContext.createGain();
-                rainGain.gain.value = 0.2;
-                
-                noise.connect(filter);
-                filter.connect(rainGain);
-                rainGain.connect(gainNode);
-                
-                noise.start();
-                activeOscillators.noise = noise;
-            }
-            
-            // Las (ćwierkanie ptaków i lekki wiatr)
-            function createForestSound() {
-                // Baza ambientu (lekki wiatr)
-                const bufferSize = 2 * audioContext.sampleRate;
-                const noiseBuffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
-                const output = noiseBuffer.getChannelData(0);
-                
-                for (let i = 0; i < bufferSize; i++) {
-                    output[i] = Math.random() * 0.3 - 0.15;
-                }
-                
-                const noise = audioContext.createBufferSource();
-                noise.buffer = noiseBuffer;
-                noise.loop = true;
-                
-                const filter = audioContext.createBiquadFilter();
-                filter.type = 'lowpass';
-                filter.frequency.value = 300;
-                
-                const noiseGain = audioContext.createGain();
-                noiseGain.gain.value = 0.1;
-                
-                noise.connect(filter);
-                filter.connect(noiseGain);
-                noiseGain.connect(gainNode);
-                
-                noise.start();
-                activeOscillators.noise = noise;
-                
-                // Losowe odgłosy ptaków
-                setInterval(() => {
-                    if (currentSound !== 'forest') return;
-                    
-                    const birdChirp = audioContext.createOscillator();
-                    birdChirp.type = 'sine';
-                    birdChirp.frequency.value = 2000 + Math.random() * 2000;
-                    
-                    const chirpGain = audioContext.createGain();
-                    chirpGain.gain.value = 0;
-                    
-                    birdChirp.connect(chirpGain);
-                    chirpGain.connect(gainNode);
-                    
-                    birdChirp.start();
-                    chirpGain.gain.setValueAtTime(0, audioContext.currentTime);
-                    chirpGain.gain.linearRampToValueAtTime(0.05, audioContext.currentTime + 0.1);
-                    chirpGain.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.3);
-                    
-                    setTimeout(() => {
-                        birdChirp.stop();
-                        birdChirp.disconnect();
-                    }, 500);
-                    
-                }, Math.random() * 3000 + 2000);
-            }
-            
-            // Noc (świerszcze i lekki wiatr)
-            function createNightSound() {
-                // Baza ambientu (lekki wiatr)
-                const bufferSize = 2 * audioContext.sampleRate;
-                const noiseBuffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
-                const output = noiseBuffer.getChannelData(0);
-                
-                for (let i = 0; i < bufferSize; i++) {
-                    output[i] = Math.random() * 0.2 - 0.1;
-                }
-                
-                const noise = audioContext.createBufferSource();
-                noise.buffer = noiseBuffer;
-                noise.loop = true;
-                
-                const filter = audioContext.createBiquadFilter();
-                filter.type = 'lowpass';
-                filter.frequency.value = 200;
-                
-                const noiseGain = audioContext.createGain();
-                noiseGain.gain.value = 0.05;
-                
-                noise.connect(filter);
-                filter.connect(noiseGain);
-                noiseGain.connect(gainNode);
-                
-                noise.start();
-                activeOscillators.noise = noise;
-                
-                // Cykliczne świerszcze
-                const cricketInterval = setInterval(() => {
-                    if (currentSound !== 'night') {
-                        clearInterval(cricketInterval);
-                        return;
-                    }
-                    
-                    const cricket = audioContext.createOscillator();
-                    cricket.type = 'triangle';
-                    cricket.frequency.value = 1500 + Math.random() * 500;
-                    
-                    const cricketGain = audioContext.createGain();
-                    cricketGain.gain.value = 0;
-                    
-                    cricket.connect(cricketGain);
-                    cricketGain.connect(gainNode);
-                    
-                    cricket.start();
-                    
-                    // Wzór dźwięku świerszcza (3 krótkie dźwięki)
-                    for (let i = 0; i < 3; i++) {
-                        setTimeout(() => {
-                            cricketGain.gain.setValueAtTime(0, audioContext.currentTime);
-                            cricketGain.gain.linearRampToValueAtTime(0.03, audioContext.currentTime + 0.05);
-                            cricketGain.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.1);
-                        }, i * 150);
-                    }
-                    
-                    setTimeout(() => {
-                        cricket.stop();
-                        cricket.disconnect();
-                    }, 1000);
-                    
-                }, Math.random() * 2000 + 1500);
-            }
-            
-            // Biały szum
-            function createWhiteNoise() {
-                const bufferSize = 2 * audioContext.sampleRate;
-                const noiseBuffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
-                const output = noiseBuffer.getChannelData(0);
-                
-                for (let i = 0; i < bufferSize; i++) {
-                    output[i] = Math.random() * 2 - 1;
-                }
-                
-                const noise = audioContext.createBufferSource();
-                noise.buffer = noiseBuffer;
-                noise.loop = true;
-                
-                const noiseGain = audioContext.createGain();
-                noiseGain.gain.value = 0.15;
-                
-                noise.connect(noiseGain);
-                noiseGain.connect(gainNode);
-                
-                noise.start();
-                activeOscillators.noise = noise;
             }
             
             // Ustawienie timera
@@ -752,6 +553,16 @@
                 }, 1000);
             }
             
+            // Funkcja do dodawania własnych dźwięków
+            // Instrukcja dla użytkownika:
+            // 1. Utwórz folder "sounds" w głównym katalogu strony
+            // 2. Umieść w nim pliki audio (mp3 lub wav) z dźwiękami
+            // 3. Zaktualizuj obiekt "sounds" powyżej, aby wskazywał na Twoje pliki
+            //
+            // Przykład:
+            // - Jeśli dodasz plik "sounds/spokojny-deszcz.mp3"
+            // - W obiekcie sounds dodaj: 'rain': 'sounds/spokojny-deszcz.mp3'
+            
             // Aktualizacja wyświetlania timera
             function updateTimerDisplay() {
                 if (!timerEndTime) return false;
@@ -787,8 +598,8 @@
             
             // Nasłuchiwacz zdarzenia dla suwaka głośności
             volumeSlider.addEventListener('input', function() {
-                if (gainNode) {
-                    gainNode.gain.value = this.value * 0.5; // Mnożnik 0.5 dla uniknięcia zbyt głośnych dźwięków
+                if (currentAudio) {
+                    currentAudio.volume = this.value;
                 }
             });
             
@@ -804,6 +615,27 @@
             if ('Notification' in window && Notification.permission !== 'granted' && Notification.permission !== 'denied') {
                 Notification.requestPermission();
             }
+            
+            // Wyświetl informację o potrzebie dodania własnych plików dźwiękowych
+            console.log("Pamiętaj o dodaniu własnych plików dźwiękowych w folderze 'sounds'!");
+            
+            // Funkcja do sprawdzania dostępności plików dźwiękowych (opcjonalnie)
+            function checkSoundFiles() {
+                // Komunikat w konsoli developerskiej
+                console.log("Skonfigurowane dźwięki:", sounds);
+                
+                // Opcjonalnie: Sprawdź czy pliki istnieją
+                Object.entries(sounds).forEach(([name, path]) => {
+                    const testAudio = new Audio();
+                    testAudio.addEventListener('error', () => {
+                        console.warn(`Plik dźwiękowy "${path}" dla "${name}" nie został znaleziony.`);
+                    });
+                    testAudio.src = path;
+                });
+            }
+            
+            // Uruchom sprawdzanie plików po załadowaniu strony
+            setTimeout(checkSoundFiles, 1000);
         });
     </script>
 </body>
