@@ -687,6 +687,74 @@
             box-shadow: var(--shadow-md);
         }
         
+        /* Stylowanie dla bajek na dobranoc */
+        .bedtime-stories {
+            margin-top: 1.5rem;
+        }
+        
+        .story-accordion {
+            margin-bottom: 1.5rem;
+        }
+        
+        .story-header {
+            padding: 1rem;
+            background-color: var(--primary-light);
+            border-radius: var(--radius-sm);
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            position: relative;
+            transition: background-color var(--transition-speed);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .story-header:hover {
+            background-color: var(--accent-transparent-light);
+        }
+        
+        .story-header.active {
+            background-color: var(--accent-dark);
+        }
+        
+        .story-header h4 {
+            color: var(--text-light);
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        .story-header.active h4 {
+            color: white;
+        }
+        
+        .story-toggle-icon {
+            transition: transform var(--transition-speed);
+        }
+        
+        .story-header.active .story-toggle-icon {
+            transform: rotate(180deg);
+        }
+        
+        .story-content {
+            display: none;
+            padding: 1rem;
+            background-color: var(--primary-medium);
+            border-radius: var(--radius-sm);
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--accent);
+            line-height: 1.6;
+        }
+        
+        .story-content.visible {
+            display: block;
+        }
+        
+        .story-content p {
+            margin-bottom: 1rem;
+            text-shadow: 0 1px 1px var(--black-transparent-light);
+        }
+        
         /* Responsywność */
         @media (max-width: 768px) {
             h1 {
@@ -812,6 +880,7 @@
                         <button class="exercise-tab active" data-tab="breathing"><i class="fas fa-lungs"></i> Techniki oddechowe</button>
                         <button class="exercise-tab" data-tab="muscle"><i class="fas fa-walking"></i> Relaksacja mięśni</button>
                         <button class="exercise-tab" data-tab="visualization"><i class="fas fa-cloud-sun"></i> Wizualizacje</button>
+                        <button class="exercise-tab" data-tab="stories"><i class="fas fa-book"></i> Bajki na dobranoc</button>
                     </div>
                     
                     <!-- Techniki oddechowe -->
@@ -930,6 +999,90 @@
                         
                         <div class="text-center mt-3">
                             <button class="sound-btn" id="start-visualization">Rozpocznij wizualizację</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Bajki na dobranoc -->
+                    <div class="exercise-content" id="stories-content">
+                        <p class="exercise-intro">Wybierz jedną z bajek na dobranoc. Przeczytaj lub opowiedz ją, aby pomóc w wyciszeniu się przed snem.</p>
+                        
+                        <div class="bedtime-stories">
+                            <div class="story-accordion">
+                                <div class="story-header" data-story="star">
+                                    <h4><i class="fas fa-star tip-icon"></i> Gwiazda, która bała się ciemności</h4>
+                                    <i class="fas fa-chevron-down story-toggle-icon"></i>
+                                </div>
+                                <div class="story-content" id="star-story">
+                                    <p>Dawno temu, wysoko na niebie mieszkała mała gwiazda o imieniu Luna. Luna była wyjątkowa – w przeciwieństwie do innych gwiazd, które kochały noc, ona bała się ciemności.</p>
+                                    <p>"Jak możesz bać się ciemności?" - pytały inne gwiazdy. "Przecież jesteśmy gwiazdami! Świecimy właśnie w ciemności!"</p>
+                                    <p>Ale Luna nie mogła poradzić sobie ze swoim lękiem. Zamiast świecić jasno jak inne gwiazdy, jej blask był ledwo widoczny, przytłumiony przez strach.</p>
+                                    <p>Pewnej nocy Luna spotkała Księżyc, który zauważył jej problem. "Droga Luno," powiedział łagodnie, "pozwól, że zdradzę ci pewien sekret. Ciemność nie jest niczym strasznym. To po prostu przestrzeń czekająca, aż wypełni ją światło."</p>
+                                    <p>Luna zastanowiła się nad tymi słowami. "Ale co jeśli moje światło jest zbyt małe, aby wypełnić całą tę ciemność?" - zapytała.</p>
+                                    <p>"Spójrz w dół, na Ziemię," odpowiedział Księżyc. Luna spojrzała i zobaczyła małą dziewczynkę, która nie mogła zasnąć, gdyż również bała się ciemności. Dziewczynka wyglądała przez okno, szukając światła na niebie.</p>
+                                    <p>"Widzisz?" - powiedział Księżyc. "Dla tej małej dziewczynki twoje światło może być najjaśniejszym punktem w nocy, przewodnikiem i pocieszeniem."</p>
+                                    <p>Luna pomyślała o dziewczynce – o kimś, kto potrzebował jej światła tak samo, jak ona potrzebowała odwagi. Nagle poczuła, jak jej strach zaczyna znikać, a jej światło staje się coraz jaśniejsze.</p>
+                                    <p>Od tej nocy Luna świeciła jasno, dumna ze swojej roli w ciemności. A mała dziewczynka znalazła swoją ulubioną gwiazdę na niebie – tę, która wydawała się świecić specjalnie dla niej, rozpraszając wszystkie lęki.</p>
+                                    <p>I tak Luna odkryła, że czasami najjaśniej świecimy wtedy, gdy zamiast koncentrować się na własnych lękach, skupiamy się na przynoszeniu światła innym.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="story-accordion">
+                                <div class="story-header" data-story="forest">
+                                    <h4><i class="fas fa-tree tip-icon"></i> Mądra Sowa i Las Snów</h4>
+                                    <i class="fas fa-chevron-down story-toggle-icon"></i>
+                                </div>
+                                <div class="story-content" id="forest-story">
+                                    <p>W samym sercu Czarodziejskiego Lasu mieszkała Mądra Sowa. Znana była ze swojej niezwykłej wiedzy i tajemniczej mocy – umiała zbierać sny i rozdawać je wieczorem wszystkim leśnym mieszkańcom.</p>
+                                    <p>Co wieczór zwierzęta gromadziły się wokół jej starego dębu, czekając na sen, który pomoże im przespać noc. Mądra Sowa miała ich całą kolekcję – sny o lataniu dla ptaków, sny o pływaniu dla ryb, kolorowe sny dla motyli i przytulne sny dla niedźwiedzi.</p>
+                                    <p>Pewnego dnia do lasu przybłąkał się mały jeżyk o imieniu Kolczatek. Był zmęczony po długiej podróży i potrzebował dobrego odpoczynku, ale miał problem – od dawna cierpiał na bezsenność.</p>
+                                    <p>"Próbowałem wszystkiego," wyszeptał do Sowy, "liczyłem gwiazdy, piłem ciepłe mleko z miodem, nawet śpiewałem kołysanki sam sobie, ale nic nie działa. Czy możesz mi pomóc?"</p>
+                                    <p>Mądra Sowa przyjrzała się małemu jeżykowi z uwagą. "Twój problem, mały przyjacielu, polega na tym, że twój umysł nadal biega, kiedy twoje ciało chce odpocząć. Potrzebujesz wyjątkowego snu, który pomoże ci się wyciszyć."</p>
+                                    <p>Sowa poszukała w swojej kolekcji i znalazła specjalny sen, zawinięty w liść miętowy. "To jest Sen o Ciszy. Jest rzadki i bardzo cenny."</p>
+                                    <p>Kolczatek podziękował Sowie i wrócił do swojego domku pod korzeniami. Tej nocy, gdy zamknął oczy, poczuł jak Sen o Ciszy otula go jak miękki koc. W tym śnie znalazł się na spokojnej polanie, gdzie słyszał tylko delikatny szept wiatru i odległe śpiewy ptaków. Powoli, jego oddech stał się głębszy, a myśli spokojniejsze.</p>
+                                    <p>Kolczatek spał tej nocy lepiej niż kiedykolwiek wcześniej. Gdy się obudził, był wypoczęty i pełen energii. Od tego dnia, zanim poszedł spać, zawsze wyobrażał sobie tę spokojną polanę ze swojego snu.</p>
+                                    <p>"Nie potrzebujesz już mojego magicznego snu," powiedziała Sowa, gdy Kolczatek przyszedł jej podziękować. "Nauczyłeś się, jak znaleźć ciszę w sobie. To jest prawdziwa magia snu."</p>
+                                    <p>I tak mały jeżyk odkrył, że najpiękniejsze sny nie są tymi, które dostajemy od innych, ale tymi, które sami potrafimy stworzyć w naszych sercach.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="story-accordion">
+                                <div class="story-header" data-story="moon">
+                                    <h4><i class="fas fa-moon tip-icon"></i> Księżyc i Marzenia</h4>
+                                    <i class="fas fa-chevron-down story-toggle-icon"></i>
+                                </div>
+                                <div class="story-content" id="moon-story">
+                                    <p>Każdej nocy, gdy cały świat zasypiał, Księżyc rozpoczynał swoją najważniejszą pracę. Nie było to tylko świecenie na niebie – to było coś znacznie ważniejszego. Księżyc zbierał marzenia śpiących dzieci.</p>
+                                    <p>Używając swoich srebrnych promieni jak delikatnych rąk, ostrożnie podnosił marzenia, które unosiły się nad głowami śpiących dzieci. Niektóre marzenia były lekkie jak piórka, inne ciężkie jak kamienie. Niektóre błyszczały kolorami tęczy, inne były ciche i skromne. Księżyc kochał je wszystkie.</p>
+                                    <p>Po zebraniu marzeń, Księżyc zabierał je wysoko na niebo, gdzie czekały na nie gwiazdy. Każda gwiazda miała specjalne zadanie – opiekowała się jednym marzeniem, karmiła je światłem i magią, sprawiając, że stawało się silniejsze.</p>
+                                    <p>Była wśród nich dziewczynka o imieniu Zosia, która każdej nocy marzyła o tym samym – chciała latać. Jej marzenie było wyjątkowo jasne i przyciągało uwagę Księżyca. "To marzenie potrzebuje specjalnej opieki," pomyślał, powierzając je najjaśniejszej gwieździe na niebie.</p>
+                                    <p>Mijały noce i miesiące. Marzenie Zosi rosło i nabierało kształtów, aż pewnej nocy, gdy spała, stało się coś magicznego. W swoim śnie Zosia poczuła, jak jej stopy odrywają się od ziemi. Najpierw unosiła się tylko kilka centymetrów, potem metr, aż w końcu szybowała wysoko ponad dachami domów, drzewami i chmurami.</p>
+                                    <p>Gdy Zosia się obudziła, poczuła radość i spełnienie, choć nie pamiętała dokładnie swojego snu. Wiedziała tylko, że jest szczęśliwa i że coś wspaniałego wydarzyło się w nocy.</p>
+                                    <p>Tej samej nocy, gdy spała, Księżyc zobaczył coś niezwykłego – z jej serca unosiło się nowe marzenie, tym razem o pomaganiu innym w spełnianiu ich własnych marzeń.</p>
+                                    <p>Księżyc uśmiechnął się. Najpiękniejsza część jego pracy to nie tylko zbieranie marzeń, ale obserwowanie, jak jedno spełnione marzenie rodzi kolejne, jeszcze piękniejsze.</p>
+                                    <p>I tak, każdej nocy, gdy patrzysz na niebo i widzisz Księżyc, pamiętaj – on nie tylko świeci, ale także dba o twoje najcenniejsze marzenia, aż nadejdzie czas, by stały się rzeczywistością.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="story-accordion">
+                                <div class="story-header" data-story="cloud">
+                                    <h4><i class="fas fa-cloud tip-icon"></i> Mała Chmurka i jej Podróż</h4>
+                                    <i class="fas fa-chevron-down story-toggle-icon"></i>
+                                </div>
+                                <div class="story-content" id="cloud-story">
+                                    <p>Wysoko na niebie, gdzie powietrze jest czyste i błękitne, żyła sobie maleńka chmurka o imieniu Puszek. Była najmniejsza spośród wszystkich chmurek na niebie i często czuła się pominięta.</p>
+                                    <p>"Jesteś zbyt mała, by tworzyć deszcz," mówiły większe chmury. "Nawet twój cień jest ledwo widoczny na ziemi."</p>
+                                    <p>Puszek marzyła o tym, by pewnego dnia stać się wielką, potężną chmurą burzową, która mogłaby przynosić życiodajny deszcz spragnionym polom i lasom. Ale bez względu na to, jak bardzo się starała, pozostawała maleńka i puszystoszara.</p>
+                                    <p>Pewnego dnia silny wiatr porwał Puszka i poniósł daleko od domu, nad rozległą pustynię. Puszek nigdy wcześniej nie widziała pustyni i przestraszyła się jej ogromnych, pustych przestrzeni. Nie było tam żadnych innych chmurek, z którymi mogłaby porozmawiać.</p>
+                                    <p>Gdy tak dryfowała samotnie, usłyszała cichy głos. "Proszę, chmurko, zostań ze mną choć na chwilę." To był mały kaktus, samotny pośród piasków.</p>
+                                    <p>"Jestem tylko małym Puszkiem," odpowiedziała chmurka. "Nie mam w sobie deszczu, nie mogę ci pomóc."</p>
+                                    <p>"Ale twój cień," powiedział kaktus, "daje mi chwilę wytchnienia od palącego słońca. To więcej, niż miałem od wielu dni."</p>
+                                    <p>Puszek nigdy nie pomyślał, że jego mały cień mógłby być dla kogoś tak ważny. Postanowił zostać nad kaktusem tak długo, jak się da. Przez cały dzień zapewniał mu cień i ochłodę.</p>
+                                    <p>Gdy słońce zachodziło, kaktus podziękował chmurce. "Dzięki tobie przetrwałem dziś. Twoja dobroć jest jak deszcz dla mojego serca."</p>
+                                    <p>Tej nocy, gdy Puszek unosił się nad pustynią, zauważył coś dziwnego – choć nie urósł ani trochę, czuł się jakoś... większy. Jakby wypełniał go spokój i radość znacznie większe niż on sam.</p>
+                                    <p>Z czasem Puszek nauczył się, że prawdziwa wielkość nie zawsze zależy od rozmiaru. Czasami najmniejszy cień może mieć największe znaczenie dla kogoś, kto tego potrzebuje. I chociaż nigdy nie stał się wielką chmurą burzową, jego mały cień przynosił ulgę wielu zmęczonym wędrowcom i samotnym roślinom na pustyni.</p>
+                                    <p>A gdy czasem spotykał się z innymi chmurami, dzielił się z nimi swoją mądrością: "Nie martw się o swoją wielkość. Martw się o wielkie dobro, które możesz uczynić, bez względu na to, jak mały jesteś."</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1634,6 +1787,7 @@
             
             // Funkcja zmieniająca scenę wizualizacji
             function changeVisualizationScene(sceneName) {
+                // Usuń wszystkie klasy scen i dodaj odpowiednią
                 visualizationScene.className = 'visualization-scene';
                 visualizationScene.classList.add(`visualization-${sceneName}`);
                 
@@ -1656,7 +1810,7 @@
                 visualizationScene.appendChild(overlay);
                 
                 // Aktualizuj referencję do elementu tekstu
-                visualizationText = document.getElementById('visualization-text');
+                visualizationText = document.querySelector('#visualization-text');
             }
             
             // Funkcja rozpoczynająca wizualizację
@@ -1696,7 +1850,7 @@
             }
             
             // Obsługa przycisków wyboru sceny wizualizacji
-            document.querySelectorAll('.exercise-tab[data-scene]').forEach(tab => {
+            document.querySelectorAll('.visualization-scene-tabs .exercise-tab[data-scene]').forEach(tab => {
                 tab.addEventListener('click', function() {
                     // Zatrzymaj aktualną wizualizację
                     if (visualizationInterval) {
@@ -1709,23 +1863,42 @@
                     currentScene = this.dataset.scene;
                     changeVisualizationScene(currentScene);
                     
-                    // Aktualizuj aktywny przycisk - poprawione podświetlanie
-                    const parentTab = this.closest('.exercise-content');
-                    if (parentTab) {
-                        parentTab.querySelectorAll('.exercise-tab[data-scene]').forEach(t => {
-                            t.classList.remove('active');
-                        });
-                    } else {
-                        document.querySelectorAll('.exercise-tab[data-scene]').forEach(t => {
-                            t.classList.remove('active');
-                        });
-                    }
+                    // Aktualizuj aktywny przycisk
+                    document.querySelectorAll('.visualization-scene-tabs .exercise-tab').forEach(t => {
+                        t.classList.remove('active');
+                    });
                     this.classList.add('active');
                 });
             });
             
             // Obsługa przycisku rozpoczęcia wizualizacji
             startVisualizationBtn.addEventListener('click', startVisualization);
+            
+            // =========== BAJKI NA DOBRANOC ===========
+            // Obsługa akordeonu z bajkami
+            const storyHeaders = document.querySelectorAll('.story-header');
+            
+            storyHeaders.forEach(header => {
+                header.addEventListener('click', function() {
+                    const storyId = this.dataset.story;
+                    const content = document.getElementById(`${storyId}-story`);
+                    
+                    // Przełącz widoczność zawartości
+                    content.classList.toggle('visible');
+                    
+                    // Przełącz stan aktywny nagłówka
+                    this.classList.toggle('active');
+                    
+                    // Zamknij inne otwarte bajki
+                    storyHeaders.forEach(otherHeader => {
+                        if (otherHeader !== this && otherHeader.classList.contains('active')) {
+                            otherHeader.classList.remove('active');
+                            const otherId = otherHeader.dataset.story;
+                            document.getElementById(`${otherId}-story`).classList.remove('visible');
+                        }
+                    });
+                });
+            });
             
             // Obsługa głównych zakładek ćwiczeń
             document.querySelectorAll('.exercise-tab[data-tab]').forEach(tab => {
@@ -1892,5 +2065,3 @@
             }, 1000);
         });
     </script>
-</body>
-</html>
