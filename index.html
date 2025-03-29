@@ -18,6 +18,7 @@
     <link rel="preload" href="sounds/night.mp3" as="audio">
     <link rel="preload" href="sounds/whitenoise.wav" as="audio">
     <link rel="preload" href="sounds/dziubasek.mp3" as="audio">
+    <link rel="preload" href="sounds/dziubasek-vol2.mp3" as="audio">
     
     <style>
         /* Główna kolorystyka i ogólne stylowanie */
@@ -518,6 +519,8 @@
         .exercise-tab.active {
             background-color: var(--accent);
             color: var(--primary-dark);
+            box-shadow: 0 0 8px var(--accent);
+            transform: translateY(-2px);
         }
         
         .exercise-content {
@@ -763,6 +766,7 @@
                         <button class="sound-btn" data-sound="night"><i class="fas fa-moon"></i> Noc</button>
                         <button class="sound-btn" data-sound="whitenoise"><i class="fas fa-wave-square"></i> Biały szum</button>
                         <button class="sound-btn" data-sound="dziubasek"><i class="fas fa-heart"></i> Dziubasek</button>
+                        <button class="sound-btn" data-sound="dziubasek-vol2"><i class="fas fa-heartbeat"></i> Dziubasek Vol.2</button>
                     </div>
                     
                     <!-- Wizualizacja aktywnych dźwięków -->
@@ -906,7 +910,7 @@
                     <div class="exercise-content" id="visualization-content">
                         <p class="exercise-intro">Wybierz scenę do wizualizacji. Zamknij oczy, słuchaj opisu i spróbuj wyobrazić sobie to miejsce wszystkimi zmysłami.</p>
                         
-                        <div class="exercise-tabs">
+                        <div class="exercise-tabs visualization-scene-tabs">
                             <button class="exercise-tab active" data-scene="beach"><i class="fas fa-umbrella-beach"></i> Plaża</button>
                             <button class="exercise-tab" data-scene="forest"><i class="fas fa-tree"></i> Las</button>
                             <button class="exercise-tab" data-scene="sky"><i class="fas fa-cloud-moon"></i> Rozgwieżdżone niebo</button>
@@ -1116,7 +1120,8 @@
                 'forest': 'sounds/forest.mp3',
                 'night': 'sounds/night.mp3',
                 'whitenoise': 'sounds/whitenoise.wav',
-                'dziubasek': 'sounds/dziubasek.mp3'
+                'dziubasek': 'sounds/dziubasek.mp3',
+                'dziubasek-vol2': 'sounds/dziubasek-vol2.mp3'
             };
             
             // Mapowanie nazw dźwięków na przyjazne nazwy polskie
@@ -1126,7 +1131,8 @@
                 'forest': 'Las',
                 'night': 'Noc',
                 'whitenoise': 'Biały szum',
-                'dziubasek': 'Dziubasek'
+                'dziubasek': 'Dziubasek',
+                'dziubasek-vol2': 'Dziubasek Vol.2'
             };
             
             // Mapowanie nazw dźwięków na ikony
@@ -1136,7 +1142,8 @@
                 'forest': 'fa-tree',
                 'night': 'fa-moon',
                 'whitenoise': 'fa-wave-square',
-                'dziubasek': 'fa-heart'
+                'dziubasek': 'fa-heart',
+                'dziubasek-vol2': 'fa-heartbeat'
             };
             
             // Funkcja tworząca element karty dźwięku
@@ -1702,10 +1709,17 @@
                     currentScene = this.dataset.scene;
                     changeVisualizationScene(currentScene);
                     
-                    // Aktualizuj aktywny przycisk
-                    document.querySelectorAll('.exercise-tab[data-scene]').forEach(t => {
-                        t.classList.remove('active');
-                    });
+                    // Aktualizuj aktywny przycisk - poprawione podświetlanie
+                    const parentTab = this.closest('.exercise-content');
+                    if (parentTab) {
+                        parentTab.querySelectorAll('.exercise-tab[data-scene]').forEach(t => {
+                            t.classList.remove('active');
+                        });
+                    } else {
+                        document.querySelectorAll('.exercise-tab[data-scene]').forEach(t => {
+                            t.classList.remove('active');
+                        });
+                    }
                     this.classList.add('active');
                 });
             });
