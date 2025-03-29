@@ -4,20 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Śpij Słoneczko | Relaksująca aplikacja do zasypiania</title>
+    <!-- Favicon -->
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
     <!-- Bootstrap CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <!-- Dodatkowe ikony -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     
-    <!-- Opcjonalnie: Preload plików audio dla szybszego ładowania -->
-    <!-- Odkomentuj i zaktualizuj ścieżki po dodaniu plików dźwiękowych -->
-    <!--
+    <!-- Preload plików audio dla szybszego ładowania -->
     <link rel="preload" href="sounds/ocean.wav" as="audio">
     <link rel="preload" href="sounds/rain.mp3" as="audio">
     <link rel="preload" href="sounds/forest.mp3" as="audio">
     <link rel="preload" href="sounds/night.mp3" as="audio">
     <link rel="preload" href="sounds/whitenoise.wav" as="audio">
-    -->
+    
     <style>
         /* Główna kolorystyka i ogólne stylowanie */
         :root {
@@ -36,6 +36,18 @@
             min-height: 100vh;
             position: relative;
             overflow-x: hidden;
+            transition: background-color 0.5s ease;
+        }
+        
+        body.light-mode {
+            --primary-dark: #e9f5f9;
+            --primary-medium: #c4e0f3;
+            --primary-light: #93c5fd;
+            --accent: #3b82f6;
+            --accent-dark: #2563eb;
+            --text-light: #1e293b;
+            background-color: var(--primary-dark);
+            color: var(--text-light);
         }
         
         /* Animowane tło z gwiazdami */
@@ -89,6 +101,7 @@
         header {
             text-align: center;
             padding: 2rem 0 1rem;
+            position: relative;
         }
         
         h1 {
@@ -115,11 +128,12 @@
             border-radius: 15px;
             margin-bottom: 2rem;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            transition: transform 0.3s ease;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
         
         .card:hover {
             transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
         }
         
         /* Stylowanie odtwarzacza dźwięku */
@@ -150,6 +164,55 @@
             color: var(--primary-dark);
             box-shadow: 0 0 10px var(--accent);
         }
+        
+        .sound-card {
+            background-color: var(--primary-light);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            opacity: 0.7;
+            transition: opacity 0.3s ease;
+        }
+        
+        .sound-card.active {
+            opacity: 1;
+            box-shadow: 0 0 10px rgba(91, 192, 190, 0.5);
+        }
+        
+        .sound-wave {
+            display: flex;
+            align-items: flex-end;
+            height: 30px;
+            width: 50px;
+            margin-right: 10px;
+        }
+        
+        .sound-wave.active span {
+            animation: soundWave 1s infinite;
+        }
+        
+        .sound-wave span {
+            display: inline-block;
+            width: 4px;
+            margin: 0 2px;
+            background-color: var(--accent);
+            height: 5px;
+            border-radius: 2px;
+        }
+        
+        @keyframes soundWave {
+            0%, 100% { height: 5px; }
+            50% { height: 20px; }
+        }
+        
+        .sound-wave span:nth-child(1) { animation-delay: 0.1s; }
+        .sound-wave span:nth-child(2) { animation-delay: 0.2s; }
+        .sound-wave span:nth-child(3) { animation-delay: 0.05s; }
+        .sound-wave span:nth-child(4) { animation-delay: 0.3s; }
+        .sound-wave span:nth-child(5) { animation-delay: 0.15s; }
         
         .controls {
             margin-top: 2rem;
@@ -188,6 +251,24 @@
             text-shadow: 0 0 5px rgba(91, 192, 190, 0.5);
         }
         
+        .custom-timer-container {
+            margin-top: 1rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .custom-timer-input {
+            width: 80px;
+            background-color: var(--primary-medium);
+            border: 2px solid var(--accent);
+            border-radius: 8px;
+            color: var(--text-light);
+            padding: 0.4rem;
+            margin-right: 0.5rem;
+            text-align: center;
+        }
+        
         /* Sekcja porad dotyczących snu */
         .sleep-tips {
             padding: 1.5rem;
@@ -223,6 +304,71 @@
             margin-right: 0.5rem;
         }
         
+        /* Stylowanie dla ćwiczeń oddechowych */
+        .breathing-exercise {
+            text-align: center;
+            padding: 2rem 0;
+        }
+        
+        .breathing-circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            margin: 0 auto;
+            background-color: rgba(91, 192, 190, 0.2);
+            border: 3px solid var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: transform 0.3s ease, background-color 0.3s ease;
+        }
+        
+        .breathing-circle.inhale {
+            animation: inhale 4s forwards;
+        }
+        
+        .breathing-circle.hold {
+            animation: hold 7s forwards;
+        }
+        
+        .breathing-circle.exhale {
+            animation: exhale 8s forwards;
+        }
+        
+        @keyframes inhale {
+            from { transform: scale(1); background-color: rgba(91, 192, 190, 0.2); }
+            to { transform: scale(1.5); background-color: rgba(91, 192, 190, 0.6); }
+        }
+        
+        @keyframes hold {
+            from { transform: scale(1.5); background-color: rgba(91, 192, 190, 0.6); }
+            to { transform: scale(1.5); background-color: rgba(91, 192, 190, 0.6); }
+        }
+        
+        @keyframes exhale {
+            from { transform: scale(1.5); background-color: rgba(91, 192, 190, 0.6); }
+            to { transform: scale(1); background-color: rgba(91, 192, 190, 0.2); }
+        }
+        
+        /* Przełącznik trybu jasny/ciemny */
+        .theme-toggle {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: var(--accent);
+            font-size: 1.5rem;
+            cursor: pointer;
+            z-index: 10;
+            transition: transform 0.3s ease;
+        }
+        
+        .theme-toggle:hover {
+            transform: rotate(30deg);
+        }
+        
         /* Stopka */
         footer {
             text-align: center;
@@ -236,13 +382,34 @@
         .moon {
             position: absolute;
             top: 20px;
-            right: 20px;
+            left: 20px;
             width: 50px;
             height: 50px;
             background-color: rgba(255, 255, 255, 0.9);
             border-radius: 50%;
             box-shadow: 0 0 20px rgba(255, 255, 255, 0.7);
             z-index: 0;
+            transition: background-color 0.5s ease, box-shadow 0.5s ease;
+        }
+        
+        .light-mode .moon {
+            background-color: #fbbf24;
+            box-shadow: 0 0 30px rgba(251, 191, 36, 0.7);
+        }
+        
+        /* Toast powiadomienia */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        
+        .custom-toast {
+            background-color: var(--primary-medium);
+            color: var(--text-light);
+            border-left: 4px solid var(--accent);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         }
         
         /* Responsywność */
@@ -269,7 +436,12 @@
                 width: 40px;
                 height: 40px;
                 top: 15px;
-                right: 15px;
+                left: 15px;
+            }
+            
+            .breathing-circle {
+                width: 120px;
+                height: 120px;
             }
         }
     </style>
@@ -279,7 +451,25 @@
     <div class="stars" id="stars"></div>
     <div class="moon"></div>
     
+    <!-- Toast powiadomienia -->
+    <div class="toast-container">
+        <div class="toast custom-toast" role="alert" aria-live="assertive" aria-atomic="true" id="app-toast">
+            <div class="toast-header">
+                <strong class="me-auto" id="toast-title">Powiadomienie</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body" id="toast-message">
+                Wiadomość
+            </div>
+        </div>
+    </div>
+    
     <div class="container">
+        <!-- Przełącznik trybu jasny/ciemny -->
+        <button class="theme-toggle" id="theme-toggle" title="Zmień motyw">
+            <i class="fas fa-moon" id="theme-icon"></i>
+        </button>
+        
         <!-- Nagłówek -->
         <header>
             <h1>Śpij Słoneczko</h1>
@@ -292,7 +482,9 @@
             <div class="card sound-player">
                 <div class="card-body">
                     <h2><i class="fas fa-music"></i> Relaksujące dźwięki</h2>
-                    <div class="d-flex flex-wrap justify-content-center">
+                    
+                    <!-- Przyciski dźwięków -->
+                    <div class="d-flex flex-wrap justify-content-center mb-4">
                         <button class="sound-btn" data-sound="ocean"><i class="fas fa-water"></i> Szum morza</button>
                         <button class="sound-btn" data-sound="rain"><i class="fas fa-cloud-rain"></i> Deszcz</button>
                         <button class="sound-btn" data-sound="forest"><i class="fas fa-tree"></i> Las</button>
@@ -300,12 +492,16 @@
                         <button class="sound-btn" data-sound="whitenoise"><i class="fas fa-wave-square"></i> Biały szum</button>
                     </div>
                     
+                    <!-- Wizualizacja aktywnych dźwięków -->
+                    <div class="active-sounds my-3" id="active-sounds-container">
+                        <!-- Aktywne dźwięki będą dodawane tutaj dynamicznie -->
+                    </div>
+                    
                     <div class="controls">
                         <!-- Kontrola głośności -->
                         <div class="slider-container">
                             <label for="volume" class="form-label"><i class="fas fa-volume-up"></i> Głośność</label>
-                            <input type="range" class="form-range" id="volume" min="0" max="1" step="0.01" value="0.5"
-                                   onchange="console.log('Zmiana głośności:', this.value)">
+                            <input type="range" class="form-range" id="volume" min="0" max="1" step="0.01" value="0.5">
                         </div>
                         
                         <!-- Timer -->
@@ -319,7 +515,27 @@
                                 <button class="sound-btn timer-btn" data-time="60">1 godz</button>
                                 <button class="sound-btn timer-btn" data-time="0"><i class="fas fa-stop"></i> Wyłącz</button>
                             </div>
+                            
+                            <!-- Niestandardowy timer -->
+                            <div class="custom-timer-container mt-3">
+                                <input type="number" min="1" max="480" class="custom-timer-input" id="custom-timer-input" placeholder="min">
+                                <button class="sound-btn" id="custom-timer-btn"><i class="fas fa-check"></i> Ustaw</button>
+                            </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Ćwiczenie oddechowe -->
+            <div class="card">
+                <div class="card-body">
+                    <h2><i class="fas fa-lungs"></i> Ćwiczenie oddechowe 4-7-8</h2>
+                    <div class="breathing-exercise">
+                        <p>Technika 4-7-8 pomaga zrelaksować się i przygotować do snu</p>
+                        <div class="breathing-circle" id="breathing-circle">
+                            <span id="breathing-text">Kliknij, aby rozpocząć</span>
+                        </div>
+                        <button class="sound-btn mt-4" id="start-breathing-btn">Rozpocznij ćwiczenie</button>
                     </div>
                 </div>
             </div>
@@ -359,8 +575,29 @@
         <!-- Stopka -->
         <footer>
             <p>© 2025 Śpij Słoneczko | Stworzone z miłością przez dziubaska dla Renatki</p>
+            <p><a href="#" id="save-preferences" class="text-decoration-none" style="color: var(--accent)">Zapisz preferencje</a></p>
         </footer>
     </div>
+    
+    <!-- Szablony HTML -->
+    <template id="sound-card-template">
+        <div class="sound-card mb-2">
+            <div class="d-flex align-items-center">
+                <div class="sound-wave me-2">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <span class="sound-name"></span>
+            </div>
+            <div>
+                <input type="range" class="form-range individual-volume" min="0" max="1" step="0.01" value="0.5" style="width: 100px;">
+                <button class="btn-close sound-close ms-2" aria-label="Close"></button>
+            </div>
+        </div>
+    </template>
     
     <!-- Bootstrap JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
@@ -368,6 +605,26 @@
     <!-- Główny skrypt JavaScript -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Inicjalizacja tooltipów Bootstrap
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+            
+            // Inicjalizacja toastów
+            const toastEl = document.getElementById('app-toast');
+            const toast = new bootstrap.Toast(toastEl, {
+                autohide: true,
+                delay: 3000
+            });
+            
+            // Funkcja do pokazywania powiadomień
+            function showToast(title, message) {
+                document.getElementById('toast-title').textContent = title;
+                document.getElementById('toast-message').textContent = message;
+                toast.show();
+            }
+            
             // Tworzenie gwiazd dla animowanego tła
             const starsContainer = document.getElementById('stars');
             const starsCount = 150; // Liczba gwiazd
@@ -416,6 +673,32 @@
                 starsContainer.appendChild(cloud);
             }
             
+            // ========== PRZEŁĄCZNIK TRYBU JASNY/CIEMNY ==========
+            const themeToggle = document.getElementById('theme-toggle');
+            const themeIcon = document.getElementById('theme-icon');
+            
+            // Sprawdź, czy użytkownik ma zapisane preferencje
+            const savedTheme = localStorage.getItem('spijSloneczko-theme');
+            if (savedTheme === 'light') {
+                document.body.classList.add('light-mode');
+                themeIcon.classList.remove('fa-moon');
+                themeIcon.classList.add('fa-sun');
+            }
+            
+            themeToggle.addEventListener('click', function() {
+                document.body.classList.toggle('light-mode');
+                
+                if (document.body.classList.contains('light-mode')) {
+                    themeIcon.classList.remove('fa-moon');
+                    themeIcon.classList.add('fa-sun');
+                    localStorage.setItem('spijSloneczko-theme', 'light');
+                } else {
+                    themeIcon.classList.remove('fa-sun');
+                    themeIcon.classList.add('fa-moon');
+                    localStorage.setItem('spijSloneczko-theme', 'dark');
+                }
+            });
+            
             // ========== SYSTEM ODTWARZANIA DŹWIĘKÓW ==========
             
             // Pobranie elementów DOM
@@ -423,52 +706,96 @@
             const volumeSlider = document.getElementById('volume');
             const timerButtons = document.querySelectorAll('.timer-btn');
             const timerDisplay = document.getElementById('timer-display');
+            const customTimerInput = document.getElementById('custom-timer-input');
+            const customTimerBtn = document.getElementById('custom-timer-btn');
+            const activeContainer = document.getElementById('active-sounds-container');
+            const soundCardTemplate = document.getElementById('sound-card-template');
             
             // Timer
             let timerInterval = null;
             let timerEndTime = null;
             
-            // Przechowywanie obecnego dźwięku
-            let currentSound = null;
-            let currentAudio = null;
+            // Przechowywanie aktywnych dźwięków (jako mapa)
+            const activeSounds = new Map();
             
             // ===== KONFIGURACJA DŹWIĘKÓW =====
-            // Aby dodać własne dźwięki:
-            // 1. Utwórz folder "sounds" w głównym katalogu strony
-            // 2. Dodaj pliki MP3 lub WAV do tego folderu
-            // 3. Zaktualizuj poniższe ścieżki, aby wskazywały na Twoje pliki
-            
             const sounds = {
-                // Format: 'nazwa': 'ścieżka_do_pliku'
-                'ocean': 'sounds/ocean.wav',  // Przykład: szum morza
-                'rain': 'sounds/rain.mp3',    // Przykład: deszcz
-                'forest': 'sounds/forest.mp3', // Przykład: las
-                'night': 'sounds/night.mp3',  // Przykład: noc
-                'whitenoise': 'sounds/whitenoise.wav' // Przykład: biały szum
-                
-                // Możesz dodać więcej dźwięków tutaj
-                // 'nazwa_dźwięku': 'ścieżka/do/pliku.mp3',
+                'ocean': 'sounds/ocean.wav',
+                'rain': 'sounds/rain.mp3',
+                'forest': 'sounds/forest.mp3',
+                'night': 'sounds/night.mp3',
+                'whitenoise': 'sounds/whitenoise.wav'
             };
+            
+            // Mapowanie nazw dźwięków na przyjazne nazwy polskie
+            const soundNames = {
+                'ocean': 'Szum morza',
+                'rain': 'Deszcz',
+                'forest': 'Las',
+                'night': 'Noc',
+                'whitenoise': 'Biały szum'
+            };
+            
+            // Mapowanie nazw dźwięków na ikony
+            const soundIcons = {
+                'ocean': 'fa-water',
+                'rain': 'fa-cloud-rain',
+                'forest': 'fa-tree',
+                'night': 'fa-moon',
+                'whitenoise': 'fa-wave-square'
+            };
+            
+            // Funkcja tworząca element karty dźwięku
+            function createSoundCard(soundName, audio) {
+                const template = soundCardTemplate.content.cloneNode(true);
+                const card = template.querySelector('.sound-card');
+                card.dataset.sound = soundName;
+                
+                // Ustaw nazwę dźwięku
+                const nameElement = card.querySelector('.sound-name');
+                nameElement.textContent = soundNames[soundName] || soundName;
+                
+                // Dodaj ikonę
+                const iconClass = soundIcons[soundName];
+                if (iconClass) {
+                    const icon = document.createElement('i');
+                    icon.className = `fas ${iconClass} me-2`;
+                    nameElement.prepend(icon);
+                }
+                
+                // Ustaw klasę aktywną dla wizualizacji dźwięku
+                card.classList.add('active');
+                const soundWave = card.querySelector('.sound-wave');
+                soundWave.classList.add('active');
+                
+                // Obsługa indywidualnej głośności
+                const volumeControl = card.querySelector('.individual-volume');
+                volumeControl.value = audio.volume;
+                volumeControl.addEventListener('input', function() {
+                    audio.volume = parseFloat(this.value);
+                });
+                
+                // Obsługa przycisku zamykania
+                const closeBtn = card.querySelector('.sound-close');
+                closeBtn.addEventListener('click', function() {
+                    stopSound(soundName);
+                });
+                
+                return card;
+            }
             
             // Funkcja odtwarzania dźwięku
             function playSound(soundName) {
-                // Zatrzymanie aktualnie odtwarzanego dźwięku
-                stopAllSounds();
-                
-                // Usunięcie klasy active ze wszystkich przycisków
-                soundButtons.forEach(btn => btn.classList.remove('active'));
-                
-                // Jeśli kliknięto ten sam dźwięk, który był odtwarzany, tylko go zatrzymaj
-                if (currentSound === soundName) {
-                    currentSound = null;
+                // Jeśli dźwięk jest już odtwarzany, zatrzymaj go
+                if (activeSounds.has(soundName)) {
+                    stopSound(soundName);
                     return;
                 }
                 
                 try {
                     // Sprawdź, czy ścieżka do dźwięku istnieje
                     if (!sounds[soundName]) {
-                        console.error(`Brak pliku dźwiękowego dla: ${soundName}`);
-                        alert(`Brak pliku dźwiękowego dla: ${soundName}. Dodaj plik w folderze "sounds" i zaktualizuj ścieżkę w kodzie.`);
+                        showToast("Błąd", `Brak pliku dźwiękowego dla: ${soundName}`);
                         return;
                     }
                     
@@ -481,38 +808,89 @@
                     // Pobierz aktualną wartość głośności z suwaka
                     const volume = parseFloat(volumeSlider.value);
                     audio.volume = volume;
-                    console.log(`Ustawiono początkową głośność: ${volume} dla dźwięku: ${soundName}`);
                     
                     // Obsługa błędów ładowania pliku
                     audio.onerror = function() {
-                        console.error(`Błąd ładowania pliku: ${sounds[soundName]}`);
-                        alert(`Nie można załadować pliku: ${sounds[soundName]}. Sprawdź, czy plik istnieje.`);
+                        showToast("Błąd", `Nie można załadować pliku: ${sounds[soundName]}`);
                     };
                     
                     // Rozpocznij odtwarzanie
                     audio.play().catch(err => {
-                        console.error('Błąd odtwarzania:', err);
-                        alert('Błąd odtwarzania dźwięku. Sprawdź uprawnienia przeglądarki.');
+                        showToast("Błąd", "Błąd odtwarzania dźwięku. Sprawdź uprawnienia przeglądarki.");
                     });
                     
-                    // Zapisz referencje do aktualnego dźwięku
-                    currentSound = soundName;
-                    currentAudio = audio;
+                    // Dodaj dźwięk do aktywnych
+                    activeSounds.set(soundName, audio);
                     
                     // Dodaj klasę active do przycisku
                     document.querySelector(`.sound-btn[data-sound="${soundName}"]`).classList.add('active');
+                    
+                    // Dodaj kartę dźwięku do kontenera
+                    const soundCard = createSoundCard(soundName, audio);
+                    activeContainer.appendChild(soundCard);
+                    
                 } catch (error) {
-                    console.error('Błąd podczas odtwarzania dźwięku:', error);
+                    showToast("Błąd", "Wystąpił nieoczekiwany błąd podczas odtwarzania dźwięku");
+                }
+            }
+            
+            // Zatrzymanie pojedynczego dźwięku
+            function stopSound(soundName) {
+                if (activeSounds.has(soundName)) {
+                    const audio = activeSounds.get(soundName);
+                    audio.pause();
+                    audio.currentTime = 0;
+                    activeSounds.delete(soundName);
+                    
+                    // Usuń klasę active z przycisku
+                    const button = document.querySelector(`.sound-btn[data-sound="${soundName}"]`);
+                    if (button) button.classList.remove('active');
+                    
+                    // Usuń kartę dźwięku
+                    const card = document.querySelector(`.sound-card[data-sound="${soundName}"]`);
+                    if (card) card.remove();
                 }
             }
             
             // Zatrzymanie wszystkich dźwięków
             function stopAllSounds() {
-                if (currentAudio) {
-                    currentAudio.pause();
-                    currentAudio.currentTime = 0;
-                    currentAudio = null;
+                for (const [soundName, audio] of activeSounds.entries()) {
+                    audio.pause();
+                    audio.currentTime = 0;
+                    
+                    // Usuń klasę active z przycisku
+                    const button = document.querySelector(`.sound-btn[data-sound="${soundName}"]`);
+                    if (button) button.classList.remove('active');
                 }
+                
+                activeSounds.clear();
+                activeContainer.innerHTML = '';
+            }
+            
+            // Funkcja do płynnego wyciszania dźwięków
+            function fadeOutAllSounds(duration = 3000) {
+                // Zapisz początkowe głośności dla każdego dźwięku
+                const initialVolumes = new Map();
+                for (const [soundName, audio] of activeSounds.entries()) {
+                    initialVolumes.set(soundName, audio.volume);
+                }
+                
+                const startTime = Date.now();
+                const fadeInterval = setInterval(() => {
+                    const elapsed = Date.now() - startTime;
+                    const ratio = 1 - Math.min(elapsed / duration, 1);
+                    
+                    // Aktualizuj głośność każdego dźwięku
+                    for (const [soundName, audio] of activeSounds.entries()) {
+                        audio.volume = initialVolumes.get(soundName) * ratio;
+                    }
+                    
+                    // Zatrzymaj interwał i dźwięki po zakończeniu wyciszania
+                    if (elapsed >= duration) {
+                        clearInterval(fadeInterval);
+                        stopAllSounds();
+                    }
+                }, 50);
             }
             
             // Ustawienie timera
@@ -530,8 +908,11 @@
                     return;
                 }
                 
-                // Aktywuj przycisk timera
-                document.querySelector(`.timer-btn[data-time="${minutes}"]`).classList.add('active');
+                // Aktywuj przycisk timera jeśli jest standardowym timerem
+                const timerBtn = document.querySelector(`.timer-btn[data-time="${minutes}"]`);
+                if (timerBtn) {
+                    timerBtn.classList.add('active');
+                }
                 
                 // Oblicz czas zakończenia
                 const now = new Date();
@@ -546,34 +927,28 @@
                         // Timer zakończony
                         clearInterval(timerInterval);
                         
-                        // Zatrzymaj wszystkie dźwięki
-                        stopAllSounds();
+                        // Płynnie wycisz wszystkie dźwięki
+                        fadeOutAllSounds(5000);
                         
-                        // Zresetuj aktualny dźwięk i stany przycisków
-                        currentSound = null;
-                        soundButtons.forEach(btn => btn.classList.remove('active'));
+                        // Usuń aktywne klasy z przycisków timera
                         timerButtons.forEach(btn => btn.classList.remove('active'));
                         
-                        // Powiadomienie (opcjonalne)
+                        // Powiadomienie
+                        showToast('Timer zakończony', 'Dźwięki zostały płynnie wyciszone.');
+                        
+                        // Powiadomienie przeglądarki (opcjonalnie)
                         if ('Notification' in window && Notification.permission === 'granted') {
                             new Notification('Śpij Słoneczko', {
-                                body: 'Timer zakończony. Dźwięki zostały wyłączone.',
+                                body: 'Timer zakończony. Dźwięki zostały wyciszone.',
                                 icon: '/favicon.ico'
                             });
                         }
                     }
                 }, 1000);
+                
+                // Pokaż powiadomienie o ustawieniu timera
+                showToast('Timer ustawiony', `Timer ustawiony na ${minutes} minut.`);
             }
-            
-            // Funkcja do dodawania własnych dźwięków
-            // Instrukcja dla użytkownika:
-            // 1. Utwórz folder "sounds" w głównym katalogu strony
-            // 2. Umieść w nim pliki audio (mp3 lub wav) z dźwiękami
-            // 3. Zaktualizuj obiekt "sounds" powyżej, aby wskazywał na Twoje pliki
-            //
-            // Przykład:
-            // - Jeśli dodasz plik "sounds/spokojny-deszcz.mp3"
-            // - W obiekcie sounds dodaj: 'rain': 'sounds/spokojny-deszcz.mp3'
             
             // Aktualizacja wyświetlania timera
             function updateTimerDisplay() {
@@ -600,6 +975,79 @@
                 return true;
             }
             
+            // =========== ĆWICZENIE ODDECHOWE ===========
+            const breathingCircle = document.getElementById('breathing-circle');
+            const breathingText = document.getElementById('breathing-text');
+            const startBreathingBtn = document.getElementById('start-breathing-btn');
+            let breathingInterval = null;
+            
+            function startBreathingExercise() {
+                // Zatrzymaj istniejący interwał jeśli istnieje
+                if (breathingInterval) {
+                    clearInterval(breathingInterval);
+                    breathingCircle.className = 'breathing-circle';
+                    breathingText.textContent = 'Kliknij, aby rozpocząć';
+                    return;
+                }
+                
+                let phase = 0;
+                const phases = [
+                    { name: 'inhale', text: 'Wdech', duration: 4000 },
+                    { name: 'hold', text: 'Zatrzymaj', duration: 7000 },
+                    { name: 'exhale', text: 'Wydech', duration: 8000 }
+                ];
+                
+                function updateBreathingPhase() {
+                    const currentPhase = phases[phase];
+                    
+                    // Usuń wszystkie klasy animacji
+                    breathingCircle.className = 'breathing-circle';
+                    
+                    // Dodaj nową klasę animacji
+                    setTimeout(() => {
+                        breathingCircle.classList.add(currentPhase.name);
+                        breathingText.textContent = currentPhase.text;
+                    }, 10);
+                    
+                    // Przejdź do następnej fazy
+                    phase = (phase + 1) % phases.length;
+                }
+                
+                // Rozpocznij od wdechu
+                updateBreathingPhase();
+                
+                // Ustawienie interwału do zmiany faz
+                breathingInterval = setInterval(() => {
+                    updateBreathingPhase();
+                }, phases[phase].duration);
+                
+                // Zmień tekst przycisku
+                startBreathingBtn.textContent = 'Zatrzymaj ćwiczenie';
+            }
+            
+            // Obsługa przycisku ćwiczenia oddechowego
+            startBreathingBtn.addEventListener('click', function() {
+                if (this.textContent.includes('Rozpocznij')) {
+                    startBreathingExercise();
+                    this.textContent = 'Zatrzymaj ćwiczenie';
+                } else {
+                    if (breathingInterval) {
+                        clearInterval(breathingInterval);
+                        breathingInterval = null;
+                    }
+                    breathingCircle.className = 'breathing-circle';
+                    breathingText.textContent = 'Kliknij, aby rozpocząć';
+                    this.textContent = 'Rozpocznij ćwiczenie';
+                }
+            });
+            
+            // Umożliwienie kliknięcia bezpośrednio na kółko
+            breathingCircle.addEventListener('click', function() {
+                startBreathingBtn.click();
+            });
+            
+            // =========== NASŁUCHIWACZE ZDARZEŃ ===========
+            
             // Nasłuchiwacze zdarzeń dla przycisków dźwięku
             soundButtons.forEach(button => {
                 button.addEventListener('click', function() {
@@ -608,68 +1056,17 @@
                 });
             });
             
-            // Funkcja do bezpośredniego ustawiania głośności
-            function setVolume(value) {
-                const volumeValue = parseFloat(value);
-                if (isNaN(volumeValue)) return;
-                
-                console.log("Funkcja setVolume wywołana z wartością:", volumeValue);
-                
-                if (currentAudio) {
-                    try {
-                        // Najpierw sprawdźmy aktualną głośność
-                        console.log("Aktualna głośność przed zmianą:", currentAudio.volume);
-                        
-                        // Ustaw nową głośność bezpośrednio
-                        currentAudio.volume = volumeValue;
-                        
-                        // Sprawdź, czy głośność faktycznie się zmieniła
-                        console.log("Głośność po zmianie:", currentAudio.volume);
-                        
-                        // Dodatkowe potwierdzenie
-                        setTimeout(() => {
-                            console.log("Głośność po timeout:", currentAudio.volume);
-                        }, 100);
-                    } catch (error) {
-                        console.error("Błąd podczas ustawiania głośności:", error);
-                    }
-                } else {
-                    console.log("Brak aktywnego dźwięku do zmiany głośności");
-                }
-            }
-            
-            // Nasłuchiwacze zdarzeń dla suwaka głośności - używamy wielu zdarzeń dla pewności
+            // Nasłuchiwacze zdarzeń dla suwaka głośności głównej
             volumeSlider.addEventListener('input', function() {
-                setVolume(this.value);
-            });
-            
-            volumeSlider.addEventListener('change', function() {
-                setVolume(this.value);
-            });
-            
-            // Dodatkowy przycisk do ręcznego zastosowania głośności
-            const volumeControlsDiv = document.createElement('div');
-            volumeControlsDiv.className = 'text-center mt-2';
-            volumeControlsDiv.innerHTML = `
-                <button class="sound-btn" id="apply-volume-btn">
-                    <i class="fas fa-check"></i> Zastosuj głośność
-                </button>
-            `;
-            
-            // Wstawienie przycisku po suwaku głośności
-            const sliderContainer = document.querySelector('.slider-container');
-            sliderContainer.appendChild(volumeControlsDiv);
-            
-            // Obsługa przycisku
-            document.getElementById('apply-volume-btn').addEventListener('click', function() {
-                if (currentAudio) {
-                    const manualValue = parseFloat(volumeSlider.value);
-                    currentAudio.volume = manualValue;
-                    console.log("Ręcznie ustawiono głośność:", manualValue);
-                    alert("Głośność ustawiona na: " + Math.round(manualValue * 100) + "%");
-                } else {
-                    alert("Najpierw wybierz dźwięk do odtworzenia");
+                const value = parseFloat(this.value);
+                for (const audio of activeSounds.values()) {
+                    audio.volume = value;
                 }
+                
+                // Aktualizuj wszystkie suwaki indywidualnej głośności
+                document.querySelectorAll('.individual-volume').forEach(slider => {
+                    slider.value = value;
+                });
             });
             
             // Nasłuchiwacze zdarzeń dla przycisków timera
@@ -680,20 +1077,72 @@
                 });
             });
             
-            // Zapytanie o pozwolenie na powiadomienia (opcjonalne)
-            if ('Notification' in window && Notification.permission !== 'granted' && Notification.permission !== 'denied') {
-                Notification.requestPermission();
+            // Nasłuchiwacz dla niestandardowego timera
+            customTimerBtn.addEventListener('click', function() {
+                const minutes = parseInt(customTimerInput.value);
+                if (isNaN(minutes) || minutes <= 0 || minutes > 480) {
+                    showToast('Błąd', 'Wprowadź wartość między 1 a 480 minut.');
+                    return;
+                }
+                setTimer(minutes);
+                
+                // Wyczyść pole input
+                customTimerInput.value = '';
+            });
+            
+            // Obsługa Enter w polu niestandardowego timera
+            customTimerInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    customTimerBtn.click();
+                }
+            });
+            
+            // Obsługa zapisywania preferencji
+            document.getElementById('save-preferences').addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Zapisz preferencje w localStorage
+                const preferences = {
+                    volume: volumeSlider.value,
+                    theme: document.body.classList.contains('light-mode') ? 'light' : 'dark',
+                    activeSounds: Array.from(activeSounds.keys())
+                };
+                
+                localStorage.setItem('spijSloneczko-preferences', JSON.stringify(preferences));
+                showToast('Zapisano', 'Twoje preferencje zostały zapisane!');
+            });
+            
+            // Ładowanie zapisanych preferencji
+            function loadSavedPreferences() {
+                const savedPrefs = localStorage.getItem('spijSloneczko-preferences');
+                if (!savedPrefs) return;
+                
+                try {
+                    const preferences = JSON.parse(savedPrefs);
+                    
+                    // Ustaw głośność
+                    if (preferences.volume) {
+                        volumeSlider.value = preferences.volume;
+                    }
+                    
+                    // Ustaw motyw (już obsłużone wcześniej)
+                    
+                    // Odtwórz zapisane dźwięki
+                    if (preferences.activeSounds && Array.isArray(preferences.activeSounds)) {
+                        preferences.activeSounds.forEach(sound => {
+                            setTimeout(() => {
+                                playSound(sound);
+                            }, 500);
+                        });
+                    }
+                    
+                } catch (error) {
+                    console.error('Błąd podczas wczytywania preferencji:', error);
+                }
             }
             
-            // Wyświetl informację o potrzebie dodania własnych plików dźwiękowych
-            console.log("Pamiętaj o dodaniu własnych plików dźwiękowych w folderze 'sounds'!");
-            
-            // Funkcja do sprawdzania dostępności plików dźwiękowych (opcjonalnie)
+            // Sprawdzenie dostępności plików dźwiękowych
             function checkSoundFiles() {
-                // Komunikat w konsoli developerskiej
-                console.log("Skonfigurowane dźwięki:", sounds);
-                
-                // Opcjonalnie: Sprawdź czy pliki istnieją
                 Object.entries(sounds).forEach(([name, path]) => {
                     const testAudio = new Audio();
                     testAudio.addEventListener('error', () => {
@@ -703,8 +1152,16 @@
                 });
             }
             
-            // Uruchom sprawdzanie plików po załadowaniu strony
-            setTimeout(checkSoundFiles, 1000);
+            // Zapytanie o pozwolenie na powiadomienia
+            if ('Notification' in window && Notification.permission !== 'granted' && Notification.permission !== 'denied') {
+                Notification.requestPermission();
+            }
+            
+            // Wczytaj preferencje po załadowaniu strony
+            setTimeout(() => {
+                loadSavedPreferences();
+                checkSoundFiles();
+            }, 1000);
         });
     </script>
 </body>
