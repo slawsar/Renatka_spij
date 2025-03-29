@@ -1,1 +1,930 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Śpij Słoneczko - Spokojny sen</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ---------- Zmienne CSS i podstawowe style ---------- */
+        :root {
+            --primary: #2c1752;
+            --secondary: #3a1e63;
+            --accent: #ff9e5e;
+            --accent-light: #ffd27d;
+            --accent-hover: #ffb880;
+            --text: #fff6ea;
+            --text-secondary: #ffebd7;
+            --card-bg: rgba(58, 30, 99, 0.7);
+            --card-border: rgba(91, 56, 153, 0.8);
+            --card-hover-border: var(--accent);
+            --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            --transition: all 0.3s ease;
+            --radius: 16px;
+            --radius-lg: 20px;
+            --radius-sm: 12px;
+        }
 
+        body {
+            background: linear-gradient(135deg, #190e2e 0%, #2c1752 100%);
+            color: var(--text);
+            font-family: 'Nunito', 'Segoe UI', sans-serif;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        /* ---------- Tło, animacje i efekty ---------- */
+        .sky {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .moon {
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 35%, #fff4d6, #ffd27d);
+            box-shadow: 0 0 40px #ffd27d;
+            top: 10%;
+            right: 10%;
+            opacity: 0.9;
+        }
+
+        .star {
+            position: absolute;
+            background-color: #fff8e8;
+            border-radius: 50%;
+            filter: blur(1px);
+            animation: twinkle 4s infinite ease-in-out;
+        }
+
+        .cloud {
+            position: absolute;
+            background: linear-gradient(to bottom, rgba(255, 222, 173, 0.2), rgba(255, 158, 94, 0.05));
+            border-radius: 100px;
+            filter: blur(20px);
+            opacity: 0.3;
+            animation: float 120s infinite linear;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.2; transform: scale(0.8); }
+            50% { opacity: 1; transform: scale(1.1); }
+        }
+
+        @keyframes float {
+            0% { transform: translateX(-100vw) translateY(0); }
+            100% { transform: translateX(200vw) translateY(0); }
+        }
+
+        @keyframes ray-rotate {
+            0% { transform: rotate(0deg) translateX(40px); }
+            100% { transform: rotate(360deg) translateX(40px); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        @keyframes beat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        /* ---------- Nagłówek i logo ---------- */
+        header {
+            padding: 2.5rem 0 3rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .logo-container {
+            position: relative;
+            margin-bottom: 1.5rem;
+            height: 80px;
+        }
+
+        .logo-sun {
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle at 35% 35%, var(--accent-light), var(--accent));
+            border-radius: 50%;
+            margin: 0 auto;
+            box-shadow: 0 0 30px rgba(255, 158, 94, 0.6);
+            position: relative;
+            z-index: 1;
+        }
+
+        .logo-ray {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            height: 3px;
+            width: 40px;
+            background: linear-gradient(90deg, rgba(255, 222, 145, 0.8), rgba(255, 222, 145, 0));
+            transform-origin: 0 0;
+            animation: ray-rotate 20s linear infinite;
+        }
+
+        h1 {
+            font-weight: 800;
+            font-size: clamp(2rem, 5vw, 3rem);
+            margin-bottom: 0.5rem;
+            background: linear-gradient(90deg, var(--accent-light), var(--accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 2px 10px rgba(255, 158, 94, 0.3);
+        }
+
+        header p {
+            color: var(--text-secondary);
+            font-weight: 400;
+            font-size: clamp(1rem, 3vw, 1.2rem);
+            max-width: 500px;
+            margin: 0 auto;
+            opacity: 0.9;
+        }
+
+        /* ---------- Główne sekcje i kontenery ---------- */
+        .main-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 1.5rem 3rem;
+        }
+
+        .section {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: var(--radius-lg);
+            padding: clamp(1.5rem, 4vw, 2rem);
+            margin-bottom: 2.5rem;
+            border: 1px solid var(--card-border);
+            box-shadow: var(--card-shadow);
+            transition: var(--transition);
+        }
+
+        .section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            border-color: var(--card-hover-border);
+        }
+
+        .section-title {
+            color: var(--accent);
+            font-size: clamp(1.3rem, 4vw, 1.6rem);
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-title i {
+            margin-right: 0.75rem;
+            background: linear-gradient(45deg, var(--accent), var(--accent-light));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        /* ---------- Dźwięki i przyciski ---------- */
+        .sound-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .sound-card {
+            background: rgba(91, 56, 153, 0.3);
+            border: 2px solid rgba(91, 56, 153, 0.5);
+            border-radius: var(--radius);
+            padding: 1.25rem 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sound-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 158, 94, 0.1), transparent 70%);
+            opacity: 0;
+            transition: var(--transition);
+            z-index: -1;
+        }
+
+        .sound-card:hover::before {
+            opacity: 1;
+            transform: scale(1.2);
+        }
+
+        .sound-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent);
+        }
+
+        .sound-card.active {
+            background: linear-gradient(135deg, rgba(91, 56, 153, 0.7), rgba(44, 23, 82, 0.7));
+            border-color: var(--accent);
+            box-shadow: 0 0 20px rgba(255, 158, 94, 0.3);
+        }
+
+        .sound-icon {
+            font-size: 2rem;
+            margin-bottom: 0.75rem;
+            color: var(--accent);
+            transition: var(--transition);
+        }
+
+        .sound-card:hover .sound-icon {
+            transform: scale(1.2);
+        }
+
+        .sound-card.active .sound-icon {
+            animation: pulse 2s infinite;
+        }
+
+        .sound-name {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        /* ---------- Kontrola głośności ---------- */
+        .volume-container {
+            width: 100%;
+            max-width: 350px;
+            margin: 1.5rem auto 0.5rem;
+            display: flex;
+            align-items: center;
+            background: rgba(91, 56, 153, 0.3);
+            padding: 0.75rem 1.25rem;
+            border-radius: 50px;
+            border: 1px solid rgba(91, 56, 153, 0.8);
+        }
+
+        .volume-icon {
+            margin-right: 1rem;
+            font-size: 1.2rem;
+            color: var(--accent);
+        }
+
+        .volume-slider {
+            flex-grow: 1;
+            -webkit-appearance: none;
+            height: 4px;
+            border-radius: 4px;
+            background: rgba(255, 246, 234, 0.2);
+            outline: none;
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--accent);
+            box-shadow: 0 0 10px rgba(255, 158, 94, 0.5);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .volume-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+        
+        /* ---------- Timer i kontrolki ---------- */
+        .timer-container {
+            text-align: center;
+        }
+
+        .timer-wrapper {
+            background: rgba(91, 56, 153, 0.3);
+            border-radius: 30px;
+            padding: 1.5rem;
+            max-width: 350px;
+            margin: 0 auto 2rem;
+            border: 1px solid rgba(91, 56, 153, 0.8);
+        }
+
+        .timer-display {
+            font-size: clamp(3rem, 10vw, 4.5rem);
+            font-weight: 300;
+            background: linear-gradient(to bottom, var(--text-secondary), var(--accent-light));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            line-height: 1;
+            margin-bottom: 1rem;
+        }
+
+        .timer-controls {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .time-presets {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.75rem;
+        }
+
+        .timer-button {
+            background: rgba(91, 56, 153, 0.4);
+            color: var(--text);
+            border: 1px solid rgba(91, 56, 153, 0.8);
+            border-radius: var(--radius-sm);
+            padding: 0.75rem 0.5rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .timer-button:hover {
+            background: rgba(255, 158, 94, 0.1);
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        .preset-button {
+            background: rgba(91, 56, 153, 0.4);
+            color: var(--text);
+            border: 1px solid rgba(91, 56, 153, 0.8);
+            border-radius: var(--radius-sm);
+            padding: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .preset-button:hover, .preset-button.active {
+            background: rgba(255, 158, 94, 0.1);
+            border-color: var(--accent);
+        }
+
+        .preset-button.active {
+            background: linear-gradient(135deg, rgba(91, 56, 153, 0.7), rgba(44, 23, 82, 0.7));
+            border-color: var(--accent);
+        }
+
+        #start-timer {
+            background: linear-gradient(to right, #5b3899, #9d68e0);
+            color: white;
+            border: none;
+        }
+
+        #start-timer:hover {
+            background: linear-gradient(to right, #6b44b0, #a87aed);
+            box-shadow: 0 4px 12px rgba(157, 104, 224, 0.3);
+        }
+
+        #stop-timer {
+            background: rgba(255, 158, 94, 0.1);
+            color: var(--accent);
+            border: 1px solid var(--accent);
+        }
+
+        #stop-timer:hover {
+            background: rgba(255, 158, 94, 0.2);
+            box-shadow: 0 4px 12px rgba(255, 158, 94, 0.15);
+        }
+
+        /* ---------- Porady i wskazówki ---------- */
+        .tips-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .tip-container {
+            background: rgba(91, 56, 153, 0.3);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            border: 1px solid rgba(91, 56, 153, 0.8);
+            transition: var(--transition);
+            height: 100%;
+        }
+
+        .tip-container:hover {
+            background: rgba(91, 56, 153, 0.4);
+            transform: translateY(-5px);
+            border-color: var(--accent);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .tip-icon {
+            font-size: 2rem;
+            color: var(--accent);
+            margin-bottom: 1rem;
+        }
+
+        .tip-title {
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            color: var(--accent-light);
+            font-size: 1.1rem;
+        }
+
+        .tip-container p {
+            color: var(--text-secondary);
+            margin-bottom: 0;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        /* ---------- Stopka ---------- */
+        footer {
+            text-align: center;
+            padding: 2rem 1rem;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            background: linear-gradient(0deg, rgba(25, 14, 46, 0.9) 0%, rgba(25, 14, 46, 0) 100%);
+        }
+
+        .heart {
+            color: #ff6b8b;
+            display: inline-block;
+            animation: beat 1.5s infinite ease-in-out;
+        }
+
+        /* ---------- Responsywność ---------- */
+        @media (max-width: 768px) {
+            .sound-grid {
+                grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            }
+            
+            .moon {
+                width: 100px;
+                height: 100px;
+            }
+            
+            .tips-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .time-presets {
+                grid-template-columns: repeat(2, 1fr);
+                grid-template-rows: repeat(2, 1fr);
+            }
+            
+            .logo-sun {
+                width: 60px;
+                height: 60px;
+            }
+            
+            .timer-wrapper {
+                padding: 1rem;
+            }
+        }
+
+        /* Optymalizacja dla urządzeń o niskim poziomie energii */
+        @media (prefers-reduced-motion: reduce) {
+            .star, .cloud, .logo-ray, .sound-card.active .sound-icon, .heart {
+                animation: none;
+            }
+            
+            .section:hover, .sound-card:hover, .tip-container:hover {
+                transform: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animowane tło z księżycem i gwiazdami -->
+    <div class="sky">
+        <div class="moon"></div>
+        <!-- Gwiazdy i chmury będą dodawane przez JavaScript -->
+    </div>
+
+    <!-- Nagłówek strony -->
+    <header>
+        <div class="logo-container">
+            <div class="logo-sun" id="logo-sun">
+                <!-- Promienie słońca dodawane przez JavaScript -->
+            </div>
+        </div>
+        <h1>Śpij Słoneczko</h1>
+        <p>Ukołysz się do snu z pomocą relaksujących dźwięków i przyjaznej atmosfery</p>
+    </header>
+
+    <!-- Główny kontener strony -->
+    <main class="main-container">
+        <!-- Sekcja z dźwiękami -->
+        <section class="section">
+            <h2 class="section-title"><i class="fas fa-music"></i> Kojące dźwięki</h2>
+            <div class="sound-grid" id="sound-grid">
+                <div class="sound-card" data-sound="ocean">
+                    <i class="fas fa-water sound-icon"></i>
+                    <span class="sound-name">Szum morza</span>
+                </div>
+                <div class="sound-card" data-sound="rain">
+                    <i class="fas fa-cloud-rain sound-icon"></i>
+                    <span class="sound-name">Deszcz</span>
+                </div>
+                <div class="sound-card" data-sound="forest">
+                    <i class="fas fa-tree sound-icon"></i>
+                    <span class="sound-name">Las</span>
+                </div>
+                <div class="sound-card" data-sound="fireplace">
+                    <i class="fas fa-fire sound-icon"></i>
+                    <span class="sound-name">Kominek</span>
+                </div>
+                <div class="sound-card" data-sound="whitenoise">
+                    <i class="fas fa-wave-square sound-icon"></i>
+                    <span class="sound-name">Biały szum</span>
+                </div>
+                <div class="sound-card" data-sound="lullaby">
+                    <i class="fas fa-music sound-icon"></i>
+                    <span class="sound-name">Kołysanka</span>
+                </div>
+            </div>
+            <div class="volume-container">
+                <i class="fas fa-volume-down volume-icon" id="volume-icon"></i>
+                <input type="range" min="0" max="100" value="70" class="volume-slider" id="volume-slider">
+            </div>
+            
+            <!-- Kontener na audio (dźwięki ładowane dynamicznie przez JS) -->
+            <div id="audio-container"></div>
+        </section>
+
+        <!-- Sekcja z timerem -->
+        <section class="section">
+            <h2 class="section-title"><i class="fas fa-clock"></i> Timer usypiania</h2>
+            <div class="timer-container">
+                <div class="timer-wrapper">
+                    <div class="timer-display" id="timer-display">30:00</div>
+                    <div class="timer-controls">
+                        <button class="timer-button" id="start-timer">Start</button>
+                        <button class="timer-button" id="stop-timer">Stop</button>
+                    </div>
+                    <div class="time-presets" id="time-presets">
+                        <button class="preset-button" data-time="10">10 min</button>
+                        <button class="preset-button active" data-time="30">30 min</button>
+                        <button class="preset-button" data-time="60">60 min</button>
+                        <button class="preset-button" data-time="90">90 min</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sekcja z poradami -->
+        <section class="section">
+            <h2 class="section-title"><i class="fas fa-bed"></i> Porady dla lepszego snu</h2>
+            
+            <div class="tips-grid">
+                <div class="tip-container">
+                    <i class="fas fa-moon tip-icon"></i>
+                    <h3 class="tip-title">Regularny rytm snu</h3>
+                    <p>Staraj się chodzić spać i wstawać o tej samej porze każdego dnia, nawet w weekendy. To pomoże twojemu ciału ustalić zdrowy rytm dobowy.</p>
+                </div>
+                
+                <div class="tip-container">
+                    <i class="fas fa-temperature-low tip-icon"></i>
+                    <h3 class="tip-title">Optymalne warunki</h3>
+                    <p>Zadbaj o ciemne, ciche i chłodne miejsce do spania. Temperatura w sypialni powinna wynosić około 18-20°C dla najlepszej jakości snu.</p>
+                </div>
+                
+                <div class="tip-container">
+                    <i class="fas fa-mobile-alt tip-icon"></i>
+                    <h3 class="tip-title">Ogranicz światło niebieskie</h3>
+                    <p>Unikaj ekranów przynajmniej 1 godzinę przed snem. Światło niebieskie emitowane przez urządzenia zakłóca produkcję melatoniny - hormonu snu.</p>
+                </div>
+                
+                <div class="tip-container">
+                    <i class="fas fa-coffee tip-icon"></i>
+                    <h3 class="tip-title">Uważaj na używki</h3>
+                    <p>Kawa, herbata, napoje energetyczne i alkohol mogą zakłócać sen. Unikaj kofeiny co najmniej 6 godzin przed snem i ogranicz alkohol wieczorem.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Stopka -->
+    <footer>
+        <p>Śpij Słoneczko &copy; 2025 | Stworzone z <span class="heart">♥</span> aby pomagać w zasypianiu</p>
+    </footer>
+
+    <!-- Skrypty JavaScript -->
+    <script>
+        // Definicje plików dźwiękowych
+        const SOUNDS = {
+            'ocean': 'https://assets.codepen.io/21542/howling-wind.mp3',
+            'rain': 'https://assets.codepen.io/21542/rain.mp3',
+            'forest': 'https://assets.codepen.io/21542/forest-bird.mp3',
+            'fireplace': 'https://assets.codepen.io/21542/fire-place.mp3',
+            'whitenoise': 'https://assets.codepen.io/21542/white-noise.mp3',
+            'lullaby': 'https://assets.codepen.io/21542/lullaby.mp3'
+        };
+
+        // Zmienne globalne
+        let currentSound = null;
+        let timerInterval = null;
+        let remainingTime = 30 * 60; // domyślnie 30 minut
+        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        
+        // ---------- Funkcje pomocnicze ----------
+        
+        // Formatowanie czasu (MM:SS)
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+        
+        // Dodanie klasy active do elementu i usunięcie z innych
+        function setActiveElement(element, selector) {
+            document.querySelectorAll(selector).forEach(el => el.classList.remove('active'));
+            if (element) element.classList.add('active');
+        }
+        
+        // Aktualizacja ikony głośności
+        function updateVolumeIcon(volume) {
+            const icon = document.getElementById('volume-icon');
+            if (!icon) return;
+            
+            icon.className = volume === 0 
+                ? 'fas fa-volume-mute volume-icon' 
+                : volume < 50 
+                    ? 'fas fa-volume-down volume-icon' 
+                    : 'fas fa-volume-up volume-icon';
+        }
+        
+        // Generowanie losowej liczby w zakresie
+        function randomRange(min, max) {
+            return Math.random() * (max - min) + min;
+        }
+        
+        // ---------- Tworzenie elementów tła i animacji ----------
+        function createBackgroundElements() {
+            // Zredukuj efekty animacji jeśli użytkownik tego chce
+            if (prefersReducedMotion) return;
+            
+            const sky = document.querySelector('.sky');
+            if (!sky) return;
+            
+            // Tworzenie gwiazd
+            const starCount = window.innerWidth < 768 ? 60 : 120;
+            const starFragment = document.createDocumentFragment();
+            
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.classList.add('star');
+                
+                const size = randomRange(1, 3);
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+                star.style.left = `${randomRange(0, 100)}%`;
+                star.style.top = `${randomRange(0, 100)}%`;
+                star.style.animationDelay = `${randomRange(0, 5)}s`;
+                star.style.animationDuration = `${randomRange(3, 6)}s`;
+                
+                starFragment.appendChild(star);
+            }
+            
+            // Tworzenie chmur
+            const cloudCount = window.innerWidth < 768 ? 2 : 4;
+            
+            for (let i = 0; i < cloudCount; i++) {
+                const cloud = document.createElement('div');
+                cloud.classList.add('cloud');
+                
+                const width = randomRange(200, 400);
+                const height = width / 2;
+                
+                cloud.style.width = `${width}px`;
+                cloud.style.height = `${height}px`;
+                cloud.style.left = `${randomRange(0, 100)}%`;
+                cloud.style.top = `${randomRange(10, 70)}%`;
+                cloud.style.animationDelay = `${randomRange(0, 30)}s`;
+                cloud.style.animationDuration = `${randomRange(60, 120)}s`;
+                
+                starFragment.appendChild(cloud);
+            }
+            
+            sky.appendChild(starFragment);
+            
+            // Tworzenie promieni słońca
+            const logoSun = document.getElementById('logo-sun');
+            if (!logoSun) return;
+            
+            const rayCount = 8;
+            const rayFragment = document.createDocumentFragment();
+            
+            for (let i = 0; i < rayCount; i++) {
+                const ray = document.createElement('div');
+                ray.classList.add('logo-ray');
+                
+                // Równomiernie rozłożone promienie
+                const angle = (i / rayCount) * 360;
+                ray.style.transform = `rotate(${angle}deg) translateX(40px)`;
+                ray.style.animationDelay = `${i * (1/rayCount)}s`;
+                
+                rayFragment.appendChild(ray);
+            }
+            
+            logoSun.appendChild(rayFragment);
+        }
+        
+        // ---------- Inicjalizacja odtwarzacza dźwięków ----------
+        function initSoundPlayer() {
+            const soundGrid = document.getElementById('sound-grid');
+            const volumeSlider = document.getElementById('volume-slider');
+            const audioContainer = document.getElementById('audio-container');
+            
+            if (!soundGrid || !volumeSlider || !audioContainer) return;
+            
+            // Tworzenie elementów audio
+            const audioFragment = document.createDocumentFragment();
+            
+            Object.entries(SOUNDS).forEach(([id, src]) => {
+                const audio = document.createElement('audio');
+                audio.id = `${id}-sound`;
+                audio.loop = true;
+                audio.preload = 'none'; // Nie ładuj dźwięków z góry
+                
+                const source = document.createElement('source');
+                source.src = src;
+                source.type = 'audio/mp3';
+                
+                audio.appendChild(source);
+                audioFragment.appendChild(audio);
+            });
+            
+            audioContainer.appendChild(audioFragment);
+            
+            // Obsługa kliknięć na karty dźwięków
+            soundGrid.addEventListener('click', (e) => {
+                const soundCard = e.target.closest('.sound-card');
+                if (!soundCard) return;
+                
+                const soundType = soundCard.dataset.sound;
+                const sound = document.getElementById(`${soundType}-sound`);
+                if (!sound) return;
+                
+                // Jeśli już gramy ten dźwięk, zatrzymujemy go
+                if (currentSound === sound && !sound.paused) {
+                    sound.pause();
+                    setActiveElement(null, '.sound-card');
+                    currentSound = null;
+                    return;
+                }
+                
+                // Zatrzymujemy aktualnie grający dźwięk
+                if (currentSound) {
+                    currentSound.pause();
+                }
+                
+                // Odtwarzamy nowy dźwięk
+                sound.volume = volumeSlider.value / 100;
+                
+                // Użyj promise dla obsługi błędów
+                const playPromise = sound.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => {
+                        console.log('Autoplay prevented: Interaction required');
+                    });
+                }
+                
+                setActiveElement(soundCard, '.sound-card');
+                currentSound = sound;
+            });
+            
+            // Obsługa suwaka głośności
+            volumeSlider.addEventListener('input', function() {
+                const volume = this.value;
+                
+                if (currentSound) {
+                    currentSound.volume = volume / 100;
+                }
+                
+                // Aktualizuj ikonę głośności
+                updateVolumeIcon(volume);
+            });
+            
+            // Ustaw początkową ikonę głośności
+            updateVolumeIcon(volumeSlider.value);
+        }
+        
+        // ---------- Inicjalizacja timera ----------
+        function initTimer() {
+            const timerDisplay = document.getElementById('timer-display');
+            const timePresets = document.getElementById('time-presets');
+            const startButton = document.getElementById('start-timer');
+            const stopButton = document.getElementById('stop-timer');
+            
+            if (!timerDisplay || !timePresets || !startButton || !stopButton) return;
+            
+            // Przyciski wyboru czasu
+            timePresets.addEventListener('click', (e) => {
+                const presetButton = e.target.closest('.preset-button');
+                if (!presetButton) return;
+                
+                // Resetuj timer
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    startButton.textContent = 'Start';
+                    startButton.style.background = 'linear-gradient(to right, #5b3899, #9d68e0)';
+                }
+                
+                // Ustaw nowy czas
+                setActiveElement(presetButton, '.preset-button');
+                remainingTime = parseInt(presetButton.dataset.time, 10) * 60;
+                timerDisplay.textContent = formatTime(remainingTime);
+            });
+            
+            // Przycisk Start
+            startButton.addEventListener('click', function() {
+                if (timerInterval) return; // Nie startujemy, jeśli już działa
+                
+                timerInterval = setInterval(() => {
+                    remainingTime--;
+                    
+                    if (remainingTime <= 0) {
+                        // Czas upłynął - zatrzymujemy dźwięk i timer
+                        if (currentSound) {
+                            currentSound.pause();
+                            setActiveElement(null, '.sound-card');
+                            currentSound = null;
+                        }
+                        
+                        clearInterval(timerInterval);
+                        timerInterval = null;
+                        remainingTime = 0;
+                        
+                        this.textContent = 'Start';
+                        this.style.background = 'linear-gradient(to right, #5b3899, #9d68e0)';
+                    }
+                    
+                    timerDisplay.textContent = formatTime(remainingTime);
+                }, 1000);
+                
+                // Zmiana stylu przycisku podczas odliczania
+                this.style.background = 'linear-gradient(to right, #6b44b0, #a87aed)';
+                this.textContent = 'Odliczanie...';
+            });
+            
+            // Przycisk Stop
+            stopButton.addEventListener('click', function() {
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    startButton.style.background = 'linear-gradient(to right, #5b3899, #9d68e0)';
+                    startButton.textContent = 'Start';
+                }
+            });
+            
+            // Wyświetl początkowy czas
+            timerDisplay.textContent = formatTime(remainingTime);
+        }
+        
+        // ---------- Inicjalizacja strony ----------
+        document.addEventListener('DOMContentLoaded', function() {
+            // Ogranicz liczbę operacji w DOM
+            createBackgroundElements();
+            initSoundPlayer();
+            initTimer();
+            
+            // Obsługa trybu oszczędzania energii
+            window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', (e) => {
+                if (e.matches) {
+                    // Usuń animowane elementy, jeśli użytkownik zmieni ustawienia
+                    document.querySelectorAll('.star, .cloud').forEach(el => el.remove());
+                } else {
+                    createBackgroundElements();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
