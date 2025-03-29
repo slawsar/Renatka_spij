@@ -21,22 +21,47 @@
     <style>
         /* Główna kolorystyka i ogólne stylowanie */
         :root {
+            /* Podstawowe kolory */
             --primary-dark: #0a1128;
             --primary-medium: #1c2541;
             --primary-light: #3a506b;
             --accent: #5bc0be;
             --accent-dark: #3a8a88;
             --text-light: #e9ecef;
+            
+            /* Przezroczyste warianty kolorów */
+            --accent-transparent-light: rgba(91, 192, 190, 0.2);
+            --accent-transparent-medium: rgba(91, 192, 190, 0.5);
+            --accent-transparent-strong: rgba(91, 192, 190, 0.7);
+            --white-transparent-light: rgba(255, 255, 255, 0.05);
+            --white-transparent-medium: rgba(255, 255, 255, 0.4);
+            --white-transparent-strong: rgba(255, 255, 255, 0.7);
+            --black-transparent-light: rgba(0, 0, 0, 0.1);
+            --black-transparent-medium: rgba(0, 0, 0, 0.3);
+            --black-transparent-strong: rgba(0, 0, 0, 0.5);
+            
+            /* System cieni */
+            --shadow-sm: 0 2px 5px rgba(0, 0, 0, 0.2);
+            --shadow-md: 0 4px 15px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 8px 25px rgba(0, 0, 0, 0.4);
+            
+            /* System zaokrągleń */
+            --radius-sm: 8px;
+            --radius-md: 10px;
+            --radius-lg: 15px;
+            
+            /* Czas trwania przejść */
+            --transition-speed: 0.3s ease;
         }
         
         body {
             background-color: var(--primary-dark);
             color: var(--text-light);
-            font-family: 'Arial', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
             min-height: 100vh;
             position: relative;
             overflow-x: hidden;
-            transition: background-color 0.5s ease;
+            transition: background-color var(--transition-speed);
         }
         
         body.light-mode {
@@ -45,7 +70,10 @@
             --primary-light: #93c5fd;
             --accent: #3b82f6;
             --accent-dark: #2563eb;
-            --text-light: #1e293b;
+            --text-light: #0f172a;
+            --accent-transparent-light: rgba(59, 130, 246, 0.2);
+            --accent-transparent-medium: rgba(59, 130, 246, 0.5);
+            --accent-transparent-strong: rgba(59, 130, 246, 0.7);
             background-color: var(--primary-dark);
             color: var(--text-light);
         }
@@ -78,7 +106,7 @@
         /* Półprzezroczyste chmury */
         .cloud {
             position: absolute;
-            background-color: rgba(255, 255, 255, 0.05);
+            background-color: var(--white-transparent-light);
             border-radius: 50%;
             filter: blur(20px);
             animation: float var(--duration, 60s) infinite linear;
@@ -108,7 +136,7 @@
             color: var(--accent);
             font-size: 2.8rem;
             margin-bottom: 0.5rem;
-            text-shadow: 0 0 10px rgba(91, 192, 190, 0.7);
+            text-shadow: 0 0 10px var(--accent-transparent-strong);
         }
         
         h2 {
@@ -125,15 +153,15 @@
         .card {
             background-color: var(--primary-medium);
             border: none;
-            border-radius: 15px;
+            border-radius: var(--radius-lg);
             margin-bottom: 2rem;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: var(--shadow-md);
+            transition: transform var(--transition-speed), box-shadow var(--transition-speed);
         }
         
         .card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+            box-shadow: var(--shadow-lg);
         }
         
         /* Stylowanie odtwarzacza dźwięku */
@@ -145,18 +173,18 @@
             background-color: var(--primary-light);
             color: var(--text-light);
             border: none;
-            border-radius: 10px;
+            border-radius: var(--radius-md);
             padding: 0.8rem 1.2rem;
             margin: 0.5rem;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: all var(--transition-speed);
+            box-shadow: var(--shadow-sm);
         }
         
         .sound-btn:hover {
             background-color: var(--accent);
             color: var(--primary-dark);
             transform: translateY(-3px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            box-shadow: var(--shadow-md);
         }
         
         .sound-btn.active {
@@ -167,19 +195,19 @@
         
         .sound-card {
             background-color: var(--primary-light);
-            border-radius: 10px;
+            border-radius: var(--radius-md);
             padding: 1rem;
             margin-bottom: 1rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
             opacity: 0.7;
-            transition: opacity 0.3s ease;
+            transition: opacity var(--transition-speed);
         }
         
         .sound-card.active {
             opacity: 1;
-            box-shadow: 0 0 10px rgba(91, 192, 190, 0.5);
+            box-shadow: 0 0 10px var(--accent-transparent-medium);
         }
         
         .sound-wave {
@@ -248,7 +276,7 @@
             font-weight: bold;
             margin: 1rem 0;
             color: var(--accent);
-            text-shadow: 0 0 5px rgba(91, 192, 190, 0.5);
+            text-shadow: 0 0 5px var(--accent-transparent-medium);
         }
         
         .custom-timer-container {
@@ -262,11 +290,291 @@
             width: 80px;
             background-color: var(--primary-medium);
             border: 2px solid var(--accent);
-            border-radius: 8px;
+            border-radius: var(--radius-sm);
             color: var(--text-light);
             padding: 0.4rem;
             margin-right: 0.5rem;
             text-align: center;
+        }
+        
+        /* Stylowanie dla ćwiczeń relaksacyjnych */
+        .relaxation-exercise {
+            text-align: center;
+            padding: 1.5rem 0;
+        }
+        
+        .breathing-exercise {
+            text-align: center;
+            padding: 1.5rem 0;
+        }
+        
+        .breathing-circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            margin: 0 auto;
+            background-color: var(--accent-transparent-light);
+            border: 3px solid var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: transform var(--transition-speed), background-color var(--transition-speed);
+        }
+        
+        .breathing-circle.inhale {
+            animation: inhale 4s forwards;
+        }
+        
+        .breathing-circle.hold {
+            animation: hold 7s forwards;
+        }
+        
+        .breathing-circle.exhale {
+            animation: exhale 8s forwards;
+        }
+        
+        .breathing-circle.box-inhale {
+            animation: inhale 4s forwards;
+        }
+        
+        .breathing-circle.box-hold1 {
+            animation: hold 4s forwards;
+        }
+        
+        .breathing-circle.box-exhale {
+            animation: exhale 4s forwards;
+        }
+        
+        .breathing-circle.box-hold2 {
+            animation: hold 4s forwards;
+        }
+        
+        .muscle-relaxation-section {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            background-color: var(--primary-light);
+            text-align: left;
+        }
+        
+        .muscle-group {
+            padding: 1.2rem;
+            margin-bottom: 1rem;
+            border-radius: var(--radius-sm);
+            background-color: var(--primary-medium);
+            position: relative;
+            cursor: pointer;
+            transition: background-color var(--transition-speed);
+        }
+        
+        .muscle-group h4 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--accent);
+            text-shadow: 0 1px 2px var(--black-transparent-light);
+        }
+        
+        .muscle-group:hover {
+            background-color: var(--primary-light);
+        }
+        
+        .muscle-group.active {
+            background-color: var(--accent-dark);
+        }
+        
+        .muscle-group.active h4 {
+            color: white;
+            text-shadow: 0 1px 2px var(--black-transparent-medium);
+        }
+        
+        .muscle-instruction {
+            display: none;
+            padding: 1.2rem;
+            margin-top: 0.7rem;
+            border-radius: var(--radius-sm);
+            background-color: var(--accent-transparent-light);
+            border-left: 4px solid var(--accent);
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: var(--text-light);
+            font-weight: 500;
+        }
+        
+        .muscle-instruction p {
+            margin-bottom: 0.7rem;
+            text-shadow: 0 1px 1px var(--black-transparent-light);
+        }
+        
+        .relaxation-progress {
+            height: 10px;
+            background-color: var(--primary-medium);
+            border-radius: 5px;
+            margin: 1rem 0;
+            overflow: hidden;
+        }
+        
+        .relaxation-progress-bar {
+            height: 100%;
+            background-color: var(--accent);
+            width: 0;
+            transition: width var(--transition-speed);
+        }
+        
+        .visualization-scene {
+            position: relative;
+            height: 200px;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            margin: 1.5rem 0;
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .visualization-beach {
+            background-image: linear-gradient(to bottom, #87CEEB, #1E90FF);
+        }
+        
+        .visualization-forest {
+            background-image: linear-gradient(to bottom, #228B22, #006400);
+        }
+        
+        .visualization-sky {
+            background-image: linear-gradient(to bottom, #4169E1, #191970);
+        }
+        
+        .visualization-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-shadow: 1px 1px 3px var(--black-transparent-strong);
+            padding: 1rem;
+            background-color: var(--black-transparent-light);
+        }
+        
+        .visualization-text {
+            font-size: 1.2rem;
+            max-width: 80%;
+            text-align: center;
+        }
+        
+        .exercise-navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1rem;
+        }
+        
+        .nav-btn {
+            background-color: var(--primary-light);
+            color: var(--text-light);
+            border: none;
+            border-radius: var(--radius-sm);
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            transition: all var(--transition-speed);
+        }
+        
+        .nav-btn:hover {
+            background-color: var(--accent);
+            color: var(--primary-dark);
+        }
+        
+        .exercise-tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .exercise-tab {
+            padding: 0.7rem 1.2rem;
+            margin: 0.3rem;
+            background-color: var(--primary-light);
+            color: var(--text-light);
+            border: none;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all var(--transition-speed);
+        }
+        
+        .exercise-tab.active {
+            background-color: var(--accent);
+            color: var(--primary-dark);
+        }
+        
+        .exercise-content {
+            display: none;
+        }
+        
+        .exercise-content.active {
+            display: block;
+        }
+        
+        /* Stylowanie opisów ćwiczeń */
+        .exercise-intro {
+            font-size: 1.15rem;
+            line-height: 1.7;
+            color: var(--text-light);
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            font-weight: 500;
+            background-color: var(--accent-transparent-light);
+            border-radius: var(--radius-sm);
+            border-left: 4px solid var(--accent);
+            text-shadow: 0 1px 2px var(--black-transparent-light);
+        }
+        
+        @keyframes inhale {
+            from { transform: scale(1); background-color: var(--accent-transparent-light); }
+            to { transform: scale(1.5); background-color: var(--accent-transparent-medium); }
+        }
+        
+        @keyframes hold {
+            from { transform: scale(1.5); background-color: var(--accent-transparent-medium); }
+            to { transform: scale(1.5); background-color: var(--accent-transparent-medium); }
+        }
+        
+        @keyframes exhale {
+            from { transform: scale(1.5); background-color: var(--accent-transparent-medium); }
+            to { transform: scale(1); background-color: var(--accent-transparent-light); }
+        }
+        
+        /* Animacja fali dla wizualizacji plaży */
+        .wave {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 20px;
+            background: var(--white-transparent-medium);
+            border-radius: 50% 50% 0 0;
+            animation: wave 8s infinite linear;
+        }
+        
+        .wave:nth-child(2) {
+            height: 15px;
+            bottom: 10px;
+            opacity: 0.6;
+            animation-delay: 0.5s;
+        }
+        
+        .wave:nth-child(3) {
+            height: 10px;
+            bottom: 15px;
+            opacity: 0.4;
+            animation-delay: 1s;
+        }
+        
+        @keyframes wave {
+            0% { transform: translateX(-50%); }
+            100% { transform: translateX(50%); }
         }
         
         /* Sekcja porad dotyczących snu */
@@ -304,276 +612,6 @@
             margin-right: 0.5rem;
         }
         
-        /* Stylowanie dla ćwiczeń relaksacyjnych */
-        .relaxation-exercise {
-            text-align: center;
-            padding: 1.5rem 0;
-        }
-        
-        .breathing-exercise {
-            text-align: center;
-            padding: 1.5rem 0;
-        }
-        
-        .breathing-circle {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            margin: 0 auto;
-            background-color: rgba(91, 192, 190, 0.2);
-            border: 3px solid var(--accent);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            transition: transform 0.3s ease, background-color 0.3s ease;
-        }
-        
-        .breathing-circle.inhale {
-            animation: inhale 4s forwards;
-        }
-        
-        .breathing-circle.hold {
-            animation: hold 7s forwards;
-        }
-        
-        .breathing-circle.exhale {
-            animation: exhale 8s forwards;
-        }
-        
-        .breathing-circle.box-inhale {
-            animation: inhale 4s forwards;
-        }
-        
-        .breathing-circle.box-hold1 {
-            animation: hold 4s forwards;
-        }
-        
-        .breathing-circle.box-exhale {
-            animation: exhale 4s forwards;
-        }
-        
-        .breathing-circle.box-hold2 {
-            animation: hold 4s forwards;
-        }
-        
-        .muscle-relaxation-section {
-            margin-top: 1.5rem;
-            padding: 1rem;
-            border-radius: 10px;
-            background-color: var(--primary-light);
-            text-align: left;
-        }
-        
-        .muscle-group {
-            padding: 1.2rem;
-            margin-bottom: 1rem;
-            border-radius: 8px;
-            background-color: var(--primary-medium);
-            position: relative;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-        
-        .muscle-group h4 {
-            font-size: 1.3rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            color: var(--accent);
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-        }
-        
-        .muscle-group:hover {
-            background-color: var(--primary-light);
-        }
-        
-        .muscle-group.active {
-            background-color: var(--accent-dark);
-        }
-        
-        .muscle-group.active h4 {
-            color: white;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-        }
-        
-        .muscle-instruction {
-            display: none;
-            padding: 1.2rem;
-            margin-top: 0.7rem;
-            border-radius: 8px;
-            background-color: rgba(91, 192, 190, 0.2);
-            border-left: 4px solid var(--accent);
-            font-size: 1.1rem;
-            line-height: 1.6;
-            color: var(--text-light);
-            font-weight: 500;
-        }
-        
-        .muscle-instruction p {
-            margin-bottom: 0.7rem;
-            text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
-        }
-        
-        .muscle-instruction.visible {
-            display: block;
-        }
-        
-        .relaxation-progress {
-            height: 10px;
-            background-color: var(--primary-medium);
-            border-radius: 5px;
-            margin: 1rem 0;
-            overflow: hidden;
-        }
-        
-        .relaxation-progress-bar {
-            height: 100%;
-            background-color: var(--accent);
-            width: 0;
-            transition: width 0.5s ease;
-        }
-        
-        .visualization-scene {
-            position: relative;
-            height: 200px;
-            border-radius: 10px;
-            overflow: hidden;
-            margin: 1.5rem 0;
-            background-size: cover;
-            background-position: center;
-        }
-        
-        .visualization-beach {
-            background-image: linear-gradient(to bottom, #87CEEB, #1E90FF);
-        }
-        
-        .visualization-forest {
-            background-image: linear-gradient(to bottom, #228B22, #006400);
-        }
-        
-        .visualization-sky {
-            background-image: linear-gradient(to bottom, #4169E1, #191970);
-        }
-        
-        .visualization-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
-            padding: 1rem;
-            background-color: rgba(0,0,0,0.1);
-        }
-        
-        .visualization-text {
-            font-size: 1.2rem;
-            max-width: 80%;
-            text-align: center;
-        }
-        
-        .exercise-navigation {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 1rem;
-        }
-        
-        .nav-btn {
-            background-color: var(--primary-light);
-            color: var(--text-light);
-            border: none;
-            border-radius: 8px;
-            padding: 0.5rem 1rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .nav-btn:hover {
-            background-color: var(--accent);
-            color: var(--primary-dark);
-        }
-        
-        .exercise-tabs {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 1.5rem;
-            flex-wrap: wrap;
-        }
-        
-        .exercise-tab {
-            padding: 0.7rem 1.2rem;
-            margin: 0.3rem;
-            background-color: var(--primary-light);
-            color: var(--text-light);
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .exercise-tab.active {
-            background-color: var(--accent);
-            color: var(--primary-dark);
-        }
-        
-        .exercise-content {
-            display: none;
-        }
-        
-        .exercise-content.active {
-            display: block;
-        }
-        
-        @keyframes inhale {
-            from { transform: scale(1); background-color: rgba(91, 192, 190, 0.2); }
-            to { transform: scale(1.5); background-color: rgba(91, 192, 190, 0.6); }
-        }
-        
-        @keyframes hold {
-            from { transform: scale(1.5); background-color: rgba(91, 192, 190, 0.6); }
-            to { transform: scale(1.5); background-color: rgba(91, 192, 190, 0.6); }
-        }
-        
-        @keyframes exhale {
-            from { transform: scale(1.5); background-color: rgba(91, 192, 190, 0.6); }
-            to { transform: scale(1); background-color: rgba(91, 192, 190, 0.2); }
-        }
-        
-        /* Animacja fali dla wizualizacji plaży */
-        .wave {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 20px;
-            background: rgba(255, 255, 255, 0.4);
-            border-radius: 50% 50% 0 0;
-            animation: wave 8s infinite linear;
-        }
-        
-        .wave:nth-child(2) {
-            height: 15px;
-            bottom: 10px;
-            opacity: 0.6;
-            animation-delay: 0.5s;
-        }
-        
-        .wave:nth-child(3) {
-            height: 10px;
-            bottom: 15px;
-            opacity: 0.4;
-            animation-delay: 1s;
-        }
-        
-        @keyframes wave {
-            0% { transform: translateX(-50%); }
-            100% { transform: translateX(50%); }
-        }
-        
         /* Przełącznik trybu jasny/ciemny */
         .theme-toggle {
             position: absolute;
@@ -585,7 +623,7 @@
             font-size: 1.5rem;
             cursor: pointer;
             z-index: 10;
-            transition: transform 0.3s ease;
+            transition: transform var(--transition-speed);
         }
         
         .theme-toggle:hover {
@@ -608,11 +646,11 @@
             left: 20px;
             width: 50px;
             height: 50px;
-            background-color: rgba(255, 255, 255, 0.9);
+            background-color: var(--white-transparent-strong);
             border-radius: 50%;
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.7);
+            box-shadow: 0 0 20px var(--white-transparent-strong);
             z-index: 0;
-            transition: background-color 0.5s ease, box-shadow 0.5s ease;
+            transition: background-color var(--transition-speed), box-shadow var(--transition-speed);
         }
         
         .light-mode .moon {
@@ -632,7 +670,7 @@
             background-color: var(--primary-medium);
             color: var(--text-light);
             border-left: 4px solid var(--accent);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            box-shadow: var(--shadow-md);
         }
         
         /* Responsywność */
