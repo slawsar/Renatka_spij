@@ -297,7 +297,8 @@
                         <!-- Kontrola głośności -->
                         <div class="slider-container">
                             <label for="volume" class="form-label"><i class="fas fa-volume-up"></i> Głośność</label>
-                            <input type="range" class="form-range" id="volume" min="0" max="1" step="0.01" value="0.5">
+                            <input type="range" class="form-range" id="volume" min="0" max="1" step="0.01" value="0.5"
+                                   onchange="console.log('Zmiana głośności:', this.value)">
                         </div>
                         
                         <!-- Timer -->
@@ -469,7 +470,11 @@
                     
                     // Ustawienia
                     audio.loop = true; // Zapętlenie dźwięku
-                    audio.volume = volumeSlider.value; // Ustaw głośność
+                    
+                    // Pobierz aktualną wartość głośności z suwaka
+                    const volume = parseFloat(volumeSlider.value);
+                    audio.volume = volume;
+                    console.log(`Ustawiono początkową głośność: ${volume} dla dźwięku: ${soundName}`);
                     
                     // Obsługa błędów ładowania pliku
                     audio.onerror = function() {
@@ -598,8 +603,14 @@
             
             // Nasłuchiwacz zdarzenia dla suwaka głośności
             volumeSlider.addEventListener('input', function() {
-                if (currentAudio) {
-                    currentAudio.volume = this.value;
+                const volume = parseFloat(this.value);
+                console.log("Zmiana głośności:", volume);
+                
+                // Upewnij się, że wartość jest w zakresie 0-1
+                if (currentAudio && !isNaN(volume)) {
+                    // Ustaw głośność aktualnie odtwarzanego dźwięku
+                    currentAudio.volume = volume;
+                    console.log("Ustawiono głośność:", volume, "dla dźwięku:", currentSound);
                 }
             });
             
