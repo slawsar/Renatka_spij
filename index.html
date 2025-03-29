@@ -304,10 +304,15 @@
             margin-right: 0.5rem;
         }
         
-        /* Stylowanie dla ćwiczeń oddechowych */
+        /* Stylowanie dla ćwiczeń relaksacyjnych */
+        .relaxation-exercise {
+            text-align: center;
+            padding: 1.5rem 0;
+        }
+        
         .breathing-exercise {
             text-align: center;
-            padding: 2rem 0;
+            padding: 1.5rem 0;
         }
         
         .breathing-circle {
@@ -336,6 +341,171 @@
             animation: exhale 8s forwards;
         }
         
+        .breathing-circle.box-inhale {
+            animation: inhale 4s forwards;
+        }
+        
+        .breathing-circle.box-hold1 {
+            animation: hold 4s forwards;
+        }
+        
+        .breathing-circle.box-exhale {
+            animation: exhale 4s forwards;
+        }
+        
+        .breathing-circle.box-hold2 {
+            animation: hold 4s forwards;
+        }
+        
+        .muscle-relaxation-section {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            border-radius: 10px;
+            background-color: var(--primary-light);
+            text-align: left;
+        }
+        
+        .muscle-group {
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 8px;
+            background-color: var(--primary-medium);
+            position: relative;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        
+        .muscle-group:hover {
+            background-color: var(--primary-light);
+        }
+        
+        .muscle-group.active {
+            background-color: var(--accent-dark);
+            color: white;
+        }
+        
+        .muscle-instruction {
+            display: none;
+            padding: 1rem;
+            margin-top: 0.5rem;
+            border-radius: 8px;
+            background-color: rgba(91, 192, 190, 0.1);
+        }
+        
+        .muscle-instruction.visible {
+            display: block;
+        }
+        
+        .relaxation-progress {
+            height: 10px;
+            background-color: var(--primary-medium);
+            border-radius: 5px;
+            margin: 1rem 0;
+            overflow: hidden;
+        }
+        
+        .relaxation-progress-bar {
+            height: 100%;
+            background-color: var(--accent);
+            width: 0;
+            transition: width 0.5s ease;
+        }
+        
+        .visualization-scene {
+            position: relative;
+            height: 200px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 1.5rem 0;
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .visualization-beach {
+            background-image: linear-gradient(to bottom, #87CEEB, #1E90FF);
+        }
+        
+        .visualization-forest {
+            background-image: linear-gradient(to bottom, #228B22, #006400);
+        }
+        
+        .visualization-sky {
+            background-image: linear-gradient(to bottom, #4169E1, #191970);
+        }
+        
+        .visualization-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
+            padding: 1rem;
+            background-color: rgba(0,0,0,0.1);
+        }
+        
+        .visualization-text {
+            font-size: 1.2rem;
+            max-width: 80%;
+            text-align: center;
+        }
+        
+        .exercise-navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1rem;
+        }
+        
+        .nav-btn {
+            background-color: var(--primary-light);
+            color: var(--text-light);
+            border: none;
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-btn:hover {
+            background-color: var(--accent);
+            color: var(--primary-dark);
+        }
+        
+        .exercise-tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .exercise-tab {
+            padding: 0.7rem 1.2rem;
+            margin: 0.3rem;
+            background-color: var(--primary-light);
+            color: var(--text-light);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .exercise-tab.active {
+            background-color: var(--accent);
+            color: var(--primary-dark);
+        }
+        
+        .exercise-content {
+            display: none;
+        }
+        
+        .exercise-content.active {
+            display: block;
+        }
+        
         @keyframes inhale {
             from { transform: scale(1); background-color: rgba(91, 192, 190, 0.2); }
             to { transform: scale(1.5); background-color: rgba(91, 192, 190, 0.6); }
@@ -349,6 +519,37 @@
         @keyframes exhale {
             from { transform: scale(1.5); background-color: rgba(91, 192, 190, 0.6); }
             to { transform: scale(1); background-color: rgba(91, 192, 190, 0.2); }
+        }
+        
+        /* Animacja fali dla wizualizacji plaży */
+        .wave {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 50% 50% 0 0;
+            animation: wave 8s infinite linear;
+        }
+        
+        .wave:nth-child(2) {
+            height: 15px;
+            bottom: 10px;
+            opacity: 0.6;
+            animation-delay: 0.5s;
+        }
+        
+        .wave:nth-child(3) {
+            height: 10px;
+            bottom: 15px;
+            opacity: 0.4;
+            animation-delay: 1s;
+        }
+        
+        @keyframes wave {
+            0% { transform: translateX(-50%); }
+            100% { transform: translateX(50%); }
         }
         
         /* Przełącznik trybu jasny/ciemny */
@@ -526,16 +727,134 @@
                 </div>
             </div>
             
-            <!-- Ćwiczenie oddechowe -->
-            <div class="card">
+            <!-- Rozbudowane ćwiczenia relaksacyjne -->
+            <div class="card relaxation-exercises">
                 <div class="card-body">
-                    <h2><i class="fas fa-lungs"></i> Ćwiczenie oddechowe 4-7-8</h2>
-                    <div class="breathing-exercise">
-                        <p>Technika 4-7-8 pomaga zrelaksować się i przygotować do snu</p>
-                        <div class="breathing-circle" id="breathing-circle">
-                            <span id="breathing-text">Kliknij, aby rozpocząć</span>
+                    <h2><i class="fas fa-spa"></i> Ćwiczenia relaksacyjne</h2>
+                    
+                    <div class="exercise-tabs">
+                        <button class="exercise-tab active" data-tab="breathing"><i class="fas fa-lungs"></i> Techniki oddechowe</button>
+                        <button class="exercise-tab" data-tab="muscle"><i class="fas fa-walking"></i> Relaksacja mięśni</button>
+                        <button class="exercise-tab" data-tab="visualization"><i class="fas fa-cloud-sun"></i> Wizualizacje</button>
+                    </div>
+                    
+                    <!-- Techniki oddechowe -->
+                    <div class="exercise-content active" id="breathing-content">
+                        <div class="exercise-tabs">
+                            <button class="exercise-tab active" data-breathing="478"><i class="fas fa-wind"></i> Technika 4-7-8</button>
+                            <button class="exercise-tab" data-breathing="box"><i class="fas fa-square"></i> Oddychanie kwadratowe 4-4-4-4</button>
+                            <button class="exercise-tab" data-breathing="diaphragm"><i class="fas fa-circle"></i> Oddychanie przeponowe</button>
                         </div>
-                        <button class="sound-btn mt-4" id="start-breathing-btn">Rozpocznij ćwiczenie</button>
+                        
+                        <div class="breathing-exercise">
+                            <p id="breathing-description">Technika 4-7-8 pomaga zrelaksować się i przygotować do snu</p>
+                            <div class="breathing-circle" id="breathing-circle">
+                                <span id="breathing-text">Kliknij, aby rozpocząć</span>
+                            </div>
+                            <button class="sound-btn mt-4" id="start-breathing-btn">Rozpocznij ćwiczenie</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Progresywna relaksacja mięśni -->
+                    <div class="exercise-content" id="muscle-content">
+                        <p>Progresywna relaksacja mięśni polega na naprzemiennym napinaniu i rozluźnianiu poszczególnych grup mięśni. Wykonuj to ćwiczenie w wygodnej pozycji, najlepiej leżącej.</p>
+                        
+                        <div class="relaxation-progress">
+                            <div class="relaxation-progress-bar" id="muscle-progress"></div>
+                        </div>
+                        
+                        <div class="muscle-relaxation-section">
+                            <div class="muscle-group" data-group="hands">
+                                <h4><i class="fas fa-hand-paper"></i> Dłonie i przedramiona</h4>
+                                <div class="muscle-instruction">
+                                    <p>1. Zaciśnij dłonie w pięści tak mocno, jak możesz</p>
+                                    <p>2. Utrzymaj napięcie przez 5 sekund</p>
+                                    <p>3. Powoli rozluźnij dłonie, czując jak napięcie odpływa</p>
+                                    <p>4. Odpoczywaj przez 10 sekund, skupiając się na uczuciu rozluźnienia</p>
+                                </div>
+                            </div>
+                            
+                            <div class="muscle-group" data-group="arms">
+                                <h4><i class="fas fa-running"></i> Ramiona i bicepsy</h4>
+                                <div class="muscle-instruction">
+                                    <p>1. Zegnij ręce w łokciach i napnij bicepsy</p>
+                                    <p>2. Utrzymaj napięcie przez 5 sekund</p>
+                                    <p>3. Powoli rozluźnij mięśnie, pozwalając ramionom opaść swobodnie</p>
+                                    <p>4. Odpoczywaj przez 10 sekund, zauważając różnicę między napięciem a rozluźnieniem</p>
+                                </div>
+                            </div>
+                            
+                            <div class="muscle-group" data-group="shoulders">
+                                <h4><i class="fas fa-user"></i> Barki i kark</h4>
+                                <div class="muscle-instruction">
+                                    <p>1. Podnieś barki w kierunku uszu (jak przy wzruszaniu ramionami)</p>
+                                    <p>2. Utrzymaj napięcie przez 5 sekund</p>
+                                    <p>3. Powoli opuść barki, pozwalając im całkowicie opaść</p>
+                                    <p>4. Odpoczywaj przez 10 sekund, skupiając się na cieple rozchodzącym się po barkach</p>
+                                </div>
+                            </div>
+                            
+                            <div class="muscle-group" data-group="face">
+                                <h4><i class="fas fa-smile"></i> Twarz i szczęka</h4>
+                                <div class="muscle-instruction">
+                                    <p>1. Zaciśnij szczękę, napnij usta i zmruż mocno oczy</p>
+                                    <p>2. Utrzymaj napięcie przez 5 sekund</p>
+                                    <p>3. Powoli rozluźnij wszystkie mięśnie twarzy</p>
+                                    <p>4. Odpoczywaj przez 10 sekund, pozwalając twarzy być całkowicie rozluźnioną</p>
+                                </div>
+                            </div>
+                            
+                            <div class="muscle-group" data-group="chest">
+                                <h4><i class="fas fa-lungs"></i> Klatka piersiowa i brzuch</h4>
+                                <div class="muscle-instruction">
+                                    <p>1. Weź głęboki wdech i napnij mięśnie brzucha</p>
+                                    <p>2. Utrzymaj napięcie przez 5 sekund</p>
+                                    <p>3. Powoli wydychaj powietrze, rozluźniając mięśnie</p>
+                                    <p>4. Odpoczywaj przez 10 sekund, oddychając naturalnie</p>
+                                </div>
+                            </div>
+                            
+                            <div class="muscle-group" data-group="legs">
+                                <h4><i class="fas fa-shoe-prints"></i> Nogi i stopy</h4>
+                                <div class="muscle-instruction">
+                                    <p>1. Napnij uda, łydki i stopy, podciągając palce stóp do góry</p>
+                                    <p>2. Utrzymaj napięcie przez 5 sekund</p>
+                                    <p>3. Powoli rozluźnij wszystkie mięśnie nóg</p>
+                                    <p>4. Odpoczywaj przez 10 sekund, czując ciężar rozluźnionych nóg</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center mt-4">
+                            <button class="sound-btn" id="start-muscle-relaxation">Rozpocznij pełne ćwiczenie</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Wizualizacje relaksacyjne -->
+                    <div class="exercise-content" id="visualization-content">
+                        <p>Wybierz scenę do wizualizacji. Zamknij oczy, słuchaj opisu i spróbuj wyobrazić sobie to miejsce wszystkimi zmysłami.</p>
+                        
+                        <div class="exercise-tabs">
+                            <button class="exercise-tab active" data-scene="beach"><i class="fas fa-umbrella-beach"></i> Plaża</button>
+                            <button class="exercise-tab" data-scene="forest"><i class="fas fa-tree"></i> Las</button>
+                            <button class="exercise-tab" data-scene="sky"><i class="fas fa-cloud-moon"></i> Rozgwieżdżone niebo</button>
+                        </div>
+                        
+                        <div class="visualization-scene visualization-beach" id="visualization-scene">
+                            <div class="wave"></div>
+                            <div class="wave"></div>
+                            <div class="wave"></div>
+                            <div class="visualization-overlay">
+                                <p class="visualization-text" id="visualization-text">
+                                    Wyobraź sobie, że leżysz na ciepłej, miękkiej plaży. Słońce delikatnie ogrzewa twoją skórę.
+                                    Słyszysz rytmiczny szum fal, które łagodnie uderzają o brzeg...
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center mt-3">
+                            <button class="sound-btn" id="start-visualization">Rozpocznij wizualizację</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -975,27 +1294,57 @@
                 return true;
             }
             
-            // =========== ĆWICZENIE ODDECHOWE ===========
+            // =========== ROZBUDOWANE ĆWICZENIA RELAKSACYJNE ===========
+            // Zmienne dla ćwiczeń oddechowych
             const breathingCircle = document.getElementById('breathing-circle');
             const breathingText = document.getElementById('breathing-text');
+            const breathingDescription = document.getElementById('breathing-description');
             const startBreathingBtn = document.getElementById('start-breathing-btn');
             let breathingInterval = null;
+            let currentBreathingType = '478'; // domyślnie 4-7-8
             
+            // Definicje ćwiczeń oddechowych
+            const breathingTypes = {
+                '478': {
+                    description: 'Technika 4-7-8 pomaga zrelaksować się i przygotować do snu',
+                    phases: [
+                        { name: 'inhale', text: 'Wdech', duration: 4000 },
+                        { name: 'hold', text: 'Zatrzymaj', duration: 7000 },
+                        { name: 'exhale', text: 'Wydech', duration: 8000 }
+                    ]
+                },
+                'box': {
+                    description: 'Oddychanie kwadratowe 4-4-4-4 pomaga uspokoić umysł i znaleźć równowagę',
+                    phases: [
+                        { name: 'box-inhale', text: 'Wdech', duration: 4000 },
+                        { name: 'box-hold1', text: 'Zatrzymaj', duration: 4000 },
+                        { name: 'box-exhale', text: 'Wydech', duration: 4000 },
+                        { name: 'box-hold2', text: 'Zatrzymaj', duration: 4000 }
+                    ]
+                },
+                'diaphragm': {
+                    description: 'Oddychanie przeponowe głęboko dotlenia organizm i pomaga się zrelaksować',
+                    phases: [
+                        { name: 'inhale', text: 'Głęboki wdech przeponą', duration: 5000 },
+                        { name: 'exhale', text: 'Powolny, pełny wydech', duration: 7000 }
+                    ]
+                }
+            };
+            
+            // Funkcja rozpoczynająca ćwiczenie oddechowe
             function startBreathingExercise() {
                 // Zatrzymaj istniejący interwał jeśli istnieje
                 if (breathingInterval) {
                     clearInterval(breathingInterval);
                     breathingCircle.className = 'breathing-circle';
                     breathingText.textContent = 'Kliknij, aby rozpocząć';
+                    startBreathingBtn.textContent = 'Rozpocznij ćwiczenie';
                     return;
                 }
                 
+                const exerciseConfig = breathingTypes[currentBreathingType];
                 let phase = 0;
-                const phases = [
-                    { name: 'inhale', text: 'Wdech', duration: 4000 },
-                    { name: 'hold', text: 'Zatrzymaj', duration: 7000 },
-                    { name: 'exhale', text: 'Wydech', duration: 8000 }
-                ];
+                const phases = exerciseConfig.phases;
                 
                 function updateBreathingPhase() {
                     const currentPhase = phases[phase];
@@ -1011,25 +1360,48 @@
                     
                     // Przejdź do następnej fazy
                     phase = (phase + 1) % phases.length;
+                    
+                    // Ustaw timeout dla następnej fazy
+                    breathingInterval = setTimeout(updateBreathingPhase, currentPhase.duration);
                 }
                 
-                // Rozpocznij od wdechu
+                // Rozpocznij od pierwszej fazy
                 updateBreathingPhase();
-                
-                // Ustawienie interwału do zmiany faz
-                breathingInterval = setInterval(() => {
-                    updateBreathingPhase();
-                }, phases[phase].duration);
                 
                 // Zmień tekst przycisku
                 startBreathingBtn.textContent = 'Zatrzymaj ćwiczenie';
             }
             
+            // Obsługa przycisków wyboru techniki oddechowej
+            document.querySelectorAll('.exercise-tab[data-breathing]').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // Zatrzymaj aktualne ćwiczenie
+                    if (breathingInterval) {
+                        clearInterval(breathingInterval);
+                        breathingInterval = null;
+                        breathingCircle.className = 'breathing-circle';
+                        breathingText.textContent = 'Kliknij, aby rozpocząć';
+                        startBreathingBtn.textContent = 'Rozpocznij ćwiczenie';
+                    }
+                    
+                    // Ustaw nowy typ oddychania
+                    currentBreathingType = this.dataset.breathing;
+                    
+                    // Aktualizuj opis
+                    breathingDescription.textContent = breathingTypes[currentBreathingType].description;
+                    
+                    // Aktualizuj aktywny przycisk
+                    document.querySelectorAll('.exercise-tab[data-breathing]').forEach(t => {
+                        t.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                });
+            });
+            
             // Obsługa przycisku ćwiczenia oddechowego
             startBreathingBtn.addEventListener('click', function() {
                 if (this.textContent.includes('Rozpocznij')) {
                     startBreathingExercise();
-                    this.textContent = 'Zatrzymaj ćwiczenie';
                 } else {
                     if (breathingInterval) {
                         clearInterval(breathingInterval);
@@ -1044,6 +1416,273 @@
             // Umożliwienie kliknięcia bezpośrednio na kółko
             breathingCircle.addEventListener('click', function() {
                 startBreathingBtn.click();
+            });
+            
+            // =========== PROGRESYWNA RELAKSACJA MIĘŚNI ===========
+            const muscleGroups = document.querySelectorAll('.muscle-group');
+            const startMuscleBtn = document.getElementById('start-muscle-relaxation');
+            const muscleProgress = document.getElementById('muscle-progress');
+            let muscleRelaxationInterval = null;
+            let currentMuscleGroup = 0;
+            
+            // Obsługa kliknięć w grupy mięśniowe
+            muscleGroups.forEach(group => {
+                group.addEventListener('click', function() {
+                    // Przełącz widoczność instrukcji
+                    const instruction = this.querySelector('.muscle-instruction');
+                    instruction.classList.toggle('visible');
+                    
+                    // Przełącz stan aktywny grupy
+                    this.classList.toggle('active');
+                });
+            });
+            
+            // Funkcja prowadząca przez pełne ćwiczenie relaksacji mięśniowej
+            function startMuscleRelaxation() {
+                // Zatrzymanie istniejącego ćwiczenia
+                if (muscleRelaxationInterval) {
+                    clearInterval(muscleRelaxationInterval);
+                    muscleRelaxationInterval = null;
+                    startMuscleBtn.textContent = 'Rozpocznij pełne ćwiczenie';
+                    muscleGroups.forEach(group => {
+                        group.classList.remove('active');
+                        group.querySelector('.muscle-instruction').classList.remove('visible');
+                    });
+                    muscleProgress.style.width = '0%';
+                    return;
+                }
+                
+                // Przygotuj wszystkie grupy
+                muscleGroups.forEach(group => {
+                    group.classList.remove('active');
+                    group.querySelector('.muscle-instruction').classList.remove('visible');
+                });
+                
+                currentMuscleGroup = 0;
+                startMuscleBtn.textContent = 'Zatrzymaj ćwiczenie';
+                
+                // Funkcja przechodząca przez poszczególne grupy mięśniowe
+                function goToNextMuscleGroup() {
+                    // Zakończ ćwiczenie po przejściu przez wszystkie grupy
+                    if (currentMuscleGroup >= muscleGroups.length) {
+                        clearInterval(muscleRelaxationInterval);
+                        muscleRelaxationInterval = null;
+                        startMuscleBtn.textContent = 'Rozpocznij pełne ćwiczenie';
+                        
+                        // Pokaż powiadomienie o zakończeniu
+                        showToast('Ćwiczenie zakończone', 'Gratulacje! Ukończyłeś/aś ćwiczenie relaksacji mięśni.');
+                        
+                        // Resetuj grupy mięśniowe
+                        muscleGroups.forEach(group => {
+                            group.classList.remove('active');
+                            group.querySelector('.muscle-instruction').classList.remove('visible');
+                        });
+                        return;
+                    }
+                    
+                    // Aktualizuj pasek postępu
+                    const progressPercentage = (currentMuscleGroup / muscleGroups.length) * 100;
+                    muscleProgress.style.width = `${progressPercentage}%`;
+                    
+                    // Usuń aktywną klasę ze wszystkich grup
+                    muscleGroups.forEach(group => {
+                        group.classList.remove('active');
+                        group.querySelector('.muscle-instruction').classList.remove('visible');
+                    });
+                    
+                    // Aktywuj bieżącą grupę
+                    const currentGroup = muscleGroups[currentMuscleGroup];
+                    currentGroup.classList.add('active');
+                    currentGroup.querySelector('.muscle-instruction').classList.add('visible');
+                    
+                    // Przewiń do aktywnej grupy
+                    currentGroup.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    
+                    // Przejdź do następnej grupy po 20 sekundach (5s napięcie + 15s relaks)
+                    currentMuscleGroup++;
+                    
+                    // Pokaż powiadomienie
+                    if (currentMuscleGroup <= muscleGroups.length) {
+                        const groupName = currentGroup.querySelector('h4').textContent;
+                        showToast('Grupa mięśniowa', groupName);
+                    }
+                }
+                
+                // Rozpocznij od pierwszej grupy
+                goToNextMuscleGroup();
+                
+                // Ustaw interwał 20 sekund między grupami
+                muscleRelaxationInterval = setInterval(goToNextMuscleGroup, 20000);
+            }
+            
+            // Obsługa przycisku rozpoczęcia ćwiczenia relaksacji mięśni
+            startMuscleBtn.addEventListener('click', startMuscleRelaxation);
+            
+            // =========== WIZUALIZACJE RELAKSACYJNE ===========
+            const visualizationScene = document.getElementById('visualization-scene');
+            const visualizationText = document.getElementById('visualization-text');
+            const startVisualizationBtn = document.getElementById('start-visualization');
+            let visualizationInterval = null;
+            let currentScene = 'beach'; // domyślna scena
+            
+            // Teksty dla różnych scen wizualizacji
+            const visualizationScenes = {
+                'beach': [
+                    'Wyobraź sobie, że leżysz na ciepłej, miękkiej plaży. Czujesz delikatne ciepło słońca na swojej skórze.',
+                    'Fale rytmicznie uderzają o brzeg, tworząc uspokajający szum. Wdychasz świeży, morski zapach.',
+                    'Z każdym oddechem czujesz się coraz bardziej zrelaksowany/a. Twoje ciało powoli zanurza się w miękkim piasku.',
+                    'Niebo nad tobą jest błękitne, z kilkoma puszystymi chmurami. Słyszysz odległe krzyki mew.',
+                    'Twoje mięśnie się rozluźniają, a umysł uspokaja. Pozwól sobie na całkowite odprężenie w tym spokojnym miejscu.'
+                ],
+                'forest': [
+                    'Znajdujesz się w pięknym, starym lesie. Otaczają cię wysokie drzewa, a ich liście szumią delikatnie na wietrze.',
+                    'Promienie słońca przebijają się przez korony drzew, tworząc ciepłe plamy światła na ścieżce przed tobą.',
+                    'Słyszysz śpiew ptaków i delikatny szelest liści. Powietrze jest świeże i pełne zapachu żywicy.',
+                    'Z każdym krokiem zagłębiasz się dalej w las, czując spokój i harmonię tego miejsca.',
+                    'Znajdujesz miękkie, mchowe miejsce, gdzie możesz usiąść lub położyć się. Czujesz, jak cały stres opuszcza twoje ciało.'
+                ],
+                'sky': [
+                    'Leżysz na miękkim kocu i patrzysz w nocne niebo pełne gwiazd. Nad tobą rozciąga się nieskończony kosmos.',
+                    'Gwiazdy migoczą delikatnie, a ty dostrzegasz znane konstelacje i jasny sierp księżyca.',
+                    'Powietrze jest chłodne i rześkie. Z każdym oddechem czujesz, jak twój umysł się uspokaja.',
+                    'Twoje ciało staje się lekkie, niemal jakbyś mógł/mogła unosić się wśród gwiazd. Grawitacja zdaje się słabnąć.',
+                    'Problemy i zmartwienia maleją, stają się małe jak drobne punkty na niebie. Czujesz głęboki spokój i połączenie z wszechświatem.'
+                ]
+            };
+            
+            // Funkcja zmieniająca scenę wizualizacji
+            function changeVisualizationScene(sceneName) {
+                visualizationScene.className = 'visualization-scene';
+                visualizationScene.classList.add(`visualization-${sceneName}`);
+                
+                // Dodaj lub usuń elementy specyficzne dla sceny
+                visualizationScene.innerHTML = '';
+                
+                if (sceneName === 'beach') {
+                    // Dodaj fale dla plaży
+                    for (let i = 0; i < 3; i++) {
+                        const wave = document.createElement('div');
+                        wave.className = 'wave';
+                        visualizationScene.appendChild(wave);
+                    }
+                }
+                
+                // Dodaj overlay z tekstem
+                const overlay = document.createElement('div');
+                overlay.className = 'visualization-overlay';
+                overlay.innerHTML = `<p class="visualization-text" id="visualization-text">${visualizationScenes[sceneName][0]}</p>`;
+                visualizationScene.appendChild(overlay);
+                
+                // Aktualizuj referencję do elementu tekstu
+                visualizationText = document.getElementById('visualization-text');
+            }
+            
+            // Funkcja rozpoczynająca wizualizację
+            function startVisualization() {
+                // Zatrzymaj istniejącą wizualizację jeśli istnieje
+                if (visualizationInterval) {
+                    clearInterval(visualizationInterval);
+                    visualizationInterval = null;
+                    startVisualizationBtn.textContent = 'Rozpocznij wizualizację';
+                    return;
+                }
+                
+                startVisualizationBtn.textContent = 'Zatrzymaj wizualizację';
+                
+                let currentTextIndex = 0;
+                const texts = visualizationScenes[currentScene];
+                
+                // Funkcja aktualizująca tekst wizualizacji
+                function updateVisualizationText() {
+                    // Płynna zmiana tekstu
+                    visualizationText.style.opacity = '0';
+                    
+                    setTimeout(() => {
+                        visualizationText.textContent = texts[currentTextIndex];
+                        visualizationText.style.opacity = '1';
+                        
+                        // Przejdź do następnego tekstu
+                        currentTextIndex = (currentTextIndex + 1) % texts.length;
+                    }, 500);
+                }
+                
+                // Rozpocznij od pierwszego tekstu
+                updateVisualizationText();
+                
+                // Ustaw interwał do zmiany tekstów co 10 sekund
+                visualizationInterval = setInterval(updateVisualizationText, 10000);
+            }
+            
+            // Obsługa przycisków wyboru sceny wizualizacji
+            document.querySelectorAll('.exercise-tab[data-scene]').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // Zatrzymaj aktualną wizualizację
+                    if (visualizationInterval) {
+                        clearInterval(visualizationInterval);
+                        visualizationInterval = null;
+                        startVisualizationBtn.textContent = 'Rozpocznij wizualizację';
+                    }
+                    
+                    // Ustaw nową scenę
+                    currentScene = this.dataset.scene;
+                    changeVisualizationScene(currentScene);
+                    
+                    // Aktualizuj aktywny przycisk
+                    document.querySelectorAll('.exercise-tab[data-scene]').forEach(t => {
+                        t.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                });
+            });
+            
+            // Obsługa przycisku rozpoczęcia wizualizacji
+            startVisualizationBtn.addEventListener('click', startVisualization);
+            
+            // Obsługa głównych zakładek ćwiczeń
+            document.querySelectorAll('.exercise-tab[data-tab]').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabName = this.dataset.tab;
+                    
+                    // Ukryj wszystkie treści ćwiczeń
+                    document.querySelectorAll('.exercise-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    
+                    // Pokaż wybraną treść
+                    document.getElementById(`${tabName}-content`).classList.add('active');
+                    
+                    // Aktualizuj aktywny przycisk
+                    document.querySelectorAll('.exercise-tab[data-tab]').forEach(t => {
+                        t.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                    
+                    // Zatrzymaj wszystkie aktywne ćwiczenia
+                    if (breathingInterval) {
+                        clearInterval(breathingInterval);
+                        breathingInterval = null;
+                        breathingCircle.className = 'breathing-circle';
+                        breathingText.textContent = 'Kliknij, aby rozpocząć';
+                        startBreathingBtn.textContent = 'Rozpocznij ćwiczenie';
+                    }
+                    
+                    if (muscleRelaxationInterval) {
+                        clearInterval(muscleRelaxationInterval);
+                        muscleRelaxationInterval = null;
+                        startMuscleBtn.textContent = 'Rozpocznij pełne ćwiczenie';
+                        muscleGroups.forEach(group => {
+                            group.classList.remove('active');
+                            group.querySelector('.muscle-instruction').classList.remove('visible');
+                        });
+                        muscleProgress.style.width = '0%';
+                    }
+                    
+                    if (visualizationInterval) {
+                        clearInterval(visualizationInterval);
+                        visualizationInterval = null;
+                        startVisualizationBtn.textContent = 'Rozpocznij wizualizację';
+                    }
+                });
             });
             
             // =========== NASŁUCHIWACZE ZDARZEŃ ===========
