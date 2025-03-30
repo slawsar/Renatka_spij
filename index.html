@@ -11,14 +11,14 @@
     <!-- Dodatkowe ikony -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     
-    <!-- Preload plików audio dla szybszego ładowania -->
-    <link rel="preload" href="sounds/ocean.wav" as="audio">
-    <link rel="preload" href="sounds/rain.mp3" as="audio">
-    <link rel="preload" href="sounds/forest.mp3" as="audio">
-    <link rel="preload" href="sounds/night.mp3" as="audio">
-    <link rel="preload" href="sounds/whitenoise.wav" as="audio">
-    <link rel="preload" href="sounds/dziubasek.mp3" as="audio">
-    <link rel="preload" href="sounds/dziubasek-vol2.mp3" as="audio">
+    <!-- Preloadowanie plików audio jako elementy audio dla lepszej kompatybilności -->
+    <audio id="preload-ocean" src="sounds/ocean.wav" preload="auto" style="display:none;"></audio>
+    <audio id="preload-rain" src="sounds/rain.mp3" preload="auto" style="display:none;"></audio>
+    <audio id="preload-forest" src="sounds/forest.mp3" preload="auto" style="display:none;"></audio>
+    <audio id="preload-night" src="sounds/night.mp3" preload="auto" style="display:none;"></audio>
+    <audio id="preload-whitenoise" src="sounds/whitenoise.wav" preload="auto" style="display:none;"></audio>
+    <audio id="preload-dziubasek" src="sounds/dziubasek.mp3" preload="auto" style="display:none;"></audio>
+    <audio id="preload-dziubasek-vol2" src="sounds/dziubasek-vol2.mp3" preload="auto" style="display:none;"></audio>
     
     <style>
         /* Główna kolorystyka i ogólne stylowanie */
@@ -80,7 +80,7 @@
             color: var(--text-light);
         }
         
-        /* Animowane tło z gwiazdami */
+        /* Tło z gwiazdami (zastąpione przez Canvas) */
         .stars {
             position: fixed;
             top: 0;
@@ -89,20 +89,6 @@
             height: 100%;
             z-index: -1;
             overflow: hidden;
-        }
-        
-        .star {
-            position: absolute;
-            background-color: white;
-            border-radius: 50%;
-            opacity: 0;
-            animation: twinkle var(--duration, 4s) infinite var(--delay, 0s);
-        }
-        
-        @keyframes twinkle {
-            0% { opacity: 0; }
-            50% { opacity: var(--intensity, 1); }
-            100% { opacity: 0; }
         }
         
         /* Półprzezroczyste chmury */
@@ -482,6 +468,7 @@
             font-size: 1.2rem;
             max-width: 80%;
             text-align: center;
+            transition: opacity 0.5s ease;
         }
         
         .exercise-navigation {
@@ -794,10 +781,64 @@
                 height: 120px;
             }
         }
+        
+        /* Dodatkowe style dla Canvas */
+        #stars-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+        
+        /* Timer wizualizacja */
+        .timer-circle {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            margin: 1rem auto;
+            border-radius: 50%;
+            background-color: var(--primary-medium);
+            overflow: hidden;
+        }
+        
+        .timer-progress {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: conic-gradient(var(--accent) 0deg, transparent 0deg);
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+            transition: background 0.5s linear;
+        }
+        
+        .timer-time {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.6rem;
+            font-weight: bold;
+            color: var(--accent);
+            z-index: 2;
+        }
+        
+        @media (max-width: 576px) {
+            .timer-circle {
+                width: 120px;
+                height: 120px;
+            }
+            
+            .timer-time {
+                font-size: 1.2rem;
+            }
+        }
     </style>
 </head>
 <body>
-    <!-- Tło z gwiazdami i chmurami -->
+    <!-- Tło z gwiazdami - teraz używamy Canvas zamiast wielu elementów DOM -->
     <div class="stars" id="stars"></div>
     <div class="moon"></div>
     
@@ -859,7 +900,13 @@
                         <!-- Timer -->
                         <div class="timer-container">
                             <h3><i class="fas fa-clock"></i> Timer snu</h3>
-                            <div class="timer-display" id="timer-display">00:00:00</div>
+                            
+                            <!-- Dodano wizualny timer -->
+                            <div class="timer-circle">
+                                <div class="timer-progress" id="timer-progress"></div>
+                                <div class="timer-time" id="timer-display">00:00:00</div>
+                            </div>
+                            
                             <div class="d-flex flex-wrap justify-content-center">
                                 <button class="sound-btn timer-btn" data-time="5">5 min</button>
                                 <button class="sound-btn timer-btn" data-time="15">15 min</button>
@@ -1183,53 +1230,84 @@
                 toast.show();
             }
             
-            // Tworzenie gwiazd dla animowanego tła
-            const starsContainer = document.getElementById('stars');
-            const starsCount = 150; // Liczba gwiazd
-            
-            // Tworzenie gwiazd
-            for (let i = 0; i < starsCount; i++) {
-                const star = document.createElement('div');
-                star.classList.add('star');
+            // Tworzenie gwiazdnego tła za pomocą Canvas
+            function createStarryBackground() {
+                const starsContainer = document.getElementById('stars');
+                const canvas = document.createElement('canvas');
+                canvas.id = 'stars-canvas';
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+                starsContainer.appendChild(canvas);
                 
-                // Losowa pozycja
-                star.style.left = `${Math.random() * 100}%`;
-                star.style.top = `${Math.random() * 100}%`;
+                const ctx = canvas.getContext('2d');
+                const starsCount = 150;
+                const stars = [];
                 
-                // Losowy rozmiar (1-3px)
-                const size = Math.random() * 2 + 1;
-                star.style.width = `${size}px`;
-                star.style.height = `${size}px`;
+                // Tworzenie gwiazd z ich właściwościami
+                for (let i = 0; i < starsCount; i++) {
+                    stars.push({
+                        x: Math.random() * canvas.width,
+                        y: Math.random() * canvas.height,
+                        size: Math.random() * 2 + 1,
+                        intensity: 0.2 + Math.random() * 0.8,
+                        phase: Math.random() * Math.PI * 2
+                    });
+                }
                 
-                // Losowa intensywność blasku
-                star.style.setProperty('--intensity', 0.2 + Math.random() * 0.8);
+                // Dodanie kilku chmur
+                const clouds = [];
+                for (let i = 0; i < 5; i++) {
+                    clouds.push({
+                        x: Math.random() * canvas.width,
+                        y: Math.random() * (canvas.height / 2),
+                        width: 100 + Math.random() * 200,
+                        height: 50 + Math.random() * 100,
+                        speed: 0.1 + Math.random() * 0.2,
+                        opacity: 0.1 + Math.random() * 0.2
+                    });
+                }
                 
-                // Losowe opóźnienie i czas trwania animacji
-                star.style.setProperty('--delay', `${Math.random() * 4}s`);
-                star.style.setProperty('--duration', `${3 + Math.random() * 5}s`);
+                // Funkcja animacji
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    const time = Date.now() / 1000;
+                    
+                    // Rysuj gwiazdy
+                    stars.forEach(star => {
+                        const intensity = star.intensity * (0.5 + 0.5 * Math.sin(time + star.phase));
+                        ctx.fillStyle = `rgba(255, 255, 255, ${intensity})`;
+                        ctx.beginPath();
+                        ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+                        ctx.fill();
+                    });
+                    
+                    // Rysuj chmury
+                    clouds.forEach(cloud => {
+                        cloud.x += cloud.speed;
+                        if (cloud.x > canvas.width + cloud.width) {
+                            cloud.x = -cloud.width;
+                        }
+                        
+                        ctx.fillStyle = `rgba(255, 255, 255, ${cloud.opacity})`;
+                        ctx.beginPath();
+                        ctx.ellipse(cloud.x, cloud.y, cloud.width / 2, cloud.height / 2, 0, 0, Math.PI * 2);
+                        ctx.fill();
+                    });
+                    
+                    requestAnimationFrame(animate);
+                }
                 
-                starsContainer.appendChild(star);
+                animate();
+                
+                // Obsługa zmiany rozmiaru okna
+                window.addEventListener('resize', function() {
+                    canvas.width = window.innerWidth;
+                    canvas.height = window.innerHeight;
+                });
             }
             
-            // Dodanie kilku przesuwających się chmur
-            for (let i = 0; i < 5; i++) {
-                const cloud = document.createElement('div');
-                cloud.classList.add('cloud');
-                
-                // Losowa pozycja
-                cloud.style.left = `${Math.random() * 100}%`;
-                cloud.style.top = `${Math.random() * 100}%`;
-                
-                // Losowy rozmiar
-                const size = 100 + Math.random() * 200;
-                cloud.style.width = `${size}px`;
-                cloud.style.height = `${size / 2}px`;
-                
-                // Losowe opóźnienie i czas trwania animacji
-                cloud.style.setProperty('--duration', `${50 + Math.random() * 30}s`);
-                
-                starsContainer.appendChild(cloud);
-            }
+            // Inicjalizacja tła gwieździstego
+            createStarryBackground();
             
             // ========== PRZEŁĄCZNIK TRYBU JASNY/CIEMNY ==========
             const themeToggle = document.getElementById('theme-toggle');
@@ -1264,6 +1342,7 @@
             const volumeSlider = document.getElementById('volume');
             const timerButtons = document.querySelectorAll('.timer-btn');
             const timerDisplay = document.getElementById('timer-display');
+            const timerProgress = document.getElementById('timer-progress');
             const customTimerInput = document.getElementById('custom-timer-input');
             const customTimerBtn = document.getElementById('custom-timer-btn');
             const activeContainer = document.getElementById('active-sounds-container');
@@ -1272,9 +1351,24 @@
             // Timer
             let timerInterval = null;
             let timerEndTime = null;
+            let timerStartTime = null;
             
             // Przechowywanie aktywnych dźwięków (jako mapa)
             const activeSounds = new Map();
+            
+            // Pula Audio - optymalizacja tworzenia obiektów Audio
+            const audioPool = {
+                pool: new Map(),
+                
+                getAudio: function(source) {
+                    if (!this.pool.has(source)) {
+                        const audio = new Audio(source);
+                        audio.load(); // Preload audio
+                        this.pool.set(source, audio);
+                    }
+                    return this.pool.get(source).cloneNode(); // Zawsze zwracaj kopię
+                }
+            };
             
             // ===== KONFIGURACJA DŹWIĘKÓW =====
             const sounds = {
@@ -1363,8 +1457,8 @@
                         return;
                     }
                     
-                    // Utwórz element audio
-                    const audio = new Audio(sounds[soundName]);
+                    // Pobierz dźwięk z puli
+                    const audio = audioPool.getAudio(sounds[soundName]);
                     
                     // Ustawienia
                     audio.loop = true; // Zapętlenie dźwięku
@@ -1373,13 +1467,16 @@
                     const volume = parseFloat(volumeSlider.value);
                     audio.volume = volume;
                     
-                    // Obsługa błędów ładowania pliku
-                    audio.onerror = function() {
-                        showToast("Błąd", `Nie można załadować pliku: ${sounds[soundName]}`);
+                    // Rozszerzona obsługa błędów
+                    audio.onerror = function(e) {
+                        console.error(`Błąd ładowania dźwięku ${soundName}:`, e);
+                        showToast("Błąd", `Nie można załadować dźwięku: ${soundNames[soundName]}`);
+                        stopSound(soundName);
                     };
                     
                     // Rozpocznij odtwarzanie
                     audio.play().catch(err => {
+                        console.error("Błąd odtwarzania:", err);
                         showToast("Błąd", "Błąd odtwarzania dźwięku. Sprawdź uprawnienia przeglądarki.");
                     });
                     
@@ -1394,6 +1491,7 @@
                     activeContainer.appendChild(soundCard);
                     
                 } catch (error) {
+                    console.error("Nieoczekiwany błąd:", error);
                     showToast("Błąd", "Wystąpił nieoczekiwany błąd podczas odtwarzania dźwięku");
                 }
             }
@@ -1404,6 +1502,12 @@
                     const audio = activeSounds.get(soundName);
                     audio.pause();
                     audio.currentTime = 0;
+                    
+                    // Wyczyść nasłuchiwacze zdarzeń - zapobieganie wyciekom pamięci
+                    audio.onended = null;
+                    audio.onerror = null;
+                    audio.oncanplay = null;
+                    
                     activeSounds.delete(soundName);
                     
                     // Usuń klasę active z przycisku
@@ -1421,6 +1525,11 @@
                 for (const [soundName, audio] of activeSounds.entries()) {
                     audio.pause();
                     audio.currentTime = 0;
+                    
+                    // Wyczyść nasłuchiwacze zdarzeń
+                    audio.onended = null;
+                    audio.onerror = null;
+                    audio.oncanplay = null;
                     
                     // Usuń klasę active z przycisku
                     const button = document.querySelector(`.sound-btn[data-sound="${soundName}"]`);
@@ -1468,7 +1577,9 @@
                 // Jeśli minutes wynosi 0, wyczyść timer
                 if (minutes === 0) {
                     timerDisplay.textContent = '00:00:00';
+                    timerProgress.style.background = 'conic-gradient(var(--accent) 0deg, transparent 0deg)';
                     timerEndTime = null;
+                    timerStartTime = null;
                     return;
                 }
                 
@@ -1479,8 +1590,8 @@
                 }
                 
                 // Oblicz czas zakończenia
-                const now = new Date();
-                timerEndTime = new Date(now.getTime() + minutes * 60000);
+                timerStartTime = new Date();
+                timerEndTime = new Date(timerStartTime.getTime() + minutes * 60000);
                 
                 // Natychmiast aktualizuj wyświetlanie timera
                 updateTimerDisplay();
@@ -1516,7 +1627,7 @@
             
             // Aktualizacja wyświetlania timera
             function updateTimerDisplay() {
-                if (!timerEndTime) return false;
+                if (!timerEndTime || !timerStartTime) return false;
                 
                 const now = new Date();
                 const diff = timerEndTime - now;
@@ -1524,6 +1635,7 @@
                 // Jeśli timer się zakończył
                 if (diff <= 0) {
                     timerDisplay.textContent = '00:00:00';
+                    timerProgress.style.background = 'conic-gradient(var(--accent) 0deg, transparent 0deg)';
                     return false;
                 }
                 
@@ -1535,6 +1647,15 @@
                 // Formatuj wyświetlanie
                 timerDisplay.textContent = 
                     `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                // Aktualizuj wizualny wskaźnik
+                const totalDuration = timerEndTime - timerStartTime;
+                const elapsed = now - timerStartTime;
+                const percentage = (elapsed / totalDuration) * 100;
+                const degrees = (percentage / 100) * 360;
+                
+                timerProgress.style.background = 
+                    `conic-gradient(var(--accent) ${degrees}deg, transparent ${degrees}deg)`;
                 
                 return true;
             }
@@ -1670,6 +1791,7 @@
             let muscleRelaxationInterval = null;
             let currentMuscleGroup = 0;
             
+            // Obsługa kliknięć w grupy
             // Obsługa kliknięć w grupy mięśniowe
             muscleGroups.forEach(group => {
                 group.addEventListener('click', function() {
