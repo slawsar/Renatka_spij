@@ -2196,4 +2196,601 @@
                 checkSoundFiles();
             }, 1000);
         });
+        // ========== GENERATOR BAJEK NA DOBRANOC ==========
+
+// Konfiguracja zewnętrznego API
+const STORY_API_CONFIG = {
+    // Ustawienia API - skonfigurowane dla OpenAI
+    openai: {
+        apiKey: 'sk-twój-klucz-api', // WPISZ SWÓJ KLUCZ API!
+        endpoint: 'https://api.openai.com/v1/chat/completions',
+        model: 'gpt-3.5-turbo',
+        maxTokens: 1500,
+        temperature: 0.7,
+        enabled: true 
+    },
+    
+    // Globalne ustawienia dla generowania bajek
+    settings: {
+        useExternalApi: true, // Główny przełącznik dla korzystania z API
+        fallbackToLocal: true, // Użycie lokalnego generatora w przypadku błędu API
+        maxStoriesToKeep: 30, // Maksymalna liczba bajek do przechowywania
+        
+        // Instrukcje dla modelu AI - dopasowane do istniejących bajek
+        prompt: `Wygeneruj oryginalną, uspokajającą bajkę na dobranoc dla dzieci (około 10 akapitów).
+        Bajka MUSI zawierać dokładnie te dwie postacie: 
+        1. Renatka - główna bohaterka, dziewczynka (lub w niektórych bajkach może być przedstawiona symbolicznie jako gwiazda, księżyc itp.)
+        2. Dziubasek - jej przyjaciel i opiekun (często przedstawiany jako mądry ptaszek, gwiazda lub inny element natury)
+        
+        Bajka powinna utrzymać następujący charakter:
+        - Mieć magiczny, kojący nastrój idealny do zasypiania
+        - Zawierać motywy nieba, gwiazd, chmur, lasu lub morza
+        - Podkreślać tematy miłości, przyjaźni, troski i opiekuńczości
+        - Mieć spokojne, pozytywne zakończenie
+        - Nie zawierać strasznych postaci ani niepokojących elementów
+        
+        Tytuł powinien zawierać imię "Renatka" lub "Dziubasek".
+        
+        Odpowiedź sformatuj jako JSON z polami:
+        - title: tytuł bajki
+        - icon: wybierz ikonę (star, moon, cloud, tree, heart)
+        - content: treść bajki podzielona na akapity (używaj podwójnych znaków nowej linii między akapitami)`
+    }
+};
+
+// Funkcja do generowania nowych bajek
+const bajkiGenerator = {
+    // Sprawdza czy należy wygenerować nową bajkę
+    shouldGenerateNewStory: function() {
+        const lastGenerationDate = localStorage.getItem('lastStoryGenerationDate');
+        
+        // Jeśli nie ma zapisanej daty, oznacza to, że należy wygenerować bajkę
+        if (!lastGenerationDate) {
+            return true;
+        }
+        
+        // Sprawdź czy minął przynajmniej jeden dzień od ostatniego generowania
+        const lastDate = new Date(lastGenerationDate);
+        const currentDate = new Date();
+        
+        // Resetujemy godziny, minuty, sekundy aby porównać tylko daty
+        lastDate.setHours(0, 0, 0, 0);
+        currentDate.setHours(0, 0, 0, 0);
+        
+        // Oblicz różnicę w dniach
+        const diffTime = currentDate.getTime() - lastDate.getTime();
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        return diffDays >= 1;
+    },
+    
+    // Pobiera zapisane bajki z localStorage
+    getSavedStories: function() {
+        const savedStories = localStorage.getItem('generatedStories');
+        return savedStories ? JSON.parse(savedStories) : [];
+    },
+    
+    // Zapisuje nową bajkę do localStorage
+    saveStory: function(story) {
+        const savedStories = this.getSavedStories();
+        savedStories.push(story);
+        
+        // Zapisz bajki i datę generowania
+        localStorage.setItem('generatedStories', JSON.stringify(savedStories));
+        localStorage.setItem('lastStoryGenerationDate', new Date().toISOString());
+    },
+    
+    // Lista predefiniowanych szablonów bajek
+    storyTemplates: [
+        {
+            title: "Wyprawa do Zaczarowanego Lasu",
+            icon: "tree",
+            generate: function(characterName = "Zuzia") {
+                return [
+                    `Dawno, dawno temu, w małej wiosce blisko krawędzi wielkiego lasu mieszkało dziecko o imieniu ${characterName}. ${characterName} zawsze było ciekawe, co kryje się w najgłębszych zakamarkach tego lasu, którego dorośli tak się obawiali.`,
+                    `Pewnego spokojnego wieczoru, gdy gwiazdy zaczęły już migotać na niebie, ${characterName} usłyszało delikatny głos dochodzący z kierunku drzew. "Przyjdź... przyjdź do nas..." - szeptał głos melodyjnie.`,
+                    `Wiedziona ciekawością, ${characterName} wymknęła się z domu i podążyła w kierunku lasu. Z każdym krokiem drzewa stawały się wyższe, a światło księżyca tańczyło wśród liści, tworząc magiczne wzory na ścieżce.`,
+                    `Nagle, w małej polance, ${characterName} zobaczyła krąg małych, świecących stworzonek. Były to leśne duszki, które od lat opiekowały się lasem i jego mieszkańcami.`,
+                    `"Witaj ${characterName}," powiedziała najstarsza z duszek, której włosy przypominały srebrne nitki pajęczyny. "Wybraliśmy cię, abyś pomogła nam w ważnym zadaniu..."`,
+                    `${characterName} dowiedziała się, że las powoli traci swoją magię z powodu smutku, który ogarnął serca ludzi z wioski. Duszki poprosiły ${characterName}, aby przypomniało ludziom o radości, jaką daje kontakt z naturą.`,
+                    `Z pomocą magicznego pyłu, który otrzymała od duszków, ${characterName} wróciła do wioski i podczas snu wszystkich jej mieszkańców, rozrzuciła go nad domami.`,
+                    `Następnego ranka wszyscy w wiosce obudzili się z pragnieniem pójścia do lasu. Gdy wkroczyli między drzewa, odkryli jego piękno i magię na nowo.`,
+                    `Od tego dnia, las i wioska żyły w harmonii. A ${characterName}? Stała się mostem między dwoma światami, często odwiedzając swoich przyjaciół duszki i słuchając ich niezwykłych opowieści.`,
+                    `I tak, dzięki odwadze i otwartemu sercu ${characterName}, magia na zawsze wróciła do lasu, a marzenia stały się częścią codziennego życia mieszkańców wioski.`
+                ].join('\n\n');
+            }
+        },
+        {
+            title: "Świetliki i Nocne Marzenia",
+            icon: "moon",
+            generate: function(characterName = "Tomek") {
+                return [
+                    `W małym domku na skraju miasta mieszkało dziecko o imieniu ${characterName}. ${characterName} miało trudności z zasypianiem - każdej nocy bało się ciemności i tego, co mogła skrywać.`,
+                    `Pewnej wyjątkowej nocy, gdy księżyc był wyjątkowo jasny i okrągły, przez uchylone okno do pokoju ${characterName} wleciał mały, świecący punkcik. A potem drugi. I trzeci...`,
+                    `${characterName} z zaciekawieniem obserwowało, jak do pokoju wlatuje coraz więcej świetlików, które zaczęły tańczyć w powietrzu, tworząc różne kształty i obrazy.`,
+                    `"Nie bój się," usłyszało ${characterName} delikatny szept. To największy ze świetlików przemówił. "Jesteśmy strażnikami dobrych snów i przychodzimy do dzieci, które mają trudności z zasypianiem."`,
+                    `Świetliki opowiedziały ${characterName}, że każdej nocy przemierzają świat, zbierając najpiękniejsze marzenia i rozdając je śpiącym dzieciom. "Ale żeby otrzymać takie marzenie, musisz najpierw zasnąć," wyjaśniły.`,
+                    `"Jak mam zasnąć, skoro tak bardzo boję się ciemności?" - zapytało ${characterName}. Świetliki zaśmiały się łagodnie i odparły: "Od dziś, gdy zgasną światła, my będziemy twoją nocną lampką."`,
+                    `${characterName} poczuło spokój. Z pomocą świetlików, które stworzyły na suficie gwiaździste niebo, szybko zapadło w głęboki sen. A we śnie przeżyło najwspanialszą przygodę - podróżowało po gwiazdach, pływało w chmurach i rozmawiało z księżycem.`,
+                    `Od tej nocy, za każdym razem gdy ${characterName} kładło się spać, świetliki przybywały, aby dotrzymać mu towarzystwa. Strach przed ciemnością zniknął, zastąpiony ekscytacją na myśl o kolejnych niezwykłych przygodach czekających w krainie snów.`,
+                    `Z czasem ${characterName} zrozumiało, że ciemność nie jest straszna - jest jak puste płótno, na którym nasze marzenia mogą malować najpiękniejsze obrazy.`,
+                    `I tak, dzięki małym, świecącym przyjaciołom, ${characterName} nauczyło się nie tylko pokonywać swój strach, ale również doceniać magię, jaką noc przynosi do naszego życia.`
+                ].join('\n\n');
+            }
+        },
+        {
+            title: "Podróż Chmurki Deszczowej",
+            icon: "cloud",
+            generate: function(characterName = "Maja") {
+                return [
+                    `Wysoko na niebie, pośród rozległego błękitu, żyła mała chmurka o imieniu ${characterName}. W przeciwieństwie do innych chmur, ${characterName} nigdy nie uroniła ani jednej kropli deszczu, gdyż bała się, że gdy odda swoją wodę, po prostu zniknie.`,
+                    `"Co się stanie, gdy wszystkie moje krople spadną na ziemię?" - pytała siebie codziennie, obserwując, jak inne chmury z radością podlewały rośliny, napełniały strumyki i dawały orzeźwienie spragnionym.`,
+                    `Pewnego dnia stary, mądry wiatr, który przemierzył cały świat niezliczoną ilość razy, zauważył samotność ${characterName} i podszepnął jej: "Każda kropla, którą dajesz ziemi, wraca do ciebie, gdy tylko słońce ją ogrzeje."`,
+                    `${characterName} nie do końca rozumiała, co miał na myśli, ale zaufała mu na tyle, by podróżować z nim nad wyjątkowo suchym i spragnionym regionem, gdzie od miesięcy nie spadła ani jedna kropla deszczu.`,
+                    `Poniżej ${characterName} zobaczyła zwiędłe kwiaty, spragnione zwierzęta i ludzi patrzących w niebo z nadzieją. Jej serce wypełniło się współczuciem, które było silniejsze niż strach.`,
+                    `"Może oddam im tylko kilka kropelek," pomyślała. I tak, niepewnie, uwolniła swoje pierwsze krople, które spadły na ziemię jako delikatna mżawka.`,
+                    `Z każdą kolejną kroplą ${characterName} czuła coś niezwykłego - zamiast maleć, czuła się coraz lżejsza i szczęśliwsza. Widziała radość, jaką przynosiła, i to dawało jej siłę.`,
+                    `Gdy oddała wszystkie swoje krople, stała się niewidoczna - ale nie zniknęła. Stała się lekkim, ciepłym powietrzem, które wędrowało ku górze, zbierając po drodze parującą wodę ze stawów, rzek i mokrej trawy.`,
+                    `Wkrótce ${characterName} znów była puszystą chmurką, pełną nowych kropel i nowego zrozumienia - im więcej dajemy innym, tym więcej otrzymujemy z powrotem, choć czasem w zupełnie nowej formie.`,
+                    `Od tego dnia ${characterName} z radością podróżowała po świecie, przynosząc deszcz tam, gdzie był najbardziej potrzebny, i ucząc inne młode chmurki, że dawanie jest największym darem również dla dawcy.`
+                ].join('\n\n');
+            }
+        },
+        {
+            title: "Magiczna Poduszka Snów",
+            icon: "star",
+            generate: function(characterName = "Oliver") {
+                return [
+                    `W małym miasteczku, gdzie domy miały czerwone dachy, a wszystkie drzwi były pomalowane na niebiesko, mieszkało dziecko o imieniu ${characterName}. ${characterName} miało problem - nie potrafiło śnić kolorowych snów jak inne dzieci.`,
+                    `Nocami, gdy wszyscy opowiadali o swoich przygodach w krainie snów, ${characterName} mogło tylko słuchać z zazdrością. Jego sny były jak puste, białe kartki - bez kolorów, bez przygód, bez magii.`,
+                    `Dziadek ${characterName}, widząc smutek wnuka, postanowił pomóc. Pewnego wieczoru przyniósł tajemniczy prezent zawinięty w papier pokryty gwiazdami. "To magiczna poduszka," wyjaśnił. "Została zrobiona z materiału utkanego z chmur o zachodzie słońca."`,
+                    `Poduszka miała kolor nieba o zmierzchu - granatowy przechodzący w fiolet, z drobnymi, świecącymi punktami, które przypominały gwiazdy. "Każda z tych gwiazd to portal do innego snu," kontynuował dziadek. "Wystarczy, że przed zaśnięciem wybierzesz jedną i pomyślisz o przygodzie, którą chciałbyś przeżyć."`,
+                    `${characterName} było skeptyczne, ale tej nocy, leżąc na nowej poduszce, dotknęło jednej z małych gwiazdek i pomyślało o lataniu ponad chmurami. Gdy tylko zamknęło oczy, poczuło, jak jego ciało staje się lekkie, a łóżko zaczyna się unosić.`,
+                    `Tej nocy ${characterName} śniło o podróży przez galaktyki, rozmowach z gwiazdami i tańcu z kometami. Rano obudziło się z uśmiechem szerszym niż kiedykolwiek wcześniej.`,
+                    `Z każdą kolejną nocą ${characterName} odkrywało nowe przygody. Raz nurkowało w głębinach oceanu z wielorybami, innym razem wędrowało przez zaklęty las pełen mówiących zwierząt, a jeszcze innym odkrywało skarby w starożytnych piramidach.`,
+                    `Pewnej nocy jednak ${characterName} odkryło, że wszystkie gwiazdki na poduszce zgasły. Zasmucone, pobiegło do dziadka, który tylko się uśmiechnął. "Spójrz na swoją dłoń," powiedział.`,
+                    `${characterName} spojrzało i zobaczyło, że jego własne palce migotały delikatnym światłem gwiazd. "Teraz magia jest w tobie," wyjaśnił dziadek. "Poduszka była tylko kluczem, który otworzył drzwi do twojej wyobraźni."`,
+                    `Od tej chwili ${characterName} nie potrzebowało już magicznej poduszki, aby śnić kolorowe sny. Nauczyło się, że największa magia mieszka w naszych sercach i umysłach - czeka tylko, aż ktoś pomoże nam ją odnaleźć.`
+                ].join('\n\n');
+            }
+        },
+        {
+            title: "Zaczarowana Melodia",
+            icon: "music",
+            generate: function(characterName = "Lena") {
+                return [
+                    `W miasteczku otoczonym górami mieszkała dziewczynka o imieniu ${characterName}. ${characterName} kochała muzykę ponad wszystko, a jej śmiech brzmiał jak najsłodsza melodia.`,
+                    `W jej domu stało stare, drewniane pianino, które należało kiedyś do jej prababci. Choć nikt nie grał na nim od lat, ${characterName} często siadała przed nim, przesuwając palcami po zakurzonych klawiszach i wyobrażając sobie piękne melodie.`,
+                    `Pewnej nocy, gdy księżyc był w pełni, a gwiazdy wydawały się jaśniejsze niż zwykle, ${characterName} obudziła się słysząc cichą muzykę. Zaciekawiona, podążyła za dźwiękiem, który prowadził ją do starego pianina.`,
+                    `Ku jej zdumieniu, klawisze poruszały się same, jakby grały na nich niewidzialne dłonie. Melodia była tak piękna, że ${characterName} poczuła łzy w oczach.`,
+                    `Nagle muzyka ustała, a w pokoju pojawił się delikatny błysk. Z pianina wyfrunęła maleńka, świecąca istota w kształcie nutki. "Nazywam się Echo," powiedziała istota. "Jestem duchem muzyki uwięzionym w tym pianinie."`,
+                    `Echo opowiedziało ${characterName}, że przed laty została zamknięta w instrumencie przez zazdrosnego muzyka, który nie chciał dzielić się swoim talentem. "Mogę się uwolnić tylko wtedy, gdy ktoś o czystym sercu zagra melodię, która wyrazi miłość do muzyki bez żadnych lekcji czy nauki."`,
+                    `${characterName}, mimo że nigdy nie uczyła się grać, usiadła przed pianinem. Zamknęła oczy i pozwoliła, by jej palce same znalazły drogę. Powoli, niepewnie, zaczęła grać... Dźwięki początkowo nieśmiałe, stawały się coraz pewniejsze, tworząc melodię pełną czystej radości i miłości.`,
+                    `Z każdą nutą Echo stawała się jaśniejsza i większa. Gdy ${characterName} zagrała ostatni akord, istota rozbłysła oślepiającym światłem, które na chwilę wypełniło cały dom.`,
+                    `Gdy światło zgasło, pianino wydawało się jaśniejsze, odnowione. Echo była wolna, ale pozostawiła dar - od tej pory, gdy ${characterName} grała, muzyka płynęła prosto z jej serca, poruszając wszystkich, którzy ją słyszeli.`,
+                    `Ludzie z całej okolicy przychodzili, aby posłuchać jej gry, a ${characterName} zawsze opowiadała im o Echo i o tym, jak ważne jest dzielenie się swoimi talentami. Bo prawdziwa magia muzyki nie polega na doskonałości technicznej, ale na umiejętności przekazywania uczuć poprzez dźwięki.`
+                ].join('\n\n');
+            }
+        }
+    ],
+    
+    // Generuje nową bajkę lokalnie
+    generateNewStory: function() {
+        // Losowo wybierz szablon
+        const randomIndex = Math.floor(Math.random() * this.storyTemplates.length);
+        const template = this.storyTemplates[randomIndex];
+        
+        // Lista imion do losowego wyboru
+        const names = ["Marek", "Ania", "Wojtek", "Zosia", "Kuba", "Julka", "Bartek", "Klara", 
+                      "Filip", "Emilka", "Olek", "Hania", "Mikołaj", "Tosia", "Igor", "Natalka"];
+        const randomName = names[Math.floor(Math.random() * names.length)];
+        
+        // Wygeneruj treść bajki
+        const storyContent = template.generate(randomName);
+        
+        // Utwórz obiekt bajki
+        const newStory = {
+            id: 'story-' + Date.now(),
+            title: template.title.replace(/Zuzia|Tomek|Maja|Oliver|Lena/, randomName),
+            icon: template.icon,
+            content: storyContent,
+            dateGenerated: new Date().toISOString(),
+            source: 'local'
+        };
+        
+        return newStory;
+    },
+    
+    // Tworzy element DOM dla nowej bajki
+    createStoryElement: function(story) {
+        // Utwórz główny kontener bajki
+        const storyAccordion = document.createElement('div');
+        storyAccordion.className = 'story-accordion';
+        
+        // Utwórz nagłówek
+        const storyHeader = document.createElement('div');
+        storyHeader.className = 'story-header';
+        storyHeader.setAttribute('data-story', story.id);
+        
+        // Dodaj tytuł z ikoną
+        const storyTitle = document.createElement('h4');
+        storyTitle.innerHTML = `<i class="fas fa-${story.icon} tip-icon"></i> ${story.title}`;
+        
+        // Dodaj ikonę strzałki
+        const storyToggleIcon = document.createElement('i');
+        storyToggleIcon.className = 'fas fa-chevron-down story-toggle-icon';
+        
+        // Dodaj elementy do nagłówka
+        storyHeader.appendChild(storyTitle);
+        
+        storyHeader.appendChild(storyToggleIcon);
+        
+        // Utwórz kontener treści
+        const storyContent = document.createElement('div');
+        storyContent.className = 'story-content';
+        storyContent.id = `${story.id}-story`;
+        
+        // Podziel treść na akapity i dodaj do kontenera
+        // Obsługujemy zarówno \n\n jak i pojedyncze \n (różne formaty z API)
+        let paragraphs = [];
+        if (story.content.includes('\n\n')) {
+            paragraphs = story.content.split('\n\n');
+        } else {
+            paragraphs = story.content.split('\n').filter(p => p.trim() !== '');
+        }
+        
+        paragraphs.forEach(paragraph => {
+            const p = document.createElement('p');
+            p.textContent = paragraph.trim();
+            storyContent.appendChild(p);
+        });
+        
+        // Dodaj nagłówek i treść do głównego kontenera
+        storyAccordion.appendChild(storyHeader);
+        storyAccordion.appendChild(storyContent);
+        
+        // Dodaj funkcjonalność akordeonu
+        storyHeader.addEventListener('click', function() {
+            // Przełącz widoczność treści
+            storyContent.classList.toggle('visible');
+            
+            // Przełącz stan aktywny nagłówka
+            this.classList.toggle('active');
+            
+            // Zamknij inne otwarte bajki
+            const allHeaders = document.querySelectorAll('.story-header');
+            allHeaders.forEach(header => {
+                if (header !== this && header.classList.contains('active')) {
+                    header.classList.remove('active');
+                    const otherId = header.dataset.story;
+                    document.getElementById(`${otherId}-story`).classList.remove('visible');
+                }
+            });
+        });
+        
+        return storyAccordion;
+    },
+    
+    // Dodaje wszystkie zapisane bajki do interfejsu
+    renderSavedStories: function() {
+        const stories = this.getSavedStories();
+        const storiesContainer = document.querySelector('.bedtime-stories');
+        
+        // Dodaj tylko nowe bajki (te, których jeszcze nie ma w interfejsie)
+        stories.forEach(story => {
+            // Sprawdź czy bajka już istnieje w interfejsie
+            if (!document.querySelector(`.story-header[data-story="${story.id}"]`)) {
+                const storyElement = this.createStoryElement(story);
+                storiesContainer.appendChild(storyElement);
+            }
+        });
+    },
+    
+    // Generuje i dodaje nową bajkę jeśli spełnione są warunki
+    checkAndGenerateNewStory: async function() {
+        if (this.shouldGenerateNewStory()) {
+            try {
+                // Próbuj wygenerować bajkę z API jeśli jest włączone
+                let newStory = null;
+                if (STORY_API_CONFIG.settings.useExternalApi && STORY_API_CONFIG.openai.enabled) {
+                    newStory = await this.generateStoryWithAPI();
+                }
+                
+                // Jeśli nie udało się wygenerować bajki z API, użyj lokalnego generatora
+                if (!newStory) {
+                    newStory = this.generateNewStory();
+                }
+                
+                // Zapisz bajkę
+                this.saveStory(newStory);
+                
+                // Limituj liczbę przechowywanych bajek
+                this.limitStoredStories();
+                
+                // Dodaj bajkę do interfejsu
+                const storyElement = this.createStoryElement(newStory);
+                const storiesContainer = document.querySelector('.bedtime-stories');
+                
+                // Dodaj nową bajkę na początek listy
+                if (storiesContainer.firstChild) {
+                    storiesContainer.insertBefore(storyElement, storiesContainer.firstChild);
+                } else {
+                    storiesContainer.appendChild(storyElement);
+                }
+                
+                // Pokaż powiadomienie
+                const toastEl = document.getElementById('app-toast');
+                if (toastEl) {
+                    document.getElementById('toast-title').textContent = 'Nowa bajka!';
+                    document.getElementById('toast-message').textContent = `Dodano nową bajkę: "${newStory.title}"`;
+                    const toast = new bootstrap.Toast(toastEl);
+                    toast.show();
+                }
+                
+                return true;
+            } catch (error) {
+                console.error('Błąd podczas generowania bajki:', error);
+                return false;
+            }
+        }
+        
+        return false;
+    },
+    
+    // Generuje bajkę przy użyciu zewnętrznego API (np. OpenAI GPT)
+    generateStoryWithAPI: async function() {
+        try {
+            const apiConfig = STORY_API_CONFIG.openai; // Domyślnie używamy OpenAI API
+            
+            // Sprawdź, czy API jest włączone i czy klucz API jest dostępny
+            if (!STORY_API_CONFIG.settings.useExternalApi || !apiConfig.enabled || !apiConfig.apiKey) {
+                console.log('API zewnętrzne wyłączone lub brak klucza API. Używanie generatora lokalnego.');
+                return null;
+            }
+            
+            // Lista imion do losowego wyboru
+            const names = ["Marek", "Ania", "Wojtek", "Zosia", "Kuba", "Julka", "Bartek", "Klara", 
+                          "Filip", "Emilka", "Olek", "Hania", "Mikołaj", "Tosia", "Igor", "Natalka"];
+            const randomName = names[Math.floor(Math.random() * names.length)];
+            
+            // Przygotuj zapytanie API
+            const promptText = STORY_API_CONFIG.settings.prompt.replace('{characterName}', randomName);
+            
+            // Skonfiguruj zapytanie do OpenAI API
+            const response = await fetch(apiConfig.endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiConfig.apiKey}`
+                },
+                body: JSON.stringify({
+                    model: apiConfig.model,
+                    messages: [
+                        { role: "system", content: "Jesteś pomocnym asystentem specjalizującym się w tworzeniu bajek dla dzieci w języku polskim." },
+                        { role: "user", content: promptText }
+                    ],
+                    max_tokens: apiConfig.maxTokens,
+                    temperature: apiConfig.temperature
+                })
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Błąd API: ${response.status} ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            const content = data.choices && data.choices[0] && data.choices[0].message ? data.choices[0].message.content : null;
+            
+            if (!content) {
+                throw new Error("Otrzymano pustą odpowiedź z API");
+            }
+            
+            // Próbujemy sparsować odpowiedź jako JSON
+            try {
+                // Znajdź JSON w odpowiedzi (czasem model może dodać komentarze przed lub po JSON)
+                const jsonMatch = content.match(/\{[\s\S]*\}/);
+                let storyData;
+                
+                if (jsonMatch) {
+                    storyData = JSON.parse(jsonMatch[0]);
+                } else {
+                    // Jeśli nie możemy znaleźć JSON, próbujemy przetworzyć odpowiedź w inny sposób
+                    // Zakładamy, że pierwsza linia to tytuł, a reszta to treść
+                    const lines = content.split('\n').filter(line => line.trim() !== '');
+                    const title = lines[0].replace(/^#+ /, ''); // Usuń znaczniki Markdown nagłówka
+                    const storyContent = lines.slice(1).join('\n\n');
+                    
+                    storyData = {
+                        title: title,
+                        icon: "star", // Domyślna ikona
+                        content: storyContent
+                    };
+                }
+                
+                // Utwórz obiekt bajki
+                const newStory = {
+                    id: 'story-api-' + Date.now(),
+                    title: storyData.title || `Bajka o ${randomName}`,
+                    icon: storyData.icon || "star",
+                    content: storyData.content || content,
+                    dateGenerated: new Date().toISOString(),
+                    source: 'api'
+                };
+                
+                return newStory;
+                
+            } catch (jsonError) {
+                console.error("Błąd parsowania JSON z odpowiedzi API:", jsonError);
+                
+                // Tworzymy bajkę z surowej odpowiedzi
+                return {
+                    id: 'story-api-' + Date.now(),
+                    title: `Bajka o ${randomName}`,
+                    icon: "star",
+                    content: content,
+                    dateGenerated: new Date().toISOString(),
+                    source: 'api'
+                };
+            }
+        } catch (error) {
+            console.error('Błąd podczas generowania bajki przez API:', error);
+            
+            // Jeśli włączony jest tryb awaryjny, zwróć null aby uruchomić lokalny generator
+            if (STORY_API_CONFIG.settings.fallbackToLocal) {
+                console.log('Przełączanie na lokalny generator bajek...');
+                return null;
+            }
+            
+            // W przeciwnym wypadku rzuć wyjątek dalej
+            throw error;
+        }
+    },
+    
+    // Ogranicza liczbę przechowywanych bajek do maksymalnej wartości
+    limitStoredStories: function() {
+        const maxStories = STORY_API_CONFIG.settings.maxStoriesToKeep;
+        let stories = this.getSavedStories();
+        
+        if (stories.length > maxStories) {
+            // Sortuj według daty generowania (najnowsze pierwsze)
+            stories.sort((a, b) => new Date(b.dateGenerated) - new Date(a.dateGenerated));
+            
+            // Zachowaj tylko określoną liczbę bajek
+            stories = stories.slice(0, maxStories);
+            
+            // Zapisz z powrotem do localStorage
+            localStorage.setItem('generatedStories', JSON.stringify(stories));
+            
+            console.log(`Ograniczono liczbę przechowywanych bajek do ${maxStories}`);
+        }
+    },
+    
+    // Inicjalizuje generator bajek
+    init: function() {
+        console.log('Inicjalizacja generatora bajek...');
+        
+        // Renderuj zapisane bajki
+        this.renderSavedStories();
+        
+        // Ogranicz liczbę przechowywanych bajek
+        this.limitStoredStories();
+        
+        // Sprawdź czy należy wygenerować nową bajkę
+        this.checkAndGenerateNewStory();
+        
+        // Dodaj przycisk do ręcznego generowania bajek
+        const storiesContent = document.getElementById('stories-content');
+        if (storiesContent) {
+            // Sprawdź czy przycisk już istnieje
+            if (!document.getElementById('generate-story-btn')) {
+                const generateButton = document.createElement('button');
+                generateButton.id = 'generate-story-btn';
+                generateButton.className = 'sound-btn mt-3 mb-3';
+                generateButton.innerHTML = '<i class="fas fa-magic"></i> Wygeneruj nową bajkę';
+                
+                generateButton.addEventListener('click', async () => {
+                    // Zmień etykietę przycisku podczas generowania
+                    generateButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generowanie...';
+                    generateButton.disabled = true;
+                    
+                    try {
+                        // Próbuj wygenerować bajkę z API jeśli jest włączone
+                        let newStory = null;
+                        if (STORY_API_CONFIG.settings.useExternalApi && STORY_API_CONFIG.openai.enabled) {
+                            newStory = await this.generateStoryWithAPI();
+                        }
+                        
+                        // Jeśli nie udało się wygenerować bajki z API, użyj lokalnego generatora
+                        if (!newStory) {
+                            newStory = this.generateNewStory();
+                        }
+                        
+                        // Zapisz bajkę
+                        this.saveStory(newStory);
+                        
+                        // Limituj liczbę przechowywanych bajek
+                        this.limitStoredStories();
+                        
+                        // Dodaj bajkę do interfejsu
+                        const storyElement = this.createStoryElement(newStory);
+                        const storiesContainer = document.querySelector('.bedtime-stories');
+                        
+                        // Dodaj nową bajkę na początek listy
+                        if (storiesContainer.firstChild) {
+                            storiesContainer.insertBefore(storyElement, storiesContainer.firstChild);
+                        } else {
+                            storiesContainer.appendChild(storyElement);
+                        }
+                        
+                        // Pokaż powiadomienie
+                        const toastEl = document.getElementById('app-toast');
+                        if (toastEl) {
+                            document.getElementById('toast-title').textContent = 'Nowa bajka!';
+                            document.getElementById('toast-message').textContent = `Dodano nową bajkę: "${newStory.title}"`;
+                            const toast = new bootstrap.Toast(toastEl);
+                            toast.show();
+                        }
+                        
+                        // Zapisz datę wygenerowania bajki
+                        localStorage.setItem('lastStoryGenerationDate', new Date().toISOString());
+                        
+                    } catch (error) {
+                        console.error('Błąd podczas generowania bajki:', error);
+                        
+                        // Wygeneruj bajkę lokalnie w przypadku błędu
+                        if (STORY_API_CONFIG.settings.fallbackToLocal) {
+                            try {
+                                const localStory = this.generateNewStory();
+                                this.saveStory(localStory);
+                                
+                                // Dodaj bajkę do interfejsu
+                                const storyElement = this.createStoryElement(localStory);
+                                const storiesContainer = document.querySelector('.bedtime-stories');
+                                if (storiesContainer.firstChild) {
+                                    storiesContainer.insertBefore(storyElement, storiesContainer.firstChild);
+                                } else {
+                                    storiesContainer.appendChild(storyElement);
+                                }
+                                
+                                // Pokaż powiadomienie o użyciu lokalnego generatora
+                                const toastEl = document.getElementById('app-toast');
+                                if (toastEl) {
+                                    document.getElementById('toast-title').textContent = 'Nowa bajka';
+                                    document.getElementById('toast-message').textContent = `Dodano nową bajkę: "${localStory.title}"`;
+                                    const toast = new bootstrap.Toast(toastEl);
+                                    toast.show();
+                                }
+                                
+                                // Zapisz datę wygenerowania bajki
+                                localStorage.setItem('lastStoryGenerationDate', new Date().toISOString());
+                            } catch (localError) {
+                                console.error('Błąd podczas generowania lokalnej bajki:', localError);
+                            }
+                        }
+                    } finally {
+                        // Przywróć etykietę przycisku
+                        generateButton.innerHTML = '<i class="fas fa-magic"></i> Wygeneruj nową bajkę';
+                        generateButton.disabled = false;
+                    }
+                });
+                
+                // Wstaw przycisk przed kontenerem bajek
+                const bedtimeStories = storiesContent.querySelector('.bedtime-stories');
+                if (bedtimeStories) {
+                    storiesContent.insertBefore(generateButton, bedtimeStories);
+                } else {
+                    storiesContent.appendChild(generateButton);
+                }
+            }
+        }
+    }
+};
+
+// Inicjalizacja generatora bajek po załadowaniu strony
+document.addEventListener('DOMContentLoaded', function() {
+    // Dodaj inicjalizację generatora bajek do istniejących inicjalizacji
+    setTimeout(() => {
+        bajkiGenerator.init();
+    }, 1500); // Małe opóźnienie, aby upewnić się, że strona jest w pełni załadowana
+});
     </script>
