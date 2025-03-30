@@ -405,6 +405,11 @@
             text-shadow: 0 1px 1px var(--black-transparent-light);
         }
         
+        .muscle-group.active h4 {
+            color: white;
+            text-shadow: 0 1px 2px var(--black-transparent-medium);
+        }
+        
         .relaxation-progress {
             height: 10px;
             background-color: var(--primary-medium);
@@ -748,7 +753,115 @@
             margin-bottom: 1rem;
             text-shadow: 0 1px 1px var(--black-transparent-light);
             color: var(--text-light); /* Jawne określenie koloru dla zapewnienia widoczności */
-            }
+        }
+
+        /* Stylowanie syntezatora mowy */
+        .speech-controls {
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--primary-light);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .speech-btn {
+            min-width: 100px;
+        }
+
+        .speech-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .voice-selector {
+            background-color: var(--primary-light);
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            margin-bottom: 1.5rem;
+        }
+
+        #voice-select {
+            background-color: var(--primary-medium);
+            color: var(--text-light);
+            border: 1px solid var(--accent);
+            border-radius: var(--radius-sm);
+            padding: 0.5rem;
+            width: 100%;
+        }
+
+        .speech-settings {
+            margin-top: 1rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .speech-setting {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 120px;
+        }
+
+        .speech-setting label {
+            margin-bottom: 5px;
+            color: var(--accent);
+            font-weight: 500;
+        }
+
+        .speech-setting input {
+            width: 100%;
+        }
+
+        .story-content.speaking {
+            background-color: var(--accent-transparent-light);
+            box-shadow: 0 0 15px var(--accent-transparent-medium);
+        }
+
+        .speech-indicator {
+            display: inline-flex;
+            align-items: center;
+            margin-left: 10px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .speech-indicator.active {
+            opacity: 1;
+        }
+
+        .speech-wave {
+            display: flex;
+            align-items: flex-end;
+            height: 20px;
+            width: 30px;
+        }
+
+        .speech-wave.active span {
+            animation: speechWave 1.2s infinite;
+        }
+
+        .speech-wave span {
+            display: inline-block;
+            width: 3px;
+            margin: 0 2px;
+            background-color: var(--accent);
+            height: 3px;
+            border-radius: 2px;
+        }
+
+        @keyframes speechWave {
+            0%, 100% { height: 3px; }
+            50% { height: 15px; }
+        }
+
+        .speech-wave span:nth-child(1) { animation-delay: 0.2s; }
+        .speech-wave span:nth-child(2) { animation-delay: 0.1s; }
+        .speech-wave span:nth-child(3) { animation-delay: 0.3s; }
+        
         /* Responsywność */
         @media (max-width: 768px) {
             h1 {
@@ -833,6 +946,15 @@
             
             .timer-time {
                 font-size: 1.2rem;
+            }
+
+            .speech-settings {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .speech-setting {
+                width: 80%;
             }
         }
     </style>
@@ -1060,10 +1182,48 @@
                     <div class="exercise-content" id="stories-content">
                         <p class="exercise-intro">Wybierz jedną z bajek na dobranoc. Przeczytaj lub opowiedz ją, aby pomóc w wyciszeniu się przed snem.</p>
                         
+                        <!-- Panel konfiguracji syntezatora mowy -->
+                        <div class="voice-selector" id="speech-config">
+                            <h4 class="mb-3"><i class="fas fa-microphone tip-icon"></i> Ustawienia czytania bajek</h4>
+                            <label for="voice-select" class="form-label">Wybierz głos:</label>
+                            <select id="voice-select" class="form-select mb-3">
+                                <option value="">Ładowanie głosów...</option>
+                            </select>
+                            
+                            <div class="speech-settings">
+                                <div class="speech-setting">
+                                    <label for="speech-rate">Szybkość</label>
+                                    <input type="range" id="speech-rate" class="form-range" min="0.5" max="1.5" step="0.1" value="0.9">
+                                    <span id="speech-rate-value">0.9</span>
+                                </div>
+                                
+                                <div class="speech-setting">
+                                    <label for="speech-pitch">Wysokość</label>
+                                    <input type="range" id="speech-pitch" class="form-range" min="0.5" max="1.5" step="0.1" value="1.0">
+                                    <span id="speech-pitch-value">1.0</span>
+                                </div>
+                                
+                                <div class="speech-setting">
+                                    <label for="speech-volume">Głośność</label>
+                                    <input type="range" id="speech-volume" class="form-range" min="0" max="1" step="0.1" value="0.8">
+                                    <span id="speech-volume-value">0.8</span>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <div class="bedtime-stories">
                             <div class="story-accordion">
                                 <div class="story-header" data-story="star">
-                                    <h4><i class="fas fa-star tip-icon"></i> Renatka, Gwiazda o Złotym Blasku</h4>
+                                    <h4>
+                                        <i class="fas fa-star tip-icon"></i> Renatka, Gwiazda o Złotym Blasku
+                                        <div class="speech-indicator" id="star-indicator">
+                                            <div class="speech-wave">
+                                                <span></span>
+                                                <span></span>
+                                                <span></span>
+                                            </div>
+                                        </div>
+                                    </h4>
                                     <i class="fas fa-chevron-down story-toggle-icon"></i>
                                 </div>
                                 <div class="story-content" id="star-story">
@@ -1077,12 +1237,31 @@
                                     <p>Renatka pomyślała o dziewczynce – o kimś, kto potrzebował jej światła tak samo, jak ona potrzebowała odwagi. Nagle poczuła, jak jej strach zaczyna znikać, a jej światło staje się coraz jaśniejsze.</p>
                                     <p>Od tej nocy Renatka i Dziubasek świecili razem, jako dwie najjaśniejsze gwiazdy na niebie. A mała dziewczynka patrząc na nich, czuła się bezpieczna i mogła spokojnie zasnąć.</p>
                                     <p>I tak Renatka odkryła, że kiedy jest się z kimś, kto daje wsparcie i miłość, wszystkie lęki stają się mniejsze, a nasze wewnętrzne światło świeci najjaśniej.</p>
+                                    
+                                    <!-- Przyciski do obsługi syntezatora mowy -->
+                                    <div class="speech-controls" id="star-controls">
+                                        <button class="sound-btn speech-btn speech-play" data-story="star" data-action="play">
+                                            <i class="fas fa-play"></i> Czytaj bajkę
+                                        </button>
+                                        <button class="sound-btn speech-btn speech-stop" data-story="star" disabled>
+                                            <i class="fas fa-stop"></i> Zatrzymaj
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                             
                             <div class="story-accordion">
                                 <div class="story-header" data-story="forest">
-                                    <h4><i class="fas fa-tree tip-icon"></i> Dziubasek i Las Pięknych Snów</h4>
+                                    <h4>
+                                        <i class="fas fa-tree tip-icon"></i> Dziubasek i Las Pięknych Snów
+                                        <div class="speech-indicator" id="forest-indicator">
+                                            <div class="speech-wave">
+                                                <span></span>
+                                                <span></span>
+                                                <span></span>
+                                            </div>
+                                        </div>
+                                    </h4>
                                     <i class="fas fa-chevron-down story-toggle-icon"></i>
                                 </div>
                                 <div class="story-content" id="forest-story">
@@ -1096,12 +1275,31 @@
                                     <p>Rano Renatka obudziła się wypoczęta jak nigdy wcześniej. Czuła się lekka i pełna energii. Od tego dnia, zanim poszła spać, zawsze przypominała sobie melodię Dziubaska i wyobrażała sobie spokojną polanę ze swojego snu.</p>
                                     <p>"Melodia jest zawsze w twoim sercu," powiedział Dziubasek, gdy Renatka przyszła mu podziękować. "Nauczyłaś się, jak odnaleźć spokój w sobie. To jest prawdziwa magia dobrego snu."</p>
                                     <p>I tak Renatka odkryła, że najpiękniejsze sny rodzą się z miłości i troski, a najlepszym przewodnikiem do krainy spokojnego snu jest ktoś, kto troszczy się o nas całym sercem.</p>
+                                    
+                                    <!-- Przyciski do obsługi syntezatora mowy -->
+                                    <div class="speech-controls" id="forest-controls">
+                                        <button class="sound-btn speech-btn speech-play" data-story="forest" data-action="play">
+                                            <i class="fas fa-play"></i> Czytaj bajkę
+                                        </button>
+                                        <button class="sound-btn speech-btn speech-stop" data-story="forest" disabled>
+                                            <i class="fas fa-stop"></i> Zatrzymaj
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                             
                             <div class="story-accordion">
                                 <div class="story-header" data-story="moon">
-                                    <h4><i class="fas fa-moon tip-icon"></i> Renatka, Księżyc i Nocne Marzenia</h4>
+                                    <h4>
+                                        <i class="fas fa-moon tip-icon"></i> Renatka, Księżyc i Nocne Marzenia
+                                        <div class="speech-indicator" id="moon-indicator">
+                                            <div class="speech-wave">
+                                                <span></span>
+                                                <span></span>
+                                                <span></span>
+                                            </div>
+                                        </div>
+                                    </h4>
                                     <i class="fas fa-chevron-down story-toggle-icon"></i>
                                 </div>
                                 <div class="story-content" id="moon-story">
@@ -1115,12 +1313,31 @@
                                     <p>Tej samej nocy, gdy chłopiec spał, Renatka i Dziubasek zobaczyli coś niezwykłego – z jego serca unosiło się nowe marzenie, tym razem o pomaganiu innym w spełnianiu ich własnych marzeń.</p>
                                     <p>Renatka-Księżyc uśmiechnęła się do Dziubaska-Gwiazdy. Najpiękniejsza część ich pracy to nie tylko zbieranie marzeń, ale obserwowanie, jak jedno spełnione marzenie rodzi kolejne, jeszcze piękniejsze.</p>
                                     <p>I tak, każdej nocy, gdy patrzysz na niebo i widzisz Księżyc otoczony gwiazdami, pamiętaj – to Renatka i Dziubasek opiekują się twoimi najcenniejszymi marzeniami, aż nadejdzie czas, by stały się rzeczywistością.</p>
+                                    
+                                    <!-- Przyciski do obsługi syntezatora mowy -->
+                                    <div class="speech-controls" id="moon-controls">
+                                        <button class="sound-btn speech-btn speech-play" data-story="moon" data-action="play">
+                                            <i class="fas fa-play"></i> Czytaj bajkę
+                                        </button>
+                                        <button class="sound-btn speech-btn speech-stop" data-story="moon" disabled>
+                                            <i class="fas fa-stop"></i> Zatrzymaj
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                             
                             <div class="story-accordion">
                                 <div class="story-header" data-story="cloud">
-                                    <h4><i class="fas fa-cloud tip-icon"></i> Dziubasek, Chmurka Pełna Miłości</h4>
+                                    <h4>
+                                        <i class="fas fa-cloud tip-icon"></i> Dziubasek, Chmurka Pełna Miłości
+                                        <div class="speech-indicator" id="cloud-indicator">
+                                            <div class="speech-wave">
+                                                <span></span>
+                                                <span></span>
+                                                <span></span>
+                                            </div>
+                                        </div>
+                                    </h4>
                                     <i class="fas fa-chevron-down story-toggle-icon"></i>
                                 </div>
                                 <div class="story-content" id="cloud-story">
@@ -1138,6 +1355,16 @@
                                     <p>Ale czasami to właśnie miłość i troska potrafią czynić niemożliwe możliwym. Dziubasek nie stał się wielką, burzową chmurą - zamiast tego stał się dokładnie taką chmurką, jakiej Renatka potrzebowała.</p>
                                     <p>Z czasem Dziubasek nauczył się, że prawdziwa wielkość nie zawsze zależy od rozmiaru. Czasami najmniejsza kropla deszczu może mieć największe znaczenie dla kogoś, kto jej potrzebuje.</p>
                                     <p>Od tamtego dnia Dziubasek i Renatka byli nierozłączni. Codziennie rano Dziubasek przynosił swojej ukochanej słoneczniczce dokładnie tyle wody, ile potrzebowała, a ona w podzięce zawsze odwracała swój złoty kielich w jego stronę, nawet gdy było pochmurno.</p>
+                                    
+                                    <!-- Przyciski do obsługi syntezatora mowy -->
+                                    <div class="speech-controls" id="cloud-controls">
+                                        <button class="sound-btn speech-btn speech-play" data-story="cloud" data-action="play">
+                                            <i class="fas fa-play"></i> Czytaj bajkę
+                                        </button>
+                                        <button class="sound-btn speech-btn speech-stop" data-story="cloud" disabled>
+                                            <i class="fas fa-stop"></i> Zatrzymaj
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1210,990 +1437,1271 @@
     <!-- Główny skrypt JavaScript -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Inicjalizacja tooltipów Bootstrap
-            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-            tooltipTriggerList.map(function (tooltipTriggerEl) {
-                return new bootstrap.Tooltip(tooltipTriggerEl);
+    // Inicjalizacja tooltipów Bootstrap
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+    
+    // Inicjalizacja toastów
+    const toastEl = document.getElementById('app-toast');
+    const toast = new bootstrap.Toast(toastEl, {
+        autohide: true,
+        delay: 3000
+    });
+    
+    // Funkcja do pokazywania powiadomień
+    function showToast(title, message) {
+        document.getElementById('toast-title').textContent = title;
+        document.getElementById('toast-message').textContent = message;
+        toast.show();
+    }
+    
+    // Tworzenie gwiazdnego tła za pomocą Canvas
+    function createStarryBackground() {
+        const starsContainer = document.getElementById('stars');
+        const canvas = document.createElement('canvas');
+        canvas.id = 'stars-canvas';
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        starsContainer.appendChild(canvas);
+        
+        const ctx = canvas.getContext('2d');
+        const starsCount = 150;
+        const stars = [];
+        
+        // Tworzenie gwiazd z ich właściwościami
+        for (let i = 0; i < starsCount; i++) {
+            stars.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                size: Math.random() * 2 + 1,
+                intensity: 0.2 + Math.random() * 0.8,
+                phase: Math.random() * Math.PI * 2
+            });
+        }
+        
+        // Dodanie kilku chmur
+        const clouds = [];
+        for (let i = 0; i < 5; i++) {
+            clouds.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * (canvas.height / 2),
+                width: 100 + Math.random() * 200,
+                height: 50 + Math.random() * 100,
+                speed: 0.1 + Math.random() * 0.2,
+                opacity: 0.1 + Math.random() * 0.2
+            });
+        }
+        
+        // Funkcja animacji
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const time = Date.now() / 1000;
+            
+            // Rysuj gwiazdy
+            stars.forEach(star => {
+                const intensity = star.intensity * (0.5 + 0.5 * Math.sin(time + star.phase));
+                ctx.fillStyle = `rgba(255, 255, 255, ${intensity})`;
+                ctx.beginPath();
+                ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+                ctx.fill();
             });
             
-            // Inicjalizacja toastów
-            const toastEl = document.getElementById('app-toast');
-            const toast = new bootstrap.Toast(toastEl, {
-                autohide: true,
-                delay: 3000
+            // Rysuj chmury
+            clouds.forEach(cloud => {
+                cloud.x += cloud.speed;
+                if (cloud.x > canvas.width + cloud.width) {
+                    cloud.x = -cloud.width;
+                }
+                
+                ctx.fillStyle = `rgba(255, 255, 255, ${cloud.opacity})`;
+                ctx.beginPath();
+                ctx.ellipse(cloud.x, cloud.y, cloud.width / 2, cloud.height / 2, 0, 0, Math.PI * 2);
+                ctx.fill();
             });
             
-            // Funkcja do pokazywania powiadomień
-            function showToast(title, message) {
-                document.getElementById('toast-title').textContent = title;
-                document.getElementById('toast-message').textContent = message;
-                toast.show();
+            requestAnimationFrame(animate);
+        }
+        
+        animate();
+        
+        // Obsługa zmiany rozmiaru okna
+        window.addEventListener('resize', function() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    }
+    
+    // Inicjalizacja tła gwieździstego
+    createStarryBackground();
+    
+    // ========== PRZEŁĄCZNIK TRYBU JASNY/CIEMNY ==========
+    const themeToggle = document.getElementById('theme-toggle');
+    const themeIcon = document.getElementById('theme-icon');
+    
+    // Sprawdź, czy użytkownik ma zapisane preferencje
+    const savedTheme = localStorage.getItem('spijSloneczko-theme');
+    if (savedTheme === 'light') {
+        document.body.classList.add('light-mode');
+        themeIcon.classList.remove('fa-moon');
+        themeIcon.classList.add('fa-sun');
+    }
+    
+    themeToggle.addEventListener('click', function() {
+        document.body.classList.toggle('light-mode');
+        
+        if (document.body.classList.contains('light-mode')) {
+            themeIcon.classList.remove('fa-moon');
+            themeIcon.classList.add('fa-sun');
+            localStorage.setItem('spijSloneczko-theme', 'light');
+        } else {
+            themeIcon.classList.remove('fa-sun');
+            themeIcon.classList.add('fa-moon');
+            localStorage.setItem('spijSloneczko-theme', 'dark');
+        }
+    });
+    
+    // ========== SYSTEM ODTWARZANIA DŹWIĘKÓW ==========
+    
+    // Pobranie elementów DOM
+    const soundButtons = document.querySelectorAll('.sound-btn[data-sound]');
+    const volumeSlider = document.getElementById('volume');
+    const timerButtons = document.querySelectorAll('.timer-btn');
+    const timerDisplay = document.getElementById('timer-display');
+    const timerProgress = document.getElementById('timer-progress');
+    const customTimerInput = document.getElementById('custom-timer-input');
+    const customTimerBtn = document.getElementById('custom-timer-btn');
+    const activeContainer = document.getElementById('active-sounds-container');
+    const soundCardTemplate = document.getElementById('sound-card-template');
+    
+    // Timer
+    let timerInterval = null;
+    let timerEndTime = null;
+    let timerStartTime = null;
+    
+    // Przechowywanie aktywnych dźwięków (jako mapa)
+    const activeSounds = new Map();
+    
+    // Pula Audio - optymalizacja tworzenia obiektów Audio
+    const audioPool = {
+        pool: new Map(),
+        
+        getAudio: function(source) {
+            if (!this.pool.has(source)) {
+                const audio = new Audio(source);
+                audio.load(); // Preload audio
+                this.pool.set(source, audio);
+            }
+            return this.pool.get(source).cloneNode(); // Zawsze zwracaj kopię
+        }
+    };
+    
+    // ===== KONFIGURACJA DŹWIĘKÓW =====
+    const sounds = {
+        'ocean': 'sounds/ocean.wav',
+        'rain': 'sounds/rain.mp3',
+        'forest': 'sounds/forest.mp3',
+        'night': 'sounds/night.mp3',
+        'whitenoise': 'sounds/whitenoise.wav',
+        'dziubasek': 'sounds/dziubasek.mp3',
+        'dziubasek-vol2': 'sounds/dziubasek-vol2.mp3'
+    };
+    
+    // Mapowanie nazw dźwięków na przyjazne nazwy polskie
+    const soundNames = {
+        'ocean': 'Szum morza',
+        'rain': 'Deszcz',
+        'forest': 'Las',
+        'night': 'Noc',
+        'whitenoise': 'Biały szum',
+        'dziubasek': 'Dziubasek',
+        'dziubasek-vol2': 'Dziubasek Vol.2'
+    };
+    
+    // Mapowanie nazw dźwięków na ikony
+    const soundIcons = {
+        'ocean': 'fa-water',
+        'rain': 'fa-cloud-rain',
+        'forest': 'fa-tree',
+        'night': 'fa-moon',
+        'whitenoise': 'fa-wave-square',
+        'dziubasek': 'fa-heart',
+        'dziubasek-vol2': 'fa-heartbeat'
+    };
+    
+    // Funkcja tworząca element karty dźwięku
+    function createSoundCard(soundName, audio) {
+        const template = soundCardTemplate.content.cloneNode(true);
+        const card = template.querySelector('.sound-card');
+        card.dataset.sound = soundName;
+        
+        // Ustaw nazwę dźwięku
+        const nameElement = card.querySelector('.sound-name');
+        nameElement.textContent = soundNames[soundName] || soundName;
+        
+        // Dodaj ikonę
+        const iconClass = soundIcons[soundName];
+        if (iconClass) {
+            const icon = document.createElement('i');
+            icon.className = `fas ${iconClass} me-2`;
+            nameElement.prepend(icon);
+        }
+        
+        // Ustaw klasę aktywną dla wizualizacji dźwięku
+        card.classList.add('active');
+        const soundWave = card.querySelector('.sound-wave');
+        soundWave.classList.add('active');
+        
+        // Obsługa indywidualnej głośności
+        const volumeControl = card.querySelector('.individual-volume');
+        volumeControl.value = audio.volume;
+        volumeControl.addEventListener('input', function() {
+            audio.volume = parseFloat(this.value);
+        });
+        
+        // Obsługa przycisku zamykania
+        const closeBtn = card.querySelector('.sound-close');
+        closeBtn.addEventListener('click', function() {
+            stopSound(soundName);
+        });
+        
+        return card;
+    }
+    
+    // Funkcja odtwarzania dźwięku
+    function playSound(soundName) {
+        // Jeśli dźwięk jest już odtwarzany, zatrzymaj go
+        if (activeSounds.has(soundName)) {
+            stopSound(soundName);
+            return;
+        }
+        
+        try {
+            // Sprawdź, czy ścieżka do dźwięku istnieje
+            if (!sounds[soundName]) {
+                showToast("Błąd", `Brak pliku dźwiękowego dla: ${soundName}`);
+                return;
             }
             
-            // Tworzenie gwiazdnego tła za pomocą Canvas
-            function createStarryBackground() {
-                const starsContainer = document.getElementById('stars');
-                const canvas = document.createElement('canvas');
-                canvas.id = 'stars-canvas';
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight;
-                starsContainer.appendChild(canvas);
-                
-                const ctx = canvas.getContext('2d');
-                const starsCount = 150;
-                const stars = [];
-                
-                // Tworzenie gwiazd z ich właściwościami
-                for (let i = 0; i < starsCount; i++) {
-                    stars.push({
-                        x: Math.random() * canvas.width,
-                        y: Math.random() * canvas.height,
-                        size: Math.random() * 2 + 1,
-                        intensity: 0.2 + Math.random() * 0.8,
-                        phase: Math.random() * Math.PI * 2
-                    });
-                }
-                
-                // Dodanie kilku chmur
-                const clouds = [];
-                for (let i = 0; i < 5; i++) {
-                    clouds.push({
-                        x: Math.random() * canvas.width,
-                        y: Math.random() * (canvas.height / 2),
-                        width: 100 + Math.random() * 200,
-                        height: 50 + Math.random() * 100,
-                        speed: 0.1 + Math.random() * 0.2,
-                        opacity: 0.1 + Math.random() * 0.2
-                    });
-                }
-                
-                // Funkcja animacji
-                function animate() {
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    const time = Date.now() / 1000;
-                    
-                    // Rysuj gwiazdy
-                    stars.forEach(star => {
-                        const intensity = star.intensity * (0.5 + 0.5 * Math.sin(time + star.phase));
-                        ctx.fillStyle = `rgba(255, 255, 255, ${intensity})`;
-                        ctx.beginPath();
-                        ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
-                        ctx.fill();
-                    });
-                    
-                    // Rysuj chmury
-                    clouds.forEach(cloud => {
-                        cloud.x += cloud.speed;
-                        if (cloud.x > canvas.width + cloud.width) {
-                            cloud.x = -cloud.width;
-                        }
-                        
-                        ctx.fillStyle = `rgba(255, 255, 255, ${cloud.opacity})`;
-                        ctx.beginPath();
-                        ctx.ellipse(cloud.x, cloud.y, cloud.width / 2, cloud.height / 2, 0, 0, Math.PI * 2);
-                        ctx.fill();
-                    });
-                    
-                    requestAnimationFrame(animate);
-                }
-                
-                animate();
-                
-                // Obsługa zmiany rozmiaru okna
-                window.addEventListener('resize', function() {
-                    canvas.width = window.innerWidth;
-                    canvas.height = window.innerHeight;
-                });
-            }
+            // Pobierz dźwięk z puli
+            const audio = audioPool.getAudio(sounds[soundName]);
             
-            // Inicjalizacja tła gwieździstego
-            createStarryBackground();
+            // Ustawienia
+            audio.loop = true; // Zapętlenie dźwięku
             
-            // ========== PRZEŁĄCZNIK TRYBU JASNY/CIEMNY ==========
-            const themeToggle = document.getElementById('theme-toggle');
-            const themeIcon = document.getElementById('theme-icon');
+            // Pobierz aktualną wartość głośności z suwaka
+            const volume = parseFloat(volumeSlider.value);
+            audio.volume = volume;
             
-            // Sprawdź, czy użytkownik ma zapisane preferencje
-            const savedTheme = localStorage.getItem('spijSloneczko-theme');
-            if (savedTheme === 'light') {
-                document.body.classList.add('light-mode');
-                themeIcon.classList.remove('fa-moon');
-                themeIcon.classList.add('fa-sun');
-            }
+            // Rozszerzona obsługa błędów
+            audio.onerror = function(e) {
+                console.error(`Błąd ładowania dźwięku ${soundName}:`, e);
+                showToast("Błąd", `Nie można załadować dźwięku: ${soundNames[soundName]}`);
+                stopSound(soundName);
+            };
             
-            themeToggle.addEventListener('click', function() {
-                document.body.classList.toggle('light-mode');
-                
-                if (document.body.classList.contains('light-mode')) {
-                    themeIcon.classList.remove('fa-moon');
-                    themeIcon.classList.add('fa-sun');
-                    localStorage.setItem('spijSloneczko-theme', 'light');
-                } else {
-                    themeIcon.classList.remove('fa-sun');
-                    themeIcon.classList.add('fa-moon');
-                    localStorage.setItem('spijSloneczko-theme', 'dark');
-                }
+            // Rozpocznij odtwarzanie
+            audio.play().catch(err => {
+                console.error("Błąd odtwarzania:", err);
+                showToast("Błąd", "Błąd odtwarzania dźwięku. Sprawdź uprawnienia przeglądarki.");
             });
             
-            // ========== SYSTEM ODTWARZANIA DŹWIĘKÓW ==========
+            // Dodaj dźwięk do aktywnych
+            activeSounds.set(soundName, audio);
             
-            // Pobranie elementów DOM
-            const soundButtons = document.querySelectorAll('.sound-btn[data-sound]');
-            const volumeSlider = document.getElementById('volume');
-            const timerButtons = document.querySelectorAll('.timer-btn');
-            const timerDisplay = document.getElementById('timer-display');
-            const timerProgress = document.getElementById('timer-progress');
-            const customTimerInput = document.getElementById('custom-timer-input');
-            const customTimerBtn = document.getElementById('custom-timer-btn');
-            const activeContainer = document.getElementById('active-sounds-container');
-            const soundCardTemplate = document.getElementById('sound-card-template');
+            // Dodaj klasę active do przycisku
+            document.querySelector(`.sound-btn[data-sound="${soundName}"]`).classList.add('active');
             
-            // Timer
-            let timerInterval = null;
-            let timerEndTime = null;
-            let timerStartTime = null;
+            // Dodaj kartę dźwięku do kontenera
+            const soundCard = createSoundCard(soundName, audio);
+            activeContainer.appendChild(soundCard);
             
-            // Przechowywanie aktywnych dźwięków (jako mapa)
-            const activeSounds = new Map();
+        } catch (error) {
+            console.error("Nieoczekiwany błąd:", error);
+            showToast("Błąd", "Wystąpił nieoczekiwany błąd podczas odtwarzania dźwięku");
+        }
+    }
+    
+    // Zatrzymanie pojedynczego dźwięku
+    function stopSound(soundName) {
+        if (activeSounds.has(soundName)) {
+            const audio = activeSounds.get(soundName);
+            audio.pause();
+            audio.currentTime = 0;
             
-            // Pula Audio - optymalizacja tworzenia obiektów Audio
-            const audioPool = {
-                pool: new Map(),
-                
-                getAudio: function(source) {
-                    if (!this.pool.has(source)) {
-                        const audio = new Audio(source);
-                        audio.load(); // Preload audio
-                        this.pool.set(source, audio);
-                    }
-                    return this.pool.get(source).cloneNode(); // Zawsze zwracaj kopię
-                }
-            };
+            // Wyczyść nasłuchiwacze zdarzeń - zapobieganie wyciekom pamięci
+            audio.onended = null;
+            audio.onerror = null;
+            audio.oncanplay = null;
             
-            // ===== KONFIGURACJA DŹWIĘKÓW =====
-            const sounds = {
-                'ocean': 'sounds/ocean.wav',
-                'rain': 'sounds/rain.mp3',
-                'forest': 'sounds/forest.mp3',
-                'night': 'sounds/night.mp3',
-                'whitenoise': 'sounds/whitenoise.wav',
-                'dziubasek': 'sounds/dziubasek.mp3',
-                'dziubasek-vol2': 'sounds/dziubasek-vol2.mp3'
-            };
+            activeSounds.delete(soundName);
             
-            // Mapowanie nazw dźwięków na przyjazne nazwy polskie
-            const soundNames = {
-                'ocean': 'Szum morza',
-                'rain': 'Deszcz',
-                'forest': 'Las',
-                'night': 'Noc',
-                'whitenoise': 'Biały szum',
-                'dziubasek': 'Dziubasek',
-                'dziubasek-vol2': 'Dziubasek Vol.2'
-            };
+            // Usuń klasę active z przycisku
+            const button = document.querySelector(`.sound-btn[data-sound="${soundName}"]`);
+            if (button) button.classList.remove('active');
             
-            // Mapowanie nazw dźwięków na ikony
-            const soundIcons = {
-                'ocean': 'fa-water',
-                'rain': 'fa-cloud-rain',
-                'forest': 'fa-tree',
-                'night': 'fa-moon',
-                'whitenoise': 'fa-wave-square',
-                'dziubasek': 'fa-heart',
-                'dziubasek-vol2': 'fa-heartbeat'
-            };
+            // Usuń kartę dźwięku
+            const card = document.querySelector(`.sound-card[data-sound="${soundName}"]`);
+            if (card) card.remove();
+        }
+    }
+    
+    // Zatrzymanie wszystkich dźwięków
+    function stopAllSounds() {
+        for (const [soundName, audio] of activeSounds.entries()) {
+            audio.pause();
+            audio.currentTime = 0;
             
-            // Funkcja tworząca element karty dźwięku
-            function createSoundCard(soundName, audio) {
-                const template = soundCardTemplate.content.cloneNode(true);
-                const card = template.querySelector('.sound-card');
-                card.dataset.sound = soundName;
-                
-                // Ustaw nazwę dźwięku
-                const nameElement = card.querySelector('.sound-name');
-                nameElement.textContent = soundNames[soundName] || soundName;
-                
-                // Dodaj ikonę
-                const iconClass = soundIcons[soundName];
-                if (iconClass) {
-                    const icon = document.createElement('i');
-                    icon.className = `fas ${iconClass} me-2`;
-                    nameElement.prepend(icon);
-                }
-                
-                // Ustaw klasę aktywną dla wizualizacji dźwięku
-                card.classList.add('active');
-                const soundWave = card.querySelector('.sound-wave');
-                soundWave.classList.add('active');
-                
-                // Obsługa indywidualnej głośności
-                const volumeControl = card.querySelector('.individual-volume');
-                volumeControl.value = audio.volume;
-                volumeControl.addEventListener('input', function() {
-                    audio.volume = parseFloat(this.value);
-                });
-                
-                // Obsługa przycisku zamykania
-                const closeBtn = card.querySelector('.sound-close');
-                closeBtn.addEventListener('click', function() {
-                    stopSound(soundName);
-                });
-                
-                return card;
+            // Wyczyść nasłuchiwacze zdarzeń
+            audio.onended = null;
+            audio.onerror = null;
+            audio.oncanplay = null;
+            
+            // Usuń klasę active z przycisku
+            const button = document.querySelector(`.sound-btn[data-sound="${soundName}"]`);
+            if (button) button.classList.remove('active');
+        }
+        
+        activeSounds.clear();
+        activeContainer.innerHTML = '';
+    }
+    
+    // Funkcja do płynnego wyciszania dźwięków
+    function fadeOutAllSounds(duration = 3000) {
+        // Zapisz początkowe głośności dla każdego dźwięku
+        const initialVolumes = new Map();
+        for (const [soundName, audio] of activeSounds.entries()) {
+            initialVolumes.set(soundName, audio.volume);
+        }
+        
+        const startTime = Date.now();
+        const fadeInterval = setInterval(() => {
+            const elapsed = Date.now() - startTime;
+            const ratio = 1 - Math.min(elapsed / duration, 1);
+            
+            // Aktualizuj głośność każdego dźwięku
+            for (const [soundName, audio] of activeSounds.entries()) {
+                audio.volume = initialVolumes.get(soundName) * ratio;
             }
             
-            // Funkcja odtwarzania dźwięku
-            function playSound(soundName) {
-                // Jeśli dźwięk jest już odtwarzany, zatrzymaj go
-                if (activeSounds.has(soundName)) {
-                    stopSound(soundName);
-                    return;
-                }
-                
-                try {
-                    // Sprawdź, czy ścieżka do dźwięku istnieje
-                    if (!sounds[soundName]) {
-                        showToast("Błąd", `Brak pliku dźwiękowego dla: ${soundName}`);
-                        return;
-                    }
-                    
-                    // Pobierz dźwięk z puli
-                    const audio = audioPool.getAudio(sounds[soundName]);
-                    
-                    // Ustawienia
-                    audio.loop = true; // Zapętlenie dźwięku
-                    
-                    // Pobierz aktualną wartość głośności z suwaka
-                    const volume = parseFloat(volumeSlider.value);
-                    audio.volume = volume;
-                    
-                    // Rozszerzona obsługa błędów
-                    audio.onerror = function(e) {
-                        console.error(`Błąd ładowania dźwięku ${soundName}:`, e);
-                        showToast("Błąd", `Nie można załadować dźwięku: ${soundNames[soundName]}`);
-                        stopSound(soundName);
-                    };
-                    
-                    // Rozpocznij odtwarzanie
-                    audio.play().catch(err => {
-                        console.error("Błąd odtwarzania:", err);
-                        showToast("Błąd", "Błąd odtwarzania dźwięku. Sprawdź uprawnienia przeglądarki.");
-                    });
-                    
-                    // Dodaj dźwięk do aktywnych
-                    activeSounds.set(soundName, audio);
-                    
-                    // Dodaj klasę active do przycisku
-                    document.querySelector(`.sound-btn[data-sound="${soundName}"]`).classList.add('active');
-                    
-                    // Dodaj kartę dźwięku do kontenera
-                    const soundCard = createSoundCard(soundName, audio);
-                    activeContainer.appendChild(soundCard);
-                    
-                } catch (error) {
-                    console.error("Nieoczekiwany błąd:", error);
-                    showToast("Błąd", "Wystąpił nieoczekiwany błąd podczas odtwarzania dźwięku");
-                }
+            // Zatrzymaj interwał i dźwięki po zakończeniu wyciszania
+            if (elapsed >= duration) {
+                clearInterval(fadeInterval);
+                stopAllSounds();
             }
-            
-            // Zatrzymanie pojedynczego dźwięku
-            function stopSound(soundName) {
-                if (activeSounds.has(soundName)) {
-                    const audio = activeSounds.get(soundName);
-                    audio.pause();
-                    audio.currentTime = 0;
-                    
-                    // Wyczyść nasłuchiwacze zdarzeń - zapobieganie wyciekom pamięci
-                    audio.onended = null;
-                    audio.onerror = null;
-                    audio.oncanplay = null;
-                    
-                    activeSounds.delete(soundName);
-                    
-                    // Usuń klasę active z przycisku
-                    const button = document.querySelector(`.sound-btn[data-sound="${soundName}"]`);
-                    if (button) button.classList.remove('active');
-                    
-                    // Usuń kartę dźwięku
-                    const card = document.querySelector(`.sound-card[data-sound="${soundName}"]`);
-                    if (card) card.remove();
-                }
-            }
-            
-            // Zatrzymanie wszystkich dźwięków
-            function stopAllSounds() {
-                for (const [soundName, audio] of activeSounds.entries()) {
-                    audio.pause();
-                    audio.currentTime = 0;
-                    
-                    // Wyczyść nasłuchiwacze zdarzeń
-                    audio.onended = null;
-                    audio.onerror = null;
-                    audio.oncanplay = null;
-                    
-                    // Usuń klasę active z przycisku
-                    const button = document.querySelector(`.sound-btn[data-sound="${soundName}"]`);
-                    if (button) button.classList.remove('active');
-                }
-                
-                activeSounds.clear();
-                activeContainer.innerHTML = '';
-            }
-            
-            // Funkcja do płynnego wyciszania dźwięków
-            function fadeOutAllSounds(duration = 3000) {
-                // Zapisz początkowe głośności dla każdego dźwięku
-                const initialVolumes = new Map();
-                for (const [soundName, audio] of activeSounds.entries()) {
-                    initialVolumes.set(soundName, audio.volume);
-                }
-                
-                const startTime = Date.now();
-                const fadeInterval = setInterval(() => {
-                    const elapsed = Date.now() - startTime;
-                    const ratio = 1 - Math.min(elapsed / duration, 1);
-                    
-                    // Aktualizuj głośność każdego dźwięku
-                    for (const [soundName, audio] of activeSounds.entries()) {
-                        audio.volume = initialVolumes.get(soundName) * ratio;
-                    }
-                    
-                    // Zatrzymaj interwał i dźwięki po zakończeniu wyciszania
-                    if (elapsed >= duration) {
-                        clearInterval(fadeInterval);
-                        stopAllSounds();
-                    }
-                }, 50);
-            }
-            
-            // Ustawienie timera
-            function setTimer(minutes) {
-                // Wyczyszczenie istniejącego timera
+        }, 50);
+    }
+    
+    // Ustawienie timera
+    function setTimer(minutes) {
+        // Wyczyszczenie istniejącego timera
+        clearInterval(timerInterval);
+        
+        // Usunięcie klasy active ze wszystkich przycisków timera
+        timerButtons.forEach(btn => btn.classList.remove('active'));
+        
+        // Jeśli minutes wynosi 0, wyczyść timer
+        if (minutes === 0) {
+            timerDisplay.textContent = '00:00:00';
+            timerProgress.style.background = 'conic-gradient(var(--accent) 0deg, transparent 0deg)';
+            timerEndTime = null;
+            timerStartTime = null;
+            return;
+        }
+        
+        // Aktywuj przycisk timera jeśli jest standardowym timerem
+        const timerBtn = document.querySelector(`.timer-btn[data-time="${minutes}"]`);
+        if (timerBtn) {
+            timerBtn.classList.add('active');
+        }
+        
+        // Oblicz czas zakończenia
+        timerStartTime = new Date();
+        timerEndTime = new Date(timerStartTime.getTime() + minutes * 60000);
+        
+        // Natychmiast aktualizuj wyświetlanie timera
+        updateTimerDisplay();
+        
+        // Ustaw interwał do aktualizacji wyświetlania
+        timerInterval = setInterval(function() {
+            if (!updateTimerDisplay()) {
+                // Timer zakończony
                 clearInterval(timerInterval);
                 
-                // Usunięcie klasy active ze wszystkich przycisków timera
+                // Płynnie wycisz wszystkie dźwięki
+                fadeOutAllSounds(5000);
+                
+                // Usuń aktywne klasy z przycisków timera
                 timerButtons.forEach(btn => btn.classList.remove('active'));
                 
-                // Jeśli minutes wynosi 0, wyczyść timer
-                if (minutes === 0) {
-                    timerDisplay.textContent = '00:00:00';
-                    timerProgress.style.background = 'conic-gradient(var(--accent) 0deg, transparent 0deg)';
-                    timerEndTime = null;
-                    timerStartTime = null;
-                    return;
-                }
+                // Powiadomienie
+                showToast('Timer zakończony', 'Dźwięki zostały płynnie wyciszone.');
                 
-                // Aktywuj przycisk timera jeśli jest standardowym timerem
-                const timerBtn = document.querySelector(`.timer-btn[data-time="${minutes}"]`);
-                if (timerBtn) {
-                    timerBtn.classList.add('active');
-                }
-                
-                // Oblicz czas zakończenia
-                timerStartTime = new Date();
-                timerEndTime = new Date(timerStartTime.getTime() + minutes * 60000);
-                
-                // Natychmiast aktualizuj wyświetlanie timera
-                updateTimerDisplay();
-                
-                // Ustaw interwał do aktualizacji wyświetlania
-                timerInterval = setInterval(function() {
-                    if (!updateTimerDisplay()) {
-                        // Timer zakończony
-                        clearInterval(timerInterval);
-                        
-                        // Płynnie wycisz wszystkie dźwięki
-                        fadeOutAllSounds(5000);
-                        
-                        // Usuń aktywne klasy z przycisków timera
-                        timerButtons.forEach(btn => btn.classList.remove('active'));
-                        
-                        // Powiadomienie
-                        showToast('Timer zakończony', 'Dźwięki zostały płynnie wyciszone.');
-                        
-                        // Powiadomienie przeglądarki (opcjonalnie)
-                        if ('Notification' in window && Notification.permission === 'granted') {
-                            new Notification('Śpij Słoneczko', {
-                                body: 'Timer zakończony. Dźwięki zostały wyciszone.',
-                                icon: '/favicon.ico'
-                            });
-                        }
-                    }
-                }, 1000);
-                
-                // Pokaż powiadomienie o ustawieniu timera
-                showToast('Timer ustawiony', `Timer ustawiony na ${minutes} minut.`);
-            }
-            
-            // Aktualizacja wyświetlania timera
-            function updateTimerDisplay() {
-                if (!timerEndTime || !timerStartTime) return false;
-                
-                const now = new Date();
-                const diff = timerEndTime - now;
-                
-                // Jeśli timer się zakończył
-                if (diff <= 0) {
-                    timerDisplay.textContent = '00:00:00';
-                    timerProgress.style.background = 'conic-gradient(var(--accent) 0deg, transparent 0deg)';
-                    return false;
-                }
-                
-                // Oblicz godziny, minuty, sekundy
-                const hours = Math.floor(diff / 3600000);
-                const minutes = Math.floor((diff % 3600000) / 60000);
-                const seconds = Math.floor((diff % 60000) / 1000);
-                
-                // Formatuj wyświetlanie
-                timerDisplay.textContent = 
-                    `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-                
-                // Aktualizuj wizualny wskaźnik
-                const totalDuration = timerEndTime - timerStartTime;
-                const elapsed = now - timerStartTime;
-                const percentage = (elapsed / totalDuration) * 100;
-                const degrees = (percentage / 100) * 360;
-                
-                timerProgress.style.background = 
-                    `conic-gradient(var(--accent) ${degrees}deg, transparent ${degrees}deg)`;
-                
-                return true;
-            }
-            
-            // =========== ROZBUDOWANE ĆWICZENIA RELAKSACYJNE ===========
-            // Zmienne dla ćwiczeń oddechowych
-            const breathingCircle = document.getElementById('breathing-circle');
-            const breathingText = document.getElementById('breathing-text');
-            const breathingDescription = document.getElementById('breathing-description');
-            const startBreathingBtn = document.getElementById('start-breathing-btn');
-            let breathingInterval = null;
-            let currentBreathingType = '478'; // domyślnie 4-7-8
-            
-            // Definicje ćwiczeń oddechowych
-            const breathingTypes = {
-                '478': {
-                    description: 'Technika 4-7-8 pomaga zrelaksować się i przygotować do snu',
-                    phases: [
-                        { name: 'inhale', text: 'Wdech', duration: 4000 },
-                        { name: 'hold', text: 'Zatrzymaj', duration: 7000 },
-                        { name: 'exhale', text: 'Wydech', duration: 8000 }
-                    ]
-                },
-                'box': {
-                    description: 'Oddychanie kwadratowe 4-4-4-4 pomaga uspokoić umysł i znaleźć równowagę',
-                    phases: [
-                        { name: 'box-inhale', text: 'Wdech', duration: 4000 },
-                        { name: 'box-hold1', text: 'Zatrzymaj', duration: 4000 },
-                        { name: 'box-exhale', text: 'Wydech', duration: 4000 },
-                        { name: 'box-hold2', text: 'Zatrzymaj', duration: 4000 }
-                    ]
-                },
-                'diaphragm': {
-                    description: 'Oddychanie przeponowe głęboko dotlenia organizm i pomaga się zrelaksować',
-                    phases: [
-                        { name: 'inhale', text: 'Głęboki wdech przeponą', duration: 5000 },
-                        { name: 'exhale', text: 'Powolny, pełny wydech', duration: 7000 }
-                    ]
-                }
-            };
-            
-            // Funkcja rozpoczynająca ćwiczenie oddechowe
-            function startBreathingExercise() {
-                // Zatrzymaj istniejący interwał jeśli istnieje
-                if (breathingInterval) {
-                    clearInterval(breathingInterval);
-                    breathingCircle.className = 'breathing-circle';
-                    breathingText.textContent = 'Kliknij, aby rozpocząć';
-                    startBreathingBtn.textContent = 'Rozpocznij ćwiczenie';
-                    return;
-                }
-                
-                const exerciseConfig = breathingTypes[currentBreathingType];
-                let phase = 0;
-                const phases = exerciseConfig.phases;
-                
-                function updateBreathingPhase() {
-                    const currentPhase = phases[phase];
-                    
-                    // Usuń wszystkie klasy animacji
-                    breathingCircle.className = 'breathing-circle';
-                    
-                    // Dodaj nową klasę animacji
-                    setTimeout(() => {
-                        breathingCircle.classList.add(currentPhase.name);
-                        breathingText.textContent = currentPhase.text;
-                    }, 10);
-                    
-                    // Przejdź do następnej fazy
-                    phase = (phase + 1) % phases.length;
-                    
-                    // Ustaw timeout dla następnej fazy
-                    breathingInterval = setTimeout(updateBreathingPhase, currentPhase.duration);
-                }
-                
-                // Rozpocznij od pierwszej fazy
-                updateBreathingPhase();
-                
-                // Zmień tekst przycisku
-                startBreathingBtn.textContent = 'Zatrzymaj ćwiczenie';
-            }
-            
-            // Obsługa przycisków wyboru techniki oddechowej
-            document.querySelectorAll('.exercise-tab[data-breathing]').forEach(tab => {
-                tab.addEventListener('click', function() {
-                    // Zatrzymaj aktualne ćwiczenie
-                    if (breathingInterval) {
-                        clearInterval(breathingInterval);
-                        breathingInterval = null;
-                        breathingCircle.className = 'breathing-circle';
-                        breathingText.textContent = 'Kliknij, aby rozpocząć';
-                        startBreathingBtn.textContent = 'Rozpocznij ćwiczenie';
-                    }
-                    
-                    // Ustaw nowy typ oddychania
-                    currentBreathingType = this.dataset.breathing;
-                    
-                    // Aktualizuj opis
-                    breathingDescription.textContent = breathingTypes[currentBreathingType].description;
-                    
-                    // Aktualizuj aktywny przycisk
-                    document.querySelectorAll('.exercise-tab[data-breathing]').forEach(t => {
-                        t.classList.remove('active');
+                // Powiadomienie przeglądarki (opcjonalnie)
+                if ('Notification' in window && Notification.permission === 'granted') {
+                    new Notification('Śpij Słoneczko', {
+                        body: 'Timer zakończony. Dźwięki zostały wyciszone.',
+                        icon: '/favicon.ico'
                     });
-                    this.classList.add('active');
-                });
-            });
-            
-            // Obsługa przycisku ćwiczenia oddechowego
-            startBreathingBtn.addEventListener('click', function() {
-                if (this.textContent.includes('Rozpocznij')) {
-                    startBreathingExercise();
-                } else {
-                    if (breathingInterval) {
-                        clearInterval(breathingInterval);
-                        breathingInterval = null;
-                    }
-                    breathingCircle.className = 'breathing-circle';
-                    breathingText.textContent = 'Kliknij, aby rozpocząć';
-                    this.textContent = 'Rozpocznij ćwiczenie';
                 }
+            }
+        }, 1000);
+        
+        // Pokaż powiadomienie o ustawieniu timera
+        showToast('Timer ustawiony', `Timer ustawiony na ${minutes} minut.`);
+    }
+    
+    // Aktualizacja wyświetlania timera
+    function updateTimerDisplay() {
+        if (!timerEndTime || !timerStartTime) return false;
+        
+        const now = new Date();
+        const diff = timerEndTime - now;
+        
+        // Jeśli timer się zakończył
+        if (diff <= 0) {
+            timerDisplay.textContent = '00:00:00';
+            timerProgress.style.background = 'conic-gradient(var(--accent) 0deg, transparent 0deg)';
+            return false;
+        }
+        
+        // Oblicz godziny, minuty, sekundy
+        const hours = Math.floor(diff / 3600000);
+        const minutes = Math.floor((diff % 3600000) / 60000);
+        const seconds = Math.floor((diff % 60000) / 1000);
+        
+        // Formatuj wyświetlanie
+        timerDisplay.textContent = 
+            `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        
+        // Aktualizuj wizualny wskaźnik
+        const totalDuration = timerEndTime - timerStartTime;
+        const elapsed = now - timerStartTime;
+        const percentage = (elapsed / totalDuration) * 100;
+        const degrees = (percentage / 100) * 360;
+        
+        timerProgress.style.background = 
+            `conic-gradient(var(--accent) ${degrees}deg, transparent ${degrees}deg)`;
+        
+        return true;
+    }
+    
+    // =========== ROZBUDOWANE ĆWICZENIA RELAKSACYJNE ===========
+    // Zmienne dla ćwiczeń oddechowych
+    const breathingCircle = document.getElementById('breathing-circle');
+    const breathingText = document.getElementById('breathing-text');
+    const breathingDescription = document.getElementById('breathing-description');
+    const startBreathingBtn = document.getElementById('start-breathing-btn');
+    let breathingInterval = null;
+    let currentBreathingType = '478'; // domyślnie 4-7-8
+    
+    // Definicje ćwiczeń oddechowych
+    const breathingTypes = {
+        '478': {
+            description: 'Technika 4-7-8 pomaga zrelaksować się i przygotować do snu',
+            phases: [
+                { name: 'inhale', text: 'Wdech', duration: 4000 },
+                { name: 'hold', text: 'Zatrzymaj', duration: 7000 },
+                { name: 'exhale', text: 'Wydech', duration: 8000 }
+            ]
+        },
+        'box': {
+            description: 'Oddychanie kwadratowe 4-4-4-4 pomaga uspokoić umysł i znaleźć równowagę',
+            phases: [
+                { name: 'box-inhale', text: 'Wdech', duration: 4000 },
+                { name: 'box-hold1', text: 'Zatrzymaj', duration: 4000 },
+                { name: 'box-exhale', text: 'Wydech', duration: 4000 },
+                { name: 'box-hold2', text: 'Zatrzymaj', duration: 4000 }
+            ]
+        },
+        'diaphragm': {
+            description: 'Oddychanie przeponowe głęboko dotlenia organizm i pomaga się zrelaksować',
+            phases: [
+                { name: 'inhale', text: 'Głęboki wdech przeponą', duration: 5000 },
+                { name: 'exhale', text: 'Powolny, pełny wydech', duration: 7000 }
+            ]
+        }
+    };
+    
+    // Funkcja rozpoczynająca ćwiczenie oddechowe
+    function startBreathingExercise() {
+        // Zatrzymaj istniejący interwał jeśli istnieje
+        if (breathingInterval) {
+            clearInterval(breathingInterval);
+            breathingCircle.className = 'breathing-circle';
+            breathingText.textContent = 'Kliknij, aby rozpocząć';
+            startBreathingBtn.textContent = 'Rozpocznij ćwiczenie';
+            return;
+        }
+        
+        const exerciseConfig = breathingTypes[currentBreathingType];
+        let phase = 0;
+        const phases = exerciseConfig.phases;
+        
+        function updateBreathingPhase() {
+            const currentPhase = phases[phase];
+            
+            // Usuń wszystkie klasy animacji
+            breathingCircle.className = 'breathing-circle';
+            
+            // Dodaj nową klasę animacji
+            setTimeout(() => {
+                breathingCircle.classList.add(currentPhase.name);
+                breathingText.textContent = currentPhase.text;
+            }, 10);
+            
+            // Przejdź do następnej fazy
+            phase = (phase + 1) % phases.length;
+            
+            // Ustaw timeout dla następnej fazy
+            breathingInterval = setTimeout(updateBreathingPhase, currentPhase.duration);
+        }
+        
+        // Rozpocznij od pierwszej fazy
+        updateBreathingPhase();
+        
+        // Zmień tekst przycisku
+        startBreathingBtn.textContent = 'Zatrzymaj ćwiczenie';
+    }
+    
+    // Obsługa przycisków wyboru techniki oddechowej
+    document.querySelectorAll('.exercise-tab[data-breathing]').forEach(tab => {
+        tab.addEventListener('click', function() {
+            // Zatrzymaj aktualne ćwiczenie
+            if (breathingInterval) {
+                clearInterval(breathingInterval);
+                breathingInterval = null;
+                breathingCircle.className = 'breathing-circle';
+                breathingText.textContent = 'Kliknij, aby rozpocząć';
+                startBreathingBtn.textContent = 'Rozpocznij ćwiczenie';
+            }
+            
+            // Ustaw nowy typ oddychania
+            currentBreathingType = this.dataset.breathing;
+            
+            // Aktualizuj opis
+            breathingDescription.textContent = breathingTypes[currentBreathingType].description;
+            
+            // Aktualizuj aktywny przycisk
+            document.querySelectorAll('.exercise-tab[data-breathing]').forEach(t => {
+                t.classList.remove('active');
             });
+            this.classList.add('active');
+        });
+    });
+    
+    // Obsługa przycisku ćwiczenia oddechowego
+    startBreathingBtn.addEventListener('click', function() {
+        if (this.textContent.includes('Rozpocznij')) {
+            startBreathingExercise();
+        } else {
+            if (breathingInterval) {
+                clearInterval(breathingInterval);
+                breathingInterval = null;
+            }
+            breathingCircle.className = 'breathing-circle';
+            breathingText.textContent = 'Kliknij, aby rozpocząć';
+            this.textContent = 'Rozpocznij ćwiczenie';
+        }
+    });
+    
+    // Umożliwienie kliknięcia bezpośrednio na kółko
+    breathingCircle.addEventListener('click', function() {
+        startBreathingBtn.click();
+    });
+    
+    // =========== PROGRESYWNA RELAKSACJA MIĘŚNI ===========
+    const muscleGroups = document.querySelectorAll('.muscle-group');
+    const startMuscleBtn = document.getElementById('start-muscle-relaxation');
+    const muscleProgress = document.getElementById('muscle-progress');
+    let muscleRelaxationInterval = null;
+    let currentMuscleGroup = 0;
+    
+    // Obsługa kliknięć w grupy mięśniowe
+    muscleGroups.forEach(group => {
+        group.addEventListener('click', function() {
+            // Przełącz widoczność instrukcji
+            const instruction = this.querySelector('.muscle-instruction');
+            instruction.classList.toggle('visible');
             
-            // Umożliwienie kliknięcia bezpośrednio na kółko
-            breathingCircle.addEventListener('click', function() {
-                startBreathingBtn.click();
-            });
-            
-            // =========== PROGRESYWNA RELAKSACJA MIĘŚNI ===========
-            const muscleGroups = document.querySelectorAll('.muscle-group');
-            const startMuscleBtn = document.getElementById('start-muscle-relaxation');
-            const muscleProgress = document.getElementById('muscle-progress');
-            let muscleRelaxationInterval = null;
-            let currentMuscleGroup = 0;
-            
-            // Obsługa kliknięć w grupy
-            // Obsługa kliknięć w grupy mięśniowe
+            // Przełącz stan aktywny grupy
+            this.classList.toggle('active');
+        });
+    });
+    
+    // Funkcja prowadząca przez pełne ćwiczenie relaksacji mięśniowej
+    function startMuscleRelaxation() {
+        // Zatrzymanie istniejącego ćwiczenia
+        if (muscleRelaxationInterval) {
+            clearInterval(muscleRelaxationInterval);
+            muscleRelaxationInterval = null;
+            startMuscleBtn.textContent = 'Rozpocznij pełne ćwiczenie';
             muscleGroups.forEach(group => {
-                group.addEventListener('click', function() {
-                    // Przełącz widoczność instrukcji
-                    const instruction = this.querySelector('.muscle-instruction');
-                    instruction.classList.toggle('visible');
-                    
-                    // Przełącz stan aktywny grupy
-                    this.classList.toggle('active');
-                });
+                group.classList.remove('active');
+                group.querySelector('.muscle-instruction').classList.remove('visible');
             });
-            
-            // Funkcja prowadząca przez pełne ćwiczenie relaksacji mięśniowej
-            function startMuscleRelaxation() {
-                // Zatrzymanie istniejącego ćwiczenia
-                if (muscleRelaxationInterval) {
-                    clearInterval(muscleRelaxationInterval);
-                    muscleRelaxationInterval = null;
-                    startMuscleBtn.textContent = 'Rozpocznij pełne ćwiczenie';
-                    muscleGroups.forEach(group => {
-                        group.classList.remove('active');
-                        group.querySelector('.muscle-instruction').classList.remove('visible');
-                    });
-                    muscleProgress.style.width = '0%';
-                    return;
-                }
+            muscleProgress.style.width = '0%';
+            return;
+        }
+        
+        // Przygotuj wszystkie grupy
+        muscleGroups.forEach(group => {
+            group.classList.remove('active');
+            group.querySelector('.muscle-instruction').classList.remove('visible');
+        });
+        
+        currentMuscleGroup = 0;
+        startMuscleBtn.textContent = 'Zatrzymaj ćwiczenie';
+        
+        // Funkcja przechodząca przez poszczególne grupy mięśniowe
+        function goToNextMuscleGroup() {
+            // Zakończ ćwiczenie po przejściu przez wszystkie grupy
+            if (currentMuscleGroup >= muscleGroups.length) {
+                clearInterval(muscleRelaxationInterval);
+                muscleRelaxationInterval = null;
+                startMuscleBtn.textContent = 'Rozpocznij pełne ćwiczenie';
                 
-                // Przygotuj wszystkie grupy
+                // Pokaż powiadomienie o zakończeniu
+                showToast('Ćwiczenie zakończone', 'Gratulacje! Ukończyłeś/aś ćwiczenie relaksacji mięśni.');
+                
+                // Resetuj grupy mięśniowe
                 muscleGroups.forEach(group => {
                     group.classList.remove('active');
                     group.querySelector('.muscle-instruction').classList.remove('visible');
                 });
-                
-                currentMuscleGroup = 0;
-                startMuscleBtn.textContent = 'Zatrzymaj ćwiczenie';
-                
-                // Funkcja przechodząca przez poszczególne grupy mięśniowe
-                function goToNextMuscleGroup() {
-                    // Zakończ ćwiczenie po przejściu przez wszystkie grupy
-                    if (currentMuscleGroup >= muscleGroups.length) {
-                        clearInterval(muscleRelaxationInterval);
-                        muscleRelaxationInterval = null;
-                        startMuscleBtn.textContent = 'Rozpocznij pełne ćwiczenie';
-                        
-                        // Pokaż powiadomienie o zakończeniu
-                        showToast('Ćwiczenie zakończone', 'Gratulacje! Ukończyłeś/aś ćwiczenie relaksacji mięśni.');
-                        
-                        // Resetuj grupy mięśniowe
-                        muscleGroups.forEach(group => {
-                            group.classList.remove('active');
-                            group.querySelector('.muscle-instruction').classList.remove('visible');
-                        });
-                        return;
-                    }
-                    
-                    // Aktualizuj pasek postępu
-                    const progressPercentage = (currentMuscleGroup / muscleGroups.length) * 100;
-                    muscleProgress.style.width = `${progressPercentage}%`;
-                    
-                    // Usuń aktywną klasę ze wszystkich grup
-                    muscleGroups.forEach(group => {
-                        group.classList.remove('active');
-                        group.querySelector('.muscle-instruction').classList.remove('visible');
-                    });
-                    
-                    // Aktywuj bieżącą grupę
-                    const currentGroup = muscleGroups[currentMuscleGroup];
-                    currentGroup.classList.add('active');
-                    currentGroup.querySelector('.muscle-instruction').classList.add('visible');
-                    
-                    // Przewiń do aktywnej grupy
-                    currentGroup.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    
-                    // Przejdź do następnej grupy po 20 sekundach (5s napięcie + 15s relaks)
-                    currentMuscleGroup++;
-                    
-                    // Pokaż powiadomienie
-                    if (currentMuscleGroup <= muscleGroups.length) {
-                        const groupName = currentGroup.querySelector('h4').textContent;
-                        showToast('Grupa mięśniowa', groupName);
-                    }
-                }
-                
-                // Rozpocznij od pierwszej grupy
-                goToNextMuscleGroup();
-                
-                // Ustaw interwał 20 sekund między grupami
-                muscleRelaxationInterval = setInterval(goToNextMuscleGroup, 20000);
+                return;
             }
             
-            // Obsługa przycisku rozpoczęcia ćwiczenia relaksacji mięśni
-            startMuscleBtn.addEventListener('click', startMuscleRelaxation);
+            // Aktualizuj pasek postępu
+            const progressPercentage = (currentMuscleGroup / muscleGroups.length) * 100;
+            muscleProgress.style.width = `${progressPercentage}%`;
             
-            // =========== WIZUALIZACJE RELAKSACYJNE ===========
-            const visualizationScene = document.getElementById('visualization-scene');
-            const visualizationText = document.getElementById('visualization-text');
-            const startVisualizationBtn = document.getElementById('start-visualization');
-            let visualizationInterval = null;
-            let currentScene = 'beach'; // domyślna scena
+            // Usuń aktywną klasę ze wszystkich grup
+            muscleGroups.forEach(group => {
+                group.classList.remove('active');
+                group.querySelector('.muscle-instruction').classList.remove('visible');
+            });
             
-            // Teksty dla różnych scen wizualizacji
-            const visualizationScenes = {
-                'beach': [
-                    'Wyobraź sobie, że leżysz na ciepłej, miękkiej plaży. Czujesz delikatne ciepło słońca na swojej skórze.',
-                    'Fale rytmicznie uderzają o brzeg, tworząc uspokajający szum. Wdychasz świeży, morski zapach.',
-                    'Z każdym oddechem czujesz się coraz bardziej zrelaksowany/a. Twoje ciało powoli zanurza się w miękkim piasku.',
-                    'Niebo nad tobą jest błękitne, z kilkoma puszystymi chmurami. Słyszysz odległe krzyki mew.',
-                    'Twoje mięśnie się rozluźniają, a umysł uspokaja. Pozwól sobie na całkowite odprężenie w tym spokojnym miejscu.'
-                ],
-                'forest': [
-                    'Znajdujesz się w pięknym, starym lesie. Otaczają cię wysokie drzewa, a ich liście szumią delikatnie na wietrze.',
-                    'Promienie słońca przebijają się przez korony drzew, tworząc ciepłe plamy światła na ścieżce przed tobą.',
-                    'Słyszysz śpiew ptaków i delikatny szelest liści. Powietrze jest świeże i pełne zapachu żywicy.',
-                    'Z każdym krokiem zagłębiasz się dalej w las, czując spokój i harmonię tego miejsca.',
-                    'Znajdujesz miękkie, mchowe miejsce, gdzie możesz usiąść lub położyć się. Czujesz, jak cały stres opuszcza twoje ciało.'
-                ],
-                'sky': [
-                    'Leżysz na miękkim kocu i patrzysz w nocne niebo pełne gwiazd. Nad tobą rozciąga się nieskończony kosmos.',
-                    'Gwiazdy migoczą delikatnie, a ty dostrzegasz znane konstelacje i jasny sierp księżyca.',
-                    'Powietrze jest chłodne i rześkie. Z każdym oddechem czujesz, jak twój umysł się uspokaja.',
-                    'Twoje ciało staje się lekkie, niemal jakbyś mógł/mogła unosić się wśród gwiazd. Grawitacja zdaje się słabnąć.',
-                    'Problemy i zmartwienia maleją, stają się małe jak drobne punkty na niebie. Czujesz głęboki spokój i połączenie z wszechświatem.'
-                ]
-            };
+            // Aktywuj bieżącą grupę
+            const currentGroup = muscleGroups[currentMuscleGroup];
+            currentGroup.classList.add('active');
+            currentGroup.querySelector('.muscle-instruction').classList.add('visible');
             
-            // Funkcja zmieniająca scenę wizualizacji
-            function changeVisualizationScene(sceneName) {
-                // Usuń wszystkie klasy scen i dodaj odpowiednią
-                visualizationScene.className = 'visualization-scene';
-                visualizationScene.classList.add(`visualization-${sceneName}`);
-                
-                // Dodaj lub usuń elementy specyficzne dla sceny
-                visualizationScene.innerHTML = '';
-                
-                if (sceneName === 'beach') {
-                    // Dodaj fale dla plaży
-                    for (let i = 0; i < 3; i++) {
-                        const wave = document.createElement('div');
-                        wave.className = 'wave';
-                        visualizationScene.appendChild(wave);
-                    }
-                }
-                
-                // Dodaj overlay z tekstem
-                const overlay = document.createElement('div');
-                overlay.className = 'visualization-overlay';
-                overlay.innerHTML = `<p class="visualization-text" id="visualization-text">${visualizationScenes[sceneName][0]}</p>`;
-                visualizationScene.appendChild(overlay);
-                
-                // Aktualizuj referencję do elementu tekstu
-                visualizationText = document.querySelector('#visualization-text');
+            // Przewiń do aktywnej grupy
+            currentGroup.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            
+            // Przejdź do następnej grupy po 20 sekundach (5s napięcie + 15s relaks)
+            currentMuscleGroup++;
+            
+            // Pokaż powiadomienie
+            if (currentMuscleGroup <= muscleGroups.length) {
+                const groupName = currentGroup.querySelector('h4').textContent;
+                showToast('Grupa mięśniowa', groupName);
             }
-            
-            // Funkcja rozpoczynająca wizualizację
-            function startVisualization() {
-                // Zatrzymaj istniejącą wizualizację jeśli istnieje
-                if (visualizationInterval) {
-                    clearInterval(visualizationInterval);
-                    visualizationInterval = null;
-                    startVisualizationBtn.textContent = 'Rozpocznij wizualizację';
-                    return;
-                }
-                
-                startVisualizationBtn.textContent = 'Zatrzymaj wizualizację';
-                
-                let currentTextIndex = 0;
-                const texts = visualizationScenes[currentScene];
-                
-                // Funkcja aktualizująca tekst wizualizacji
-                function updateVisualizationText() {
-                    // Płynna zmiana tekstu
-                    visualizationText.style.opacity = '0';
-                    
-                    setTimeout(() => {
-                        visualizationText.textContent = texts[currentTextIndex];
-                        visualizationText.style.opacity = '1';
-                        
-                        // Przejdź do następnego tekstu
-                        currentTextIndex = (currentTextIndex + 1) % texts.length;
-                    }, 500);
-                }
-                
-                // Rozpocznij od pierwszego tekstu
-                updateVisualizationText();
-                
-                // Ustaw interwał do zmiany tekstów co 10 sekund
-                visualizationInterval = setInterval(updateVisualizationText, 10000);
+        }
+        
+        // Rozpocznij od pierwszej grupy
+        goToNextMuscleGroup();
+        
+        // Ustaw interwał 20 sekund między grupami
+        muscleRelaxationInterval = setInterval(goToNextMuscleGroup, 20000);
+    }
+    
+    // Obsługa przycisku rozpoczęcia ćwiczenia relaksacji mięśni
+    startMuscleBtn.addEventListener('click', startMuscleRelaxation);
+    
+    // =========== WIZUALIZACJE RELAKSACYJNE ===========
+    const visualizationScene = document.getElementById('visualization-scene');
+    const visualizationText = document.getElementById('visualization-text');
+    const startVisualizationBtn = document.getElementById('start-visualization');
+    let visualizationInterval = null;
+    let currentScene = 'beach'; // domyślna scena
+    
+    // Teksty dla różnych scen wizualizacji
+    const visualizationScenes = {
+        'beach': [
+            'Wyobraź sobie, że leżysz na ciepłej, miękkiej plaży. Czujesz delikatne ciepło słońca na swojej skórze.',
+            'Fale rytmicznie uderzają o brzeg, tworząc uspokajający szum. Wdychasz świeży, morski zapach.',
+            'Z każdym oddechem czujesz się coraz bardziej zrelaksowany/a. Twoje ciało powoli zanurza się w miękkim piasku.',
+            'Niebo nad tobą jest błękitne, z kilkoma puszystymi chmurami. Słyszysz odległe krzyki mew.',
+            'Twoje mięśnie się rozluźniają, a umysł uspokaja. Pozwól sobie na całkowite odprężenie w tym spokojnym miejscu.'
+        ],
+        'forest': [
+            'Znajdujesz się w pięknym, starym lesie. Otaczają cię wysokie drzewa, a ich liście szumią delikatnie na wietrze.',
+            'Promienie słońca przebijają się przez korony drzew, tworząc ciepłe plamy światła na ścieżce przed tobą.',
+            'Słyszysz śpiew ptaków i delikatny szelest liści. Powietrze jest świeże i pełne zapachu żywicy.',
+            'Z każdym krokiem zagłębiasz się dalej w las, czując spokój i harmonię tego miejsca.',
+            'Znajdujesz miękkie, mchowe miejsce, gdzie możesz usiąść lub położyć się. Czujesz, jak cały stres opuszcza twoje ciało.'
+        ],
+        'sky': [
+            'Leżysz na miękkim kocu i patrzysz w nocne niebo pełne gwiazd. Nad tobą rozciąga się nieskończony kosmos.',
+            'Gwiazdy migoczą delikatnie, a ty dostrzegasz znane konstelacje i jasny sierp księżyca.',
+            'Powietrze jest chłodne i rześkie. Z każdym oddechem czujesz, jak twój umysł się uspokaja.',
+            'Twoje ciało staje się lekkie, niemal jakbyś mógł/mogła unosić się wśród gwiazd. Grawitacja zdaje się słabnąć.',
+            'Problemy i zmartwienia maleją, stają się małe jak drobne punkty na niebie. Czujesz głęboki spokój i połączenie z wszechświatem.'
+        ]
+    };
+    
+    // Funkcja zmieniająca scenę wizualizacji
+    function changeVisualizationScene(sceneName) {
+        // Usuń wszystkie klasy scen i dodaj odpowiednią
+        visualizationScene.className = 'visualization-scene';
+        visualizationScene.classList.add(`visualization-${sceneName}`);
+        
+        // Dodaj lub usuń elementy specyficzne dla sceny
+        visualizationScene.innerHTML = '';
+        
+        if (sceneName === 'beach') {
+            // Dodaj fale dla plaży
+            for (let i = 0; i < 3; i++) {
+                const wave = document.createElement('div');
+                wave.className = 'wave';
+                visualizationScene.appendChild(wave);
             }
+        }
+        
+        // Dodaj overlay z tekstem
+        const overlay = document.createElement('div');
+        overlay.className = 'visualization-overlay';
+        overlay.innerHTML = `<p class="visualization-text" id="visualization-text">${visualizationScenes[sceneName][0]}</p>`;
+        visualizationScene.appendChild(overlay);
+        
+        // Aktualizuj referencję do elementu tekstu
+        visualizationText = document.querySelector('#visualization-text');
+    }
+    
+    // Funkcja rozpoczynająca wizualizację
+    function startVisualization() {
+        // Zatrzymaj istniejącą wizualizację jeśli istnieje
+        if (visualizationInterval) {
+            clearInterval(visualizationInterval);
+            visualizationInterval = null;
+            startVisualizationBtn.textContent = 'Rozpocznij wizualizację';
+            return;
+        }
+        
+        startVisualizationBtn.textContent = 'Zatrzymaj wizualizację';
+        
+        let currentTextIndex = 0;
+        const texts = visualizationScenes[currentScene];
+        
+        // Funkcja aktualizująca tekst wizualizacji
+        function updateVisualizationText() {
+            // Płynna zmiana tekstu
+            visualizationText.style.opacity = '0';
             
-            // Obsługa przycisków wyboru sceny wizualizacji
-            document.querySelectorAll('.visualization-scene-tabs .exercise-tab[data-scene]').forEach(tab => {
-                tab.addEventListener('click', function() {
-                    // Zatrzymaj aktualną wizualizację
-                    if (visualizationInterval) {
-                        clearInterval(visualizationInterval);
-                        visualizationInterval = null;
-                        startVisualizationBtn.textContent = 'Rozpocznij wizualizację';
-                    }
-                    
-                    // Ustaw nową scenę
-                    currentScene = this.dataset.scene;
-                    changeVisualizationScene(currentScene);
-                    
-                    // Aktualizuj aktywny przycisk
-                    document.querySelectorAll('.visualization-scene-tabs .exercise-tab').forEach(t => {
-                        t.classList.remove('active');
-                    });
-                    this.classList.add('active');
-                });
-            });
-            
-            // Obsługa przycisku rozpoczęcia wizualizacji
-            startVisualizationBtn.addEventListener('click', startVisualization);
-            
-            // =========== BAJKI NA DOBRANOC ===========
-            // Obsługa akordeonu z bajkami
-            const storyHeaders = document.querySelectorAll('.story-header');
-            
-            storyHeaders.forEach(header => {
-                header.addEventListener('click', function() {
-                    const storyId = this.dataset.story;
-                    const content = document.getElementById(`${storyId}-story`);
-                    
-                    // Przełącz widoczność zawartości
-                    content.classList.toggle('visible');
-                    
-                    // Przełącz stan aktywny nagłówka
-                    this.classList.toggle('active');
-                    
-                    // Zamknij inne otwarte bajki
-                    storyHeaders.forEach(otherHeader => {
-                        if (otherHeader !== this && otherHeader.classList.contains('active')) {
-                            otherHeader.classList.remove('active');
-                            const otherId = otherHeader.dataset.story;
-                            document.getElementById(`${otherId}-story`).classList.remove('visible');
-                        }
-                    });
-                });
-            });
-            
-            // Obsługa głównych zakładek ćwiczeń
-            document.querySelectorAll('.exercise-tab[data-tab]').forEach(tab => {
-                tab.addEventListener('click', function() {
-                    const tabName = this.dataset.tab;
-                    
-                    // Ukryj wszystkie treści ćwiczeń
-                    document.querySelectorAll('.exercise-content').forEach(content => {
-                        content.classList.remove('active');
-                    });
-                    
-                    // Pokaż wybraną treść
-                    document.getElementById(`${tabName}-content`).classList.add('active');
-                    
-                    // Aktualizuj aktywny przycisk
-                    document.querySelectorAll('.exercise-tab[data-tab]').forEach(t => {
-                        t.classList.remove('active');
-                    });
-                    this.classList.add('active');
-                    
-                    // Zatrzymaj wszystkie aktywne ćwiczenia
-                    if (breathingInterval) {
-                        clearInterval(breathingInterval);
-                        breathingInterval = null;
-                        breathingCircle.className = 'breathing-circle';
-                        breathingText.textContent = 'Kliknij, aby rozpocząć';
-                        startBreathingBtn.textContent = 'Rozpocznij ćwiczenie';
-                    }
-                    
-                    if (muscleRelaxationInterval) {
-                        clearInterval(muscleRelaxationInterval);
-                        muscleRelaxationInterval = null;
-                        startMuscleBtn.textContent = 'Rozpocznij pełne ćwiczenie';
-                        muscleGroups.forEach(group => {
-                            group.classList.remove('active');
-                            group.querySelector('.muscle-instruction').classList.remove('visible');
-                        });
-                        muscleProgress.style.width = '0%';
-                    }
-                    
-                    if (visualizationInterval) {
-                        clearInterval(visualizationInterval);
-                        visualizationInterval = null;
-                        startVisualizationBtn.textContent = 'Rozpocznij wizualizację';
-                    }
-                });
-            });
-            
-            // =========== NASŁUCHIWACZE ZDARZEŃ ===========
-            
-            // Nasłuchiwacze zdarzeń dla przycisków dźwięku
-            soundButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    const soundName = this.dataset.sound;
-                    playSound(soundName);
-                });
-            });
-            
-            // Nasłuchiwacze zdarzeń dla suwaka głośności głównej
-            volumeSlider.addEventListener('input', function() {
-                const value = parseFloat(this.value);
-                for (const audio of activeSounds.values()) {
-                    audio.volume = value;
-                }
-                
-                // Aktualizuj wszystkie suwaki indywidualnej głośności
-                document.querySelectorAll('.individual-volume').forEach(slider => {
-                    slider.value = value;
-                });
-            });
-            
-            // Nasłuchiwacze zdarzeń dla przycisków timera
-            timerButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    const minutes = parseInt(this.dataset.time);
-                    setTimer(minutes);
-                });
-            });
-            
-            // Nasłuchiwacz dla niestandardowego timera
-            customTimerBtn.addEventListener('click', function() {
-                const minutes = parseInt(customTimerInput.value);
-                if (isNaN(minutes) || minutes <= 0 || minutes > 480) {
-                    showToast('Błąd', 'Wprowadź wartość między 1 a 480 minut.');
-                    return;
-                }
-                setTimer(minutes);
-                
-                // Wyczyść pole input
-                customTimerInput.value = '';
-            });
-            
-            // Obsługa Enter w polu niestandardowego timera
-            customTimerInput.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') {
-                    customTimerBtn.click();
-                }
-            });
-            
-            // Obsługa zapisywania preferencji
-            document.getElementById('save-preferences').addEventListener('click', function(e) {
-                e.preventDefault();
-                
-                // Zapisz preferencje w localStorage
-                const preferences = {
-                    volume: volumeSlider.value,
-                    theme: document.body.classList.contains('light-mode') ? 'light' : 'dark',
-                    activeSounds: Array.from(activeSounds.keys())
-                };
-                
-                localStorage.setItem('spijSloneczko-preferences', JSON.stringify(preferences));
-                showToast('Zapisano', 'Twoje preferencje zostały zapisane!');
-            });
-            
-            // Ładowanie zapisanych preferencji
-            function loadSavedPreferences() {
-                const savedPrefs = localStorage.getItem('spijSloneczko-preferences');
-                if (!savedPrefs) return;
-                
-                try {
-                    const preferences = JSON.parse(savedPrefs);
-                    
-                    // Ustaw głośność
-                    if (preferences.volume) {
-                        volumeSlider.value = preferences.volume;
-                    }
-                    
-                    // Ustaw motyw (już obsłużone wcześniej)
-                    
-                    // Odtwórz zapisane dźwięki
-                    if (preferences.activeSounds && Array.isArray(preferences.activeSounds)) {
-                        preferences.activeSounds.forEach(sound => {
-                            setTimeout(() => {
-                                playSound(sound);
-                            }, 500);
-                        });
-                    }
-                    
-                } catch (error) {
-                    console.error('Błąd podczas wczytywania preferencji:', error);
-                }
-            }
-            
-            // Sprawdzenie dostępności plików dźwiękowych
-            function checkSoundFiles() {
-                Object.entries(sounds).forEach(([name, path]) => {
-                    const testAudio = new Audio();
-                    testAudio.addEventListener('error', () => {
-                        console.warn(`Plik dźwiękowy "${path}" dla "${name}" nie został znaleziony.`);
-                    });
-                    testAudio.src = path;
-                });
-            }
-            
-            // Zapytanie o pozwolenie na powiadomienia
-            if ('Notification' in window && Notification.permission !== 'granted' && Notification.permission !== 'denied') {
-                Notification.requestPermission();
-            }
-            
-            // Wczytaj preferencje po załadowaniu strony
             setTimeout(() => {
-                loadSavedPreferences();
-                checkSoundFiles();
-            }, 1000);
+                visualizationText.textContent = texts[currentTextIndex];
+                visualizationText.style.opacity = '1';
+                
+                // Przejdź do następnego tekstu
+                currentTextIndex = (currentTextIndex + 1) % texts.length;
+            }, 500);
+        }
+        
+        // Rozpocznij od pierwszego tekstu
+        updateVisualizationText();
+        
+        // Ustaw interwał do zmiany tekstów co 10 sekund
+        visualizationInterval = setInterval(updateVisualizationText, 10000);
+    }
+    
+    // Obsługa przycisków wyboru sceny wizualizacji
+    document.querySelectorAll('.visualization-scene-tabs .exercise-tab[data-scene]').forEach(tab => {
+        tab.addEventListener('click', function() {
+            // Zatrzymaj aktualną wizualizację
+            if (visualizationInterval) {
+                clearInterval(visualizationInterval);
+                visualizationInterval = null;
+                startVisualizationBtn.textContent = 'Rozpocznij wizualizację';
+            }
+            
+            // Ustaw nową scenę
+            currentScene = this.dataset.scene;
+            changeVisualizationScene(currentScene);
+            
+            // Aktualizuj aktywny przycisk
+            document.querySelectorAll('.visualization-scene-tabs .exercise-tab').forEach(t => {
+                t.classList.remove('active');
+            });
+            this.classList.add('active');
         });
-    </script>
+    });
+    
+    // Obsługa przycisku rozpoczęcia wizualizacji
+    startVisualizationBtn.addEventListener('click', startVisualization);
+    
+    // =========== BAJKI NA DOBRANOC ===========
+    // Obsługa akordeonu z bajkami
+    const storyHeaders = document.querySelectorAll('.story-header');
+    
+    storyHeaders.forEach(header => {
+        header.addEventListener('click', function() {
+            const storyId = this.dataset.story;
+            const content = document.getElementById(`${storyId}-story`);
+            
+            // Przełącz widoczność zawartości
+            content.classList.toggle('visible');
+            
+            // Przełącz stan aktywny nagłówka
+            this.classList.toggle('active');
+            
+            // Zamknij inne otwarte bajki
+            storyHeaders.forEach(otherHeader => {
+                if (otherHeader !== this && otherHeader.classList.contains('active')) {
+                    otherHeader.classList.remove('active');
+                    const otherId = otherHeader.dataset.story;
+                    document.getElementById(`${otherId}-story`).classList.remove('visible');
+                }
+            });
+        });
+    });
+    
+    // Obsługa głównych zakładek ćwiczeń
+    document.querySelectorAll('.exercise-tab[data-tab]').forEach(tab => {
+        tab.addEventListener('click', function() {
+            const tabName = this.dataset.tab;
+            
+            // Ukryj wszystkie treści ćwiczeń
+            document.querySelectorAll('.exercise-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Pokaż wybraną treść
+            document.getElementById(`${tabName}-content`).classList.add('active');
+            
+            // Aktualizuj aktywny przycisk
+            document.querySelectorAll('.exercise-tab[data-tab]').forEach(t => {
+                t.classList.remove('active');
+            });
+            this.classList.add('active');
+            
+            // Zatrzymaj wszystkie aktywne ćwiczenia
+            if (breathingInterval) {
+                clearInterval(breathingInterval);
+                breathingInterval = null;
+                breathingCircle.className = 'breathing-circle';
+                breathingText.textContent = 'Kliknij, aby rozpocząć';
+                startBreathingBtn.textContent = 'Rozpocznij ćwiczenie';
+            }
+            
+            if (muscleRelaxationInterval) {
+                clearInterval(muscleRelaxationInterval);
+                muscleRelaxationInterval = null;
+                startMuscleBtn.textContent = 'Rozpocznij pełne ćwiczenie';
+                muscleGroups.forEach(group => {
+                    group.classList.remove('active');
+                    group.querySelector('.muscle-instruction').classList.remove('visible');
+                });
+                muscleProgress.style.width = '0%';
+            }
+            
+            if (visualizationInterval) {
+                clearInterval(visualizationInterval);
+                visualizationInterval = null;
+                startVisualizationBtn.textContent = 'Rozpocznij wizualizację';
+            }
+            
+            // Zatrzymaj syntezator mowy przy zmianie zakładki
+            if (speechSynthesis && speechSynthesis.speaking) {
+                speechSynthesis.cancel();
+                if (currentlyReadingStory) {
+                    updateSpeechUI(currentlyReadingStory, false);
+                    currentlyReadingStory = null;
+                }
+            }
+        });
+    });
+    
+    // =========== SYNTEZATOR MOWY DLA BAJEK ===========
+    // Inicjalizacja syntezatora mowy
+    const speechSynthesis = window.speechSynthesis;
+    const voiceSelect = document.getElementById('voice-select');
+    const rateInput = document.getElementById('speech-rate');
+    const rateValue = document.getElementById('speech-rate-value');
+    const pitchInput = document.getElementById('speech-pitch');
+    const pitchValue = document.getElementById('speech-pitch-value');
+    const volumeInput = document.getElementById('speech-volume');
+    const volumeValue = document.getElementById('speech-volume-value');
+    
+    // Przechowywanie informacji o aktualnie odtwarzanej bajce
+    let currentlyReadingStory = null;
+    let utterance = null;
+    
+    // Funkcja ładująca dostępne głosy
+    function loadVoices() {
+        const voices = speechSynthesis.getVoices();
+        
+        // Wyczyść listę głosów
+        voiceSelect.innerHTML = '';
+        
+        // Znajdź głosy polskie i dodaj je jako pierwsze
+        const polishVoices = voices.filter(voice => voice.lang.includes('pl'));
+        const otherVoices = voices.filter(voice => !voice.lang.includes('pl'));
+        
+        // Grupuj głosy według języka
+        const allVoices = [...polishVoices, ...otherVoices];
+        
+        if (allVoices.length === 0) {
+            const option = document.createElement('option');
+            option.textContent = 'Brak dostępnych głosów';
+            option.value = '';
+            voiceSelect.appendChild(option);
+            return;
+        }
+        
+        // Dodaj grupę głosów polskich
+        if (polishVoices.length > 0) {
+            const polishGroup = document.createElement('optgroup');
+            polishGroup.label = 'Głosy polskie';
+            
+            polishVoices.forEach(voice => {
+                const option = document.createElement('option');
+                option.textContent = `${voice.name} (${voice.lang})`;
+                option.value = voice.name;
+                polishGroup.appendChild(option);
+            });
+            
+            voiceSelect.appendChild(polishGroup);
+        }
+        
+        // Dodaj pozostałe głosy w grupach według języka
+        const languageGroups = {};
+        
+        otherVoices.forEach(voice => {
+            const langCode = voice.lang.split('-')[0];
+            if (!languageGroups[langCode]) {
+                languageGroups[langCode] = [];
+            }
+            languageGroups[langCode].push(voice);
+        });
+        
+        // Dodaj głosy pogrupowane według języka
+        Object.keys(languageGroups).forEach(langCode => {
+            const group = document.createElement('optgroup');
+            let langName = '';
+            
+            // Mapowanie kodu języka na nazwę języka (dla popularnych języków)
+            switch(langCode) {
+                case 'en': langName = 'Angielski'; break;
+                case 'de': langName = 'Niemiecki'; break;
+                case 'fr': langName = 'Francuski'; break;
+                case 'es': langName = 'Hiszpański'; break;
+                case 'it': langName = 'Włoski'; break;
+                case 'ru': langName = 'Rosyjski'; break;
+                default: langName = langCode.toUpperCase();
+            }
+            
+            group.label = `Głosy: ${langName}`;
+            
+            languageGroups[langCode].forEach(voice => {
+                const option = document.createElement('option');
+                option.textContent = `${voice.name} (${voice.lang})`;
+                option.value = voice.name;
+                group.appendChild(option);
+            });
+            
+            voiceSelect.appendChild(group);
+        });
+        
+        // Wybierz domyślny głos (polski jeśli jest dostępny)
+        if (polishVoices.length > 0) {
+            voiceSelect.value = polishVoices[0].name;
+        } else if (allVoices.length > 0) {
+            voiceSelect.value = allVoices[0].name;
+        }
+        
+        // Sprawdź, czy jest zapisany głos w localStorage
+        const savedVoice = localStorage.getItem('spijSloneczko-voice');
+        if (savedVoice && allVoices.some(v => v.name === savedVoice)) {
+            voiceSelect.value = savedVoice;
+        }
+    }
+    
+    // Inicjalizacja wyboru głosów
+    if (speechSynthesis.onvoiceschanged !== undefined) {
+        speechSynthesis.onvoiceschanged = loadVoices;
+    }
+    
+    // Załaduj głosy na starcie
+    setTimeout(loadVoices, 500);
+    
+    // Aktualizacja wartości głośności, tonu i szybkości
+    rateInput.addEventListener('input', function() {
+        rateValue.textContent = this.value;
+        localStorage.setItem('spijSloneczko-rate', this.value);
+    });
+    
+    pitchInput.addEventListener('input', function() {
+        pitchValue.textContent = this.value;
+        localStorage.setItem('spijSloneczko-pitch', this.value);
+    });
+    
+    volumeInput.addEventListener('input', function() {
+        volumeValue.textContent = this.value;
+        localStorage.setItem('spijSloneczko-speech-volume', this.value);
+    });
+    
+    // Zapisywanie wybranego głosu
+    voiceSelect.addEventListener('change', function() {
+        localStorage.setItem('spijSloneczko-voice', this.value);
+    });
+    
+    // Funkcja pobierająca tekst bajki
+    function getStoryText(storyId) {
+        const storyElement = document.getElementById(`${storyId}-story`);
+        if (!storyElement) return '';
+        
+        const paragraphs = storyElement.querySelectorAll('p');
+        let text = '';
+        
+        paragraphs.forEach(p => {
+            text += p.textContent + ' ';
+        });
+        
+        return text;
+    }
+    
+    // Aktualizacja interfejsu podczas mówienia
+    function updateSpeechUI(storyId, isSpeaking) {
+        const storyContent = document.getElementById(`${storyId}-story`);
+        const playButton = document.querySelector(`.speech-btn.speech-play[data-story="${storyId}"]`);
+        const stopButton = document.querySelector(`.speech-btn.speech-stop[data-story="${storyId}"]`);
+        const indicator = document.getElementById(`${storyId}-indicator`);
+        
+        if (isSpeaking) {
+            storyContent.classList.add('speaking');
+            playButton.disabled = true;
+            stopButton.disabled = false;
+            indicator.classList.add('active');
+            indicator.querySelector('.speech-wave').classList.add('active');
+            
+            // Dezaktywuj inne przyciski bajek
+            document.querySelectorAll('.speech-btn.speech-play').forEach(btn => {
+                if (btn.dataset.story !== storyId) {
+                    btn.disabled = true;
+                }
+            });
+        } else {
+            storyContent.classList.remove('speaking');
+            playButton.disabled = false;
+            stopButton.disabled = true;
+            indicator.classList.remove('active');
+            indicator.querySelector('.speech-wave').classList.remove('active');
+            
+            // Reaktywuj inne przyciski bajek
+            document.querySelectorAll('.speech-btn.speech-play').forEach(btn => {
+                btn.disabled = false;
+            });
+        }
+    }
+    
+    // Funkcja odtwarzająca bajkę
+    function readStory(storyId) {
+        // Zatrzymaj aktualnie odtwarzaną bajkę jeśli istnieje
+        if (utterance && speechSynthesis.speaking) {
+            speechSynthesis.cancel();
+        }
+        
+        const text = getStoryText(storyId);
+        if (!text) return;
+        
+        // Ustaw aktualnie odtwarzaną bajkę
+        currentlyReadingStory = storyId;
+        
+        // Stwórz nowy obiekt utterance
+        utterance = new SpeechSynthesisUtterance(text);
+        
+        // Ustaw parametry mowy
+        utterance.rate = parseFloat(rateInput.value);
+        utterance.pitch = parseFloat(pitchInput.value);
+        utterance.volume = parseFloat(volumeInput.value);
+        
+        // Ustaw głos
+        const voices = speechSynthesis.getVoices();
+        const selectedVoice = voices.find(voice => voice.name === voiceSelect.value);
+        if (selectedVoice) {
+            utterance.voice = selectedVoice;
+        }
+        
+        // Obsługa zdarzeń
+        utterance.onstart = function() {
+            updateSpeechUI(storyId, true);
+        };
+        
+        utterance.onend = function() {
+            currentlyReadingStory = null;
+            updateSpeechUI(storyId, false);
+        };
+        
+        utterance.onerror = function(event) {
+            console.error('Błąd syntezy mowy:', event);
+            showToast('Błąd', 'Wystąpił problem podczas czytania bajki');
+            currentlyReadingStory = null;
+            updateSpeechUI(storyId, false);
+        };
+        
+        // Rozpocznij mówienie
+        speechSynthesis.speak(utterance);
+        
+        // Pokaż powiadomienie
+        showToast('Syntezator mowy', `Rozpoczynam czytanie bajki: ${document.querySelector(`.story-header[data-story="${storyId}"] h4`).textContent.trim()}`);
+    }
+    
+    // Funkcja zatrzymująca czytanie bajki
+    function stopReadingStory() {
+        if (speechSynthesis.speaking) {
+            speechSynthesis.cancel();
+        }
+        
+        if (currentlyReadingStory) {
+            updateSpeechUI(currentlyReadingStory, false);
+            currentlyReadingStory = null;
+        }
+    }
+    
+    // Obsługa przycisków syntezatora mowy
+    document.querySelectorAll('.speech-btn.speech-play').forEach(button => {
+        button.addEventListener('click', function() {
+            const storyId = this.dataset.story;
+            readStory(storyId);
+        });
+    });
+    
+    document.querySelectorAll('.speech-btn.speech-stop').forEach(button => {
+        button.addEventListener('click', function() {
+            stopReadingStory();
+        });
+    });
+    
+    // Zatrzymaj czytanie bajki, gdy zamykamy bajkę
+    document.querySelectorAll('.story-header').forEach(header => {
+        header.addEventListener('click', function() {
+            const isActive = this.classList.contains('active');
+            const storyId = this.dataset.story;
+            
+            if (isActive && currentlyReadingStory === storyId) {
+                stopReadingStory();
+            }
+        });
+    });
+    
+    // Wczytaj zapisane ustawienia syntezatora mowy
+    function loadSavedSpeechSettings() {
+        const savedRate = localStorage.getItem('spijSloneczko-rate');
+        const savedPitch = localStorage.getItem('spijSloneczko-pitch');
+        const savedVolume = localStorage.getItem('spijSloneczko-speech-volume');
+        
+        if (savedRate) {
+            rateInput.value = savedRate;
+            rateValue.textContent = savedRate;
+        }
+        
+        if (savedPitch) {
+            pitchInput.value = savedPitch;
+            pitchValue.textContent = savedPitch;
+        }
+        
+        if (savedVolume) {
+            volumeInput.value = savedVolume;
+            volumeValue.textContent = savedVolume;
+        }
+    }
+    
+    // =========== NASŁUCHIWACZE ZDARZEŃ ===========
+    
+    // Nasłuchiwacze zdarzeń dla przycisków dźwięku
+    soundButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const soundName = this.dataset.sound;
+            playSound(soundName);
+        });
+    });
+    
+    // Nasłuchiwacze zdarzeń dla suwaka głośności głównej
+    volumeSlider.addEventListener('input', function() {
+        const value = parseFloat(this.value);
+        for (const audio of activeSounds.values()) {
+            audio.volume = value;
+        }
+        
+        // Aktualizuj wszystkie suwaki indywidualnej głośności
+        document.querySelectorAll('.individual-volume').forEach(slider => {
+            slider.value = value;
+        });
+    });
+    
+    // Nasłuchiwacze zdarzeń dla przycisków timera
+    timerButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const minutes = parseInt(this.dataset.time);
+            setTimer(minutes);
+        });
+    });
+    
+    // Nasłuchiwacz dla niestandardowego timera
+    customTimerBtn.addEventListener('click', function() {
+        const minutes = parseInt(customTimerInput.value);
+        if (isNaN(minutes) || minutes <= 0 || minutes > 480) {
+            showToast('Błąd', 'Wprowadź wartość między 1 a 480 minut.');
+            return;
+        }
+        setTimer(minutes);
+        
+        // Wyczyść pole input
+        customTimerInput.value = '';
+    });
+    
+    // Obsługa Enter w polu niestandardowego timera
+    customTimerInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            customTimerBtn.click();
+        }
+    });
+    
+    // Obsługa zapisywania preferencji
+    document.getElementById('save-preferences').addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        // Zapisz preferencje w localStorage
+        const preferences = {
+            volume: volumeSlider.value,
+            theme: document.body.classList.contains('light-mode') ? 'light' : 'dark',
+            activeSounds: Array.from(activeSounds.keys())
+        };
+        
+        localStorage.setItem('spijSloneczko-preferences', JSON.stringify(preferences));
+        showToast('Zapisano', 'Twoje preferencje zostały zapisane!');
+    });
+    
+    // Sprawdzenie dostępności plików dźwiękowych
+    function checkSoundFiles() {
+        Object.entries(sounds).forEach(([name, path]) => {
+            const testAudio = new Audio();
+            testAudio.addEventListener('error', () => {
+                console.warn(`Plik dźwiękowy "${path}" dla "${name}" nie został znaleziony.`);
+            });
+            testAudio.src = path;
+        });
+    }
+    
+    // Zapytanie o pozwolenie na powiadomienia
+    if ('Notification' in window && Notification.permission !== 'granted' && Notification.permission !== 'denied') {
+        Notification.requestPermission();
+    }
+    
+    // Wczytaj preferencje po załadowaniu strony
+    setTimeout(() => {
+        loadSavedPreferences();
+        loadSavedSpeechSettings();
+        checkSoundFiles();
+    }, 1000);
+    
+    // Zatrzymaj syntezator mowy przy zamknięciu/odświeżeniu strony
+    window.addEventListener('beforeunload', function() {
+        if (speechSynthesis.speaking) {
+            speechSynthesis.cancel();
+        }
+    });
+});
