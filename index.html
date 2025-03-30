@@ -1430,177 +1430,423 @@
             };
             
             // Klasa do zarządzania dźwiękami przez Web Audio API
-            class SoundManager {
-                constructor() {
-                    // Tworzenie kontekstu audio
-                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                    this.masterGain = this.audioContext.createGain();
-                    this.masterGain.connect(this.audioContext.destination);
-                    this.masterGain.gain.value = 0.5; // Domyślna głośność
-                    
-                    // Przechowywanie bufforów i źródeł
-                    this.buffers = new Map();
-                    this.sources = new Map();
-                    this.gains = new Map();
-                    
-                    // Załaduj dźwięki dopiero gdy są potrzebne
-                    this.loadedSounds = new Set();
-                }
-                
-                async loadSound(soundName, url) {
-                    if (this.loadedSounds.has(soundName)) return this.buffers.get(soundName);
-                    
-                    try {
-                        const response = await fetch(url);
-                        if (!response.ok) {
-                            throw new Error(`HTTP error! status: ${response.status}`);
-                        }
-                        
-                        const arrayBuffer = await response.arrayBuffer();
-                        const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
-                        
-                        this.buffers.set(soundName, audioBuffer);
-                        this.loadedSounds.add(soundName);
-                        
-                        return audioBuffer;
-                    } catch (error) {
-                        console.error(`Błąd ładowania dźwięku ${soundName}:`, error);
-                        NotificationService.showToast("Błąd", `Nie można załadować dźwięku: ${soundName}`, "error");
-                        throw error;
-                    }
-                }
-                
-                async playSound(soundName, url) {
-                    // Uruchom kontekst audio (wymagane przez nowe przeglądarki)
-                    if (this.audioContext.state === 'suspended') {
-                        await this.audioContext.resume();
-                    }
-                    
-                    // Zatrzymaj, jeśli dźwięk już jest odtwarzany
-                    if (this.sources.has(soundName)) {
-                        this.stopSound(soundName);
-                        return null;
-                    }
-                    
-                    try {
-                        // Załaduj dźwięk, jeśli jeszcze nie został załadowany
-                        let buffer;
-                        if (!this.buffers.has(soundName)) {
-                            buffer = await this.loadSound(soundName, url);
-                        } else {
-                            buffer = this.buffers.get(soundName);
-                        }
-                        
-                        // Utwórz źródło i węzeł wzmocnienia
-                        const source = this.audioContext.createBufferSource();
-                        const gainNode = this.audioContext.createGain();
-                        
-                        source.buffer = buffer;
-                        source.loop = true;
-                        
-                        // Połącz węzły
-                        source.connect(gainNode);
-                        gainNode.connect(this.masterGain);
-                        
-                        // Ustaw poziom głośności
-                        gainNode.gain.value = this.masterGain.gain.value;
-                        
-                        // Zapisz referencje
-                        this.sources.set(soundName, source);
-                        this.gains.set(soundName, gainNode);
-                        
-                        // Rozpocznij odtwarzanie
-                        source.start(0);
-                        
-                        // Obsługa zakończenia (np. po usunięciu źródła)
-                        source.onended = () => {
-                            if (this.sources.has(soundName)) {
-                                this.sources.delete(soundName);
-                                this.gains.delete(soundName);
-                            }
-                        };
-                        
-                        return source;
-                    } catch (error) {
-                        console.error(`Błąd odtwarzania dźwięku ${soundName}:`, error);
-                        NotificationService.showToast("Błąd", `Problem z odtwarzaniem dźwięku: ${soundName}`, "error");
-                        return null;
-                    }
-                }
-                
-                stopSound(soundName) {
-                    if (this.sources.has(soundName)) {
-                        const source = this.sources.get(soundName);
-                        try {
-                            source.stop(0);
-                        } catch (e) {
-                            console.error(`Błąd zatrzymywania dźwięku ${soundName}:`, e);
-                        }
-                        this.sources.delete(soundName);
-                        this.gains.delete(soundName);
-                        return true;
-                    }
-                    return false;
-                }
-                
-                stopAllSounds() {
-                    const soundNames = Array.from(this.sources.keys());
-                    soundNames.forEach(name => this.stopSound(name));
-                }
-                
-                setMasterVolume(value) {
-                    this.masterGain.gain.value = value;
-                }
-                
-                setSoundVolume(soundName, value) {
-                    if (this.gains.has(soundName)) {
-                        this.gains.get(soundName).gain.value = value;
-                    }
-                }
-                
-                getSoundVolume(soundName) {
-                    return this.gains.has(soundName) ? this.gains.get(soundName).gain.value : this.masterGain.gain.value;
-                }
-                
-                fadeOutSound(soundName, duration = 3000) {
-                    if (this.gains.has(soundName)) {
-                        const gainNode = this.gains.get(soundName);
-                        const currentTime = this.audioContext.currentTime;
-                        
-                        // Zapisz obecną wartość
-                        const currentValue = gainNode.gain.value;
-                        
-                        // Liniowe obniżenie głośności do 0 w czasie trwania
-                        gainNode.gain.setValueAtTime(currentValue, currentTime);
-                        gainNode.gain.linearRampToValueAtTime(0, currentTime + duration/1000);
-                        
-                        // Zatrzymaj dźwięk po zakończeniu fade out
-                        setTimeout(() => {
-                            this.stopSound(soundName);
-                        }, duration);
-                    }
-                }
-                
-                fadeOutAllSounds(duration = 3000) {
-                    const currentTime = this.audioContext.currentTime;
-                    const currentValue = this.masterGain.gain.value;
-                    
-                    // Płynne wyciszenie głównego węzła głośności
-                    this.masterGain.gain.setValueAtTime(currentValue, currentTime);
-                    this.masterGain.gain.linearRampToValueAtTime(0, currentTime + duration/1000);
-                    
-                    // Zatrzymaj wszystkie dźwięki po wyciszeniu
-                    setTimeout(() => {
-                        this.stopAllSounds();
-                        // Przywróć głośność główną
-                        this.masterGain.gain.setValueAtTime(currentValue, this.audioContext.currentTime);
-                    }, duration);
-                }
-                
-                getActiveSoundNames() {
-                    return Array.from(this.sources.keys());
-                }
+            // Klasa do zarządzania dźwiękami przez Web Audio API
+class SoundManager {
+    constructor() {
+        // Tworzenie kontekstu audio
+        this.audioContext = null;
+        this.masterGain = null;
+        this.initAudioContext();
+        
+        // Przechowywanie bufforów i źródeł
+        this.buffers = new Map();
+        this.sources = new Map();
+        this.gains = new Map();
+        
+        // Załaduj dźwięki dopiero gdy są potrzebne
+        this.loadedSounds = new Set();
+        
+        // Dodajemy flagę do śledzenia stanu inicjalizacji
+        this.initialized = false;
+    }
+    
+    initAudioContext() {
+        try {
+            // Utworzenie kontekstu audio
+            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            this.masterGain = this.audioContext.createGain();
+            this.masterGain.connect(this.audioContext.destination);
+            this.masterGain.gain.value = 0.5; // Domyślna głośność
+            console.log('Kontekst audio zainicjowany pomyślnie');
+            return true;
+        } catch (error) {
+            console.error('Błąd inicjalizacji kontekstu audio:', error);
+            NotificationService.showToast("Błąd", "Nie można zainicjować systemu audio w przeglądarce.", "error");
+            return false;
+        }
+    }
+    
+    async ensureAudioContext() {
+        // Sprawdź, czy kontekst audio istnieje, jeśli nie, utwórz go
+        if (!this.audioContext) {
+            if (!this.initAudioContext()) {
+                throw new Error('Nie można utworzyć kontekstu audio');
             }
+        }
+        
+        // Wznów kontekst audio, jeśli jest wstrzymany
+        if (this.audioContext.state === 'suspended') {
+            try {
+                await this.audioContext.resume();
+                console.log('Kontekst audio wznowiony');
+            } catch (error) {
+                console.error('Błąd wznawiania kontekstu audio:', error);
+                throw new Error('Nie można wznowić kontekstu audio');
+            }
+        }
+        
+        // Zainicjalizujemy flagę, jeśli wszystko się powiodło
+        this.initialized = true;
+    }
+    
+    async loadSound(soundName, url) {
+        // Najpierw upewnij się, że kontekst audio jest aktywny
+        await this.ensureAudioContext();
+        
+        if (this.loadedSounds.has(soundName)) {
+            console.log(`Dźwięk ${soundName} już załadowany, używam z pamięci podręcznej`);
+            return this.buffers.get(soundName);
+        }
+        
+        try {
+            console.log(`Rozpoczynam ładowanie dźwięku: ${soundName} z ${url}`);
+            
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const arrayBuffer = await response.arrayBuffer();
+            
+            // Dodajemy dodatkowe debugowanie
+            console.log(`Dźwięk ${soundName} pobrany, rozmiar: ${arrayBuffer.byteLength} bajtów`);
+            
+            if (arrayBuffer.byteLength === 0) {
+                throw new Error(`Plik dźwiękowy ${soundName} jest pusty`);
+            }
+            
+            try {
+                const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
+                console.log(`Dźwięk ${soundName} zdekodowany pomyślnie, długość: ${audioBuffer.duration} sekund`);
+                
+                this.buffers.set(soundName, audioBuffer);
+                this.loadedSounds.add(soundName);
+                
+                return audioBuffer;
+            } catch (decodeError) {
+                console.error(`Błąd dekodowania dźwięku ${soundName}:`, decodeError);
+                throw new Error(`Nie można zdekodować pliku audio: ${soundName}`);
+            }
+        } catch (error) {
+            console.error(`Błąd ładowania dźwięku ${soundName}:`, error);
+            NotificationService.showToast(
+                "Błąd", 
+                `Nie można załadować dźwięku: ${soundName}. Szczegóły: ${error.message}`, 
+                "error"
+            );
+            throw error;
+        }
+    }
+    
+    async playSound(soundName, url) {
+        // Upewnij się, że wszystkie zasoby są gotowe
+        try {
+            await this.ensureAudioContext();
+            
+            // Zatrzymaj, jeśli dźwięk już jest odtwarzany
+            if (this.sources.has(soundName)) {
+                console.log(`Zatrzymuję aktualnie grający dźwięk: ${soundName}`);
+                this.stopSound(soundName);
+                return null;
+            }
+            
+            console.log(`Rozpoczynam odtwarzanie dźwięku: ${soundName}`);
+            
+            // Załaduj dźwięk, jeśli jeszcze nie został załadowany
+            let buffer;
+            if (!this.buffers.has(soundName)) {
+                buffer = await this.loadSound(soundName, url);
+            } else {
+                buffer = this.buffers.get(soundName);
+            }
+            
+            if (!buffer) {
+                throw new Error(`Brak bufora dźwięku dla: ${soundName}`);
+            }
+            
+            // Utwórz źródło i węzeł wzmocnienia
+            const source = this.audioContext.createBufferSource();
+            const gainNode = this.audioContext.createGain();
+            
+            source.buffer = buffer;
+            source.loop = true;
+            
+            // Połącz węzły
+            source.connect(gainNode);
+            gainNode.connect(this.masterGain);
+            
+            // Ustaw poziom głośności
+            gainNode.gain.value = this.masterGain.gain.value;
+            
+            // Zapisz referencje
+            this.sources.set(soundName, source);
+            this.gains.set(soundName, gainNode);
+            
+            // Rozpocznij odtwarzanie
+            source.start(0);
+            console.log(`Dźwięk ${soundName} rozpoczął odtwarzanie`);
+            
+            // Obsługa zakończenia (np. po usunięciu źródła)
+            source.onended = () => {
+                console.log(`Dźwięk ${soundName} zakończył odtwarzanie`);
+                if (this.sources.has(soundName)) {
+                    this.sources.delete(soundName);
+                    this.gains.delete(soundName);
+                }
+            };
+            
+            return source;
+        } catch (error) {
+            console.error(`Błąd odtwarzania dźwięku ${soundName}:`, error);
+            NotificationService.showToast(
+                "Błąd", 
+                `Problem z odtwarzaniem dźwięku: ${soundName}. Sprawdź, czy plik istnieje.`,
+                "error"
+            );
+            return null;
+        }
+    }
+    
+    stopSound(soundName) {
+        if (this.sources.has(soundName)) {
+            console.log(`Zatrzymuję dźwięk: ${soundName}`);
+            const source = this.sources.get(soundName);
+            try {
+                source.stop(0);
+            } catch (e) {
+                console.error(`Błąd zatrzymywania dźwięku ${soundName}:`, e);
+            }
+            this.sources.delete(soundName);
+            this.gains.delete(soundName);
+            return true;
+        }
+        return false;
+    }
+    
+    stopAllSounds() {
+        const soundNames = Array.from(this.sources.keys());
+        console.log(`Zatrzymuję wszystkie dźwięki: ${soundNames.join(', ')}`);
+        soundNames.forEach(name => this.stopSound(name));
+    }
+    
+    setMasterVolume(value) {
+        if (this.masterGain) {
+            this.masterGain.gain.value = value;
+        }
+    }
+    
+    setSoundVolume(soundName, value) {
+        if (this.gains.has(soundName)) {
+            this.gains.get(soundName).gain.value = value;
+        }
+    }
+    
+    getSoundVolume(soundName) {
+        return this.gains.has(soundName) ? this.gains.get(soundName).gain.value : this.masterGain?.gain.value || 0.5;
+    }
+    
+    fadeOutSound(soundName, duration = 3000) {
+        if (this.gains.has(soundName)) {
+            const gainNode = this.gains.get(soundName);
+            const currentTime = this.audioContext.currentTime;
+            
+            // Zapisz obecną wartość
+            const currentValue = gainNode.gain.value;
+            
+            // Liniowe obniżenie głośności do 0 w czasie trwania
+            gainNode.gain.setValueAtTime(currentValue, currentTime);
+            gainNode.gain.linearRampToValueAtTime(0, currentTime + duration/1000);
+            
+            // Zatrzymaj dźwięk po zakończeniu fade out
+            setTimeout(() => {
+                this.stopSound(soundName);
+            }, duration);
+        }
+    }
+    
+    fadeOutAllSounds(duration = 3000) {
+        if (!this.audioContext || !this.masterGain) return;
+        
+        const currentTime = this.audioContext.currentTime;
+        const currentValue = this.masterGain.gain.value;
+        
+        // Płynne wyciszenie głównego węzła głośności
+        this.masterGain.gain.setValueAtTime(currentValue, currentTime);
+        this.masterGain.gain.linearRampToValueAtTime(0, currentTime + duration/1000);
+        
+        // Zatrzymaj wszystkie dźwięki po wyciszeniu
+        setTimeout(() => {
+            this.stopAllSounds();
+            // Przywróć głośność główną
+            if (this.masterGain) {
+                this.masterGain.gain.setValueAtTime(currentValue, this.audioContext.currentTime);
+            }
+        }, duration);
+    }
+    
+    getActiveSoundNames() {
+        return Array.from(this.sources.keys());
+    }
+}
+
+// ===== INICJALIZACJA I WYWOŁANIA =====
+
+// Funkcja do inicjalizacji odtwarzania dźwięków po interakcji użytkownika
+function initializeAudioPlayback() {
+    // Tutaj inicjalizujemy kontekst audio po interakcji użytkownika
+    soundManager.ensureAudioContext()
+        .then(() => {
+            console.log('Kontekst audio zainicjowany po interakcji użytkownika');
+            // Możemy teraz odtwarzać dźwięki
+        })
+        .catch(error => {
+            console.error('Błąd inicjalizacji audio:', error);
+            NotificationService.showToast("Błąd", "Nie można zainicjować systemu audio. Spróbuj odświeżyć stronę.", "error");
+        });
+}
+
+// Dodaj to do obsługi zdarzeń po załadowaniu dokumentu
+document.addEventListener('click', function audioInitializer() {
+    initializeAudioPlayback();
+    // Usuń nasłuchiwacz po pierwszym kliknięciu
+    document.removeEventListener('click', audioInitializer);
+});
+
+// Sprawdzanie dostępności plików dźwiękowych
+async function checkSoundFiles() {
+    const soundErrors = [];
+    
+    for (const [name, path] of Object.entries(sounds)) {
+        try {
+            console.log(`Sprawdzam dostępność pliku: ${path}`);
+            const response = await fetch(path, { method: 'HEAD' });
+            
+            if (!response.ok) {
+                console.warn(`Plik dźwiękowy "${path}" nie został znaleziony (status: ${response.status}).`);
+                soundErrors.push(`${name}: ${response.status}`);
+                
+                // Dezaktywuj przycisk
+                const button = document.querySelector(`.sound-btn[data-sound="${name}"]`);
+                if (button) {
+                    button.classList.add('disabled');
+                    button.setAttribute('aria-disabled', 'true');
+                    button.setAttribute('title', `Dźwięk niedostępny: ${response.status}`);
+                }
+            } else {
+                console.log(`Plik ${path} dostępny (status: ${response.status})`);
+            }
+        } catch (error) {
+            console.error(`Błąd sprawdzania pliku "${path}":`, error);
+            soundErrors.push(`${name}: ${error.message}`);
+            
+            // Dezaktywuj przycisk
+            const button = document.querySelector(`.sound-btn[data-sound="${name}"]`);
+            if (button) {
+                button.classList.add('disabled');
+                button.setAttribute('aria-disabled', 'true');
+                button.setAttribute('title', `Błąd sprawdzania pliku: ${error.message}`);
+            }
+        }
+    }
+    
+    // Jeśli jest dużo błędów, pokaż ogólne powiadomienie
+    if (soundErrors.length > 0) {
+        if (soundErrors.length === Object.keys(sounds).length) {
+            NotificationService.showToast(
+                "Błąd", 
+                "Żadne pliki dźwiękowe nie są dostępne. Sprawdź ścieżki plików i uprawnienia.", 
+                "error"
+            );
+        } else {
+            NotificationService.showToast(
+                "Ostrzeżenie", 
+                `Niektóre pliki dźwiękowe (${soundErrors.length}) nie są dostępne.`, 
+                "warning"
+            );
+        }
+    }
+}
+
+// Funkcja odtwarzania dźwięku
+function playSound(soundName) {
+    // Jeśli dźwięk jest już odtwarzany, zatrzymaj go
+    if (activeSounds.has(soundName)) {
+        stopSound(soundName);
+        return;
+    }
+    
+    try {
+        // Sprawdź, czy ścieżka do dźwięku istnieje
+        if (!sounds[soundName]) {
+            showToast("Błąd", `Brak pliku dźwiękowego dla: ${soundName}`, "error");
+            return;
+        }
+        
+        // Pokaż użytkownikowi, że próbujemy odtworzyć dźwięk
+        const button = document.querySelector(`.sound-btn[data-sound="${soundName}"]`);
+        if (button) {
+            button.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${button.textContent.trim()}`;
+        }
+        
+        // Odtwórz dźwięk przez Web Audio API
+        soundManager.playSound(soundName, sounds[soundName])
+            .then(source => {
+                if (!source) {
+                    // Przywróć oryginalny tekst przycisku
+                    if (button) {
+                        const originalIcon = soundIcons[soundName] || 'fa-music';
+                        button.innerHTML = `<i class="fas ${originalIcon}"></i> ${soundNames[soundName] || soundName}`;
+                    }
+                    return;
+                }
+                
+                // Utwórz interfejs audio dla kompatybilności z istniejącym kodem
+                const audioInterface = {
+                    soundName: soundName,
+                    volume: volumeSlider.value,
+                    // Właściwości i metody powiązane z interfejsem dźwięku
+                    setVolume: function(value) {
+                        this.volume = value;
+                        soundManager.setSoundVolume(soundName, value);
+                    },
+                    getVolume: function() {
+                        return soundManager.getSoundVolume(soundName);
+                    }
+                };
+                
+                // Dodaj dźwięk do aktywnych
+                activeSounds.set(soundName, audioInterface);
+                
+                // Ustaw atrybut aria-pressed na przycisku
+                if (button) {
+                    // Przywróć oryginalny tekst i dodaj klasę active
+                    const originalIcon = soundIcons[soundName] || 'fa-music';
+                    button.innerHTML = `<i class="fas ${originalIcon}"></i> ${soundNames[soundName] || soundName}`;
+                    button.classList.add('active');
+                    button.setAttribute('aria-pressed', 'true');
+                }
+                
+                // Dodaj kartę dźwięku do kontenera
+                const soundCard = createSoundCard(soundName);
+                activeContainer.appendChild(soundCard);
+            })
+            .catch(error => {
+                console.error(`Błąd odtwarzania dźwięku ${soundName}:`, error);
+                
+                // Przywróć oryginalny tekst przycisku
+                if (button) {
+                    const originalIcon = soundIcons[soundName] || 'fa-music';
+                    button.innerHTML = `<i class="fas ${originalIcon}"></i> ${soundNames[soundName] || soundName}`;
+                }
+                
+                showToast("Błąd", `Wystąpił problem podczas odtwarzania dźwięku ${soundName}: ${error.message}`, "error");
+            });
+        
+    } catch (error) {
+        console.error("Nieoczekiwany błąd podczas odtwarzania dźwięku:", error);
+        showToast("Błąd", `Wystąpił nieoczekiwany błąd podczas odtwarzania dźwięku: ${error.message}`, "error");
+    }
+}
             
             // Inicjalizacja menadżera dźwięków
             const soundManager = new SoundManager();
