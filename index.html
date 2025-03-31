@@ -2562,13 +2562,11 @@ const bajkiGenerator = {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${apiConfig.apiKey}`,
-                    'HTTP-Referer': apiConfig.referer || window.location.origin,
-                    'X-Title': apiConfig.siteTitle || 'Śpij Słoneczko'
                 },
                 body: JSON.stringify({
                     model: apiConfig.model,
                     messages: [
-                        { role: "system", content: "Jesteś pomocnym asystentem specjalizującym się w tworzeniu bajek dla dzieci w języku polskim." },
+                        { role: "system", content: "Jesteś pomocnym asystentem specjalizującym się w tworzeniu bajek na dobranoc dla kobiet w języku polskim." },
                         { role: "user", content: promptText }
                     ],
                     max_tokens: apiConfig.maxTokens,
