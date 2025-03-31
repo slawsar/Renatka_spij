@@ -10,27 +10,27 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <!-- Dodatkowe ikony -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-
-    <!-- Preloadowanie plików audio jako elementy audio dla lepszej kompatybilności -->
-    <audio id="preload-ocean" src="sounds/ocean.wav" preload="auto" style="display:none;"></audio>
-    <audio id="preload-rain" src="sounds/rain.mp3" preload="auto" style="display:none;"></audio>
-    <audio id="preload-forest" src="sounds/forest.mp3" preload="auto" style="display:none;"></audio>
-    <audio id="preload-night" src="sounds/night.mp3" preload="auto" style="display:none;"></audio>
-    <audio id="preload-whitenoise" src="sounds/whitenoise.wav" preload="auto" style="display:none;"></audio>
-    <audio id="preload-dziubasek" src="sounds/dziubasek.mp3" preload="auto" style="display:none;"></audio>
-    <audio id="preload-dziubasek-vol2" src="sounds/dziubasek-vol2.mp3" preload="auto" style="display:none;"></audio>
-
+    
+    <!-- Preload plików audio dla szybszego ładowania -->
+    <link rel="preload" href="sounds/ocean.wav" as="audio">
+    <link rel="preload" href="sounds/rain.mp3" as="audio">
+    <link rel="preload" href="sounds/forest.mp3" as="audio">
+    <link rel="preload" href="sounds/night.mp3" as="audio">
+    <link rel="preload" href="sounds/whitenoise.wav" as="audio">
+    <link rel="preload" href="sounds/dziubasek.mp3" as="audio">
+    <link rel="preload" href="sounds/dziubasek-vol2.mp3" as="audio">
+    
     <style>
-        /* Główna kolorystyka i ogólne stylowanie /
+        /* Główna kolorystyka i ogólne stylowanie */
         :root {
-            / Podstawowe kolory */
+            /* Podstawowe kolory */
             --primary-dark: #0a1128;
             --primary-medium: #1c2541;
             --primary-light: #3a506b;
             --accent: #5bc0be;
             --accent-dark: #3a8a88;
             --text-light: #e9ecef;
-
+            
             /* Przezroczyste warianty kolorów */
             --accent-transparent-light: rgba(91, 192, 190, 0.2);
             --accent-transparent-medium: rgba(91, 192, 190, 0.5);
@@ -41,21 +41,21 @@
             --black-transparent-light: rgba(0, 0, 0, 0.1);
             --black-transparent-medium: rgba(0, 0, 0, 0.3);
             --black-transparent-strong: rgba(0, 0, 0, 0.5);
-
+            
             /* System cieni */
             --shadow-sm: 0 2px 5px rgba(0, 0, 0, 0.2);
             --shadow-md: 0 4px 15px rgba(0, 0, 0, 0.3);
             --shadow-lg: 0 8px 25px rgba(0, 0, 0, 0.4);
-
+            
             /* System zaokrągleń */
             --radius-sm: 8px;
             --radius-md: 10px;
             --radius-lg: 15px;
-
+            
             /* Czas trwania przejść */
             --transition-speed: 0.3s ease;
         }
-
+        
         body {
             background-color: var(--primary-dark);
             color: var(--text-light);
@@ -65,7 +65,7 @@
             overflow-x: hidden;
             transition: background-color var(--transition-speed);
         }
-
+        
         body.light-mode {
             --primary-dark: #e9f5f9;
             --primary-medium: #c4e0f3;
@@ -79,8 +79,8 @@
             background-color: var(--primary-dark);
             color: var(--text-light);
         }
-
-        /* Tło z gwiazdami (zastąpione przez Canvas) */
+        
+        /* Animowane tło z gwiazdami */
         .stars {
             position: fixed;
             top: 0;
@@ -90,7 +90,21 @@
             z-index: -1;
             overflow: hidden;
         }
-
+        
+        .star {
+            position: absolute;
+            background-color: white;
+            border-radius: 50%;
+            opacity: 0;
+            animation: twinkle var(--duration, 4s) infinite var(--delay, 0s);
+        }
+        
+        @keyframes twinkle {
+            0% { opacity: 0; }
+            50% { opacity: var(--intensity, 1); }
+            100% { opacity: 0; }
+        }
+        
         /* Półprzezroczyste chmury */
         .cloud {
             position: absolute;
@@ -100,44 +114,44 @@
             animation: float var(--duration, 60s) infinite linear;
             opacity: 0.3;
         }
-
+        
         @keyframes float {
             0% { transform: translateX(-5%); }
             50% { transform: translateX(5%); }
             100% { transform: translateX(-5%); }
         }
-
+        
         /* Główne elementy stylowania */
         .container {
             padding: 2rem 1rem;
             position: relative;
             z-index: 1;
         }
-
+        
         header {
             text-align: center;
             padding: 2rem 0 1rem;
             position: relative;
         }
-
+        
         h1 {
             color: var(--accent);
             font-size: 2.8rem;
             margin-bottom: 0.5rem;
             text-shadow: 0 0 10px var(--accent-transparent-strong);
         }
-
+        
         h2 {
             color: var(--accent);
             font-size: 1.8rem;
             margin: 1.5rem 0;
         }
-
+        
         h3 {
             color: var(--accent);
             font-size: 1.5rem;
         }
-
+        
         .card {
             background-color: var(--primary-medium);
             border: none;
@@ -146,17 +160,17 @@
             box-shadow: var(--shadow-md);
             transition: transform var(--transition-speed), box-shadow var(--transition-speed);
         }
-
+        
         .card:hover {
             transform: translateY(-5px);
             box-shadow: var(--shadow-lg);
         }
-
+        
         /* Stylowanie odtwarzacza dźwięku */
         .sound-player {
             padding: 1.5rem;
         }
-
+        
         .sound-btn {
             background-color: var(--primary-light);
             color: var(--text-light);
@@ -167,20 +181,20 @@
             transition: all var(--transition-speed);
             box-shadow: var(--shadow-sm);
         }
-
+        
         .sound-btn:hover {
             background-color: var(--accent);
             color: var(--primary-dark);
             transform: translateY(-3px);
             box-shadow: var(--shadow-md);
         }
-
+        
         .sound-btn.active {
             background-color: var(--accent);
             color: var(--primary-dark);
             box-shadow: 0 0 10px var(--accent);
         }
-
+        
         .sound-card {
             background-color: var(--primary-light);
             border-radius: var(--radius-md);
@@ -192,12 +206,12 @@
             opacity: 0.7;
             transition: opacity var(--transition-speed);
         }
-
+        
         .sound-card.active {
             opacity: 1;
             box-shadow: 0 0 10px var(--accent-transparent-medium);
         }
-
+        
         .sound-wave {
             display: flex;
             align-items: flex-end;
@@ -205,11 +219,11 @@
             width: 50px;
             margin-right: 10px;
         }
-
+        
         .sound-wave.active span {
             animation: soundWave 1s infinite;
         }
-
+        
         .sound-wave span {
             display: inline-block;
             width: 4px;
@@ -218,47 +232,47 @@
             height: 5px;
             border-radius: 2px;
         }
-
+        
         @keyframes soundWave {
             0%, 100% { height: 5px; }
             50% { height: 20px; }
         }
-
+        
         .sound-wave span:nth-child(1) { animation-delay: 0.1s; }
         .sound-wave span:nth-child(2) { animation-delay: 0.2s; }
         .sound-wave span:nth-child(3) { animation-delay: 0.05s; }
         .sound-wave span:nth-child(4) { animation-delay: 0.3s; }
         .sound-wave span:nth-child(5) { animation-delay: 0.15s; }
-
+        
         .controls {
             margin-top: 2rem;
         }
-
+        
         .slider-container {
             margin: 1.5rem 0;
         }
-
+        
         .form-label {
             color: var(--accent);
             font-weight: 500;
             font-size: 1.1rem;
             margin-bottom: 0.8rem;
         }
-
+        
         .form-range::-webkit-slider-thumb {
             background: var(--accent);
         }
-
+        
         .form-range::-moz-range-thumb {
             background: var(--accent);
         }
-
+        
         /* Stylowanie timera */
         .timer-container {
             text-align: center;
             margin: 1.5rem 0;
         }
-
+        
         .timer-display {
             font-size: 2.2rem;
             font-weight: bold;
@@ -266,14 +280,14 @@
             color: var(--accent);
             text-shadow: 0 0 5px var(--accent-transparent-medium);
         }
-
+        
         .custom-timer-container {
             margin-top: 1rem;
             display: flex;
             justify-content: center;
             align-items: center;
         }
-
+        
         .custom-timer-input {
             width: 80px;
             background-color: var(--primary-medium);
@@ -284,24 +298,24 @@
             margin-right: 0.5rem;
             text-align: center;
         }
-
+        
         /* Stylowanie dla ćwiczeń relaksacyjnych */
         .relaxation-exercise {
             text-align: center;
             padding: 1.5rem 0;
         }
-
+        
         .breathing-exercise {
             text-align: center;
             padding: 1.5rem 0;
         }
-
+        
         #breathing-description {
             color: var(--text-light);
             font-weight: 500;
             margin-bottom: 1.2rem;
         }
-
+        
         .breathing-circle {
             width: 150px;
             height: 150px;
@@ -315,35 +329,35 @@
             font-size: 1.2rem;
             transition: transform var(--transition-speed), background-color var(--transition-speed);
         }
-
+        
         .breathing-circle.inhale {
             animation: inhale 4s forwards;
         }
-
+        
         .breathing-circle.hold {
             animation: hold 7s forwards;
         }
-
+        
         .breathing-circle.exhale {
             animation: exhale 8s forwards;
         }
-
+        
         .breathing-circle.box-inhale {
             animation: inhale 4s forwards;
         }
-
+        
         .breathing-circle.box-hold1 {
             animation: hold 4s forwards;
         }
-
+        
         .breathing-circle.box-exhale {
             animation: exhale 4s forwards;
         }
-
+        
         .breathing-circle.box-hold2 {
             animation: hold 4s forwards;
         }
-
+        
         .muscle-relaxation-section {
             margin-top: 1.5rem;
             padding: 1rem;
@@ -351,7 +365,7 @@
             background-color: var(--primary-light);
             text-align: left;
         }
-
+        
         .muscle-group {
             padding: 1.2rem;
             margin-bottom: 1rem;
@@ -361,7 +375,7 @@
             cursor: pointer;
             transition: background-color var(--transition-speed);
         }
-
+        
         .muscle-group h4 {
             font-size: 1.3rem;
             font-weight: 600;
@@ -369,20 +383,20 @@
             color: var(--accent);
             text-shadow: 0 1px 2px var(--black-transparent-light);
         }
-
+        
         .muscle-group:hover {
             background-color: var(--primary-light);
         }
-
+        
         .muscle-group.active {
             background-color: var(--accent-dark);
         }
-
+        
         .muscle-group.active h4 {
             color: white;
             text-shadow: 0 1px 2px var(--black-transparent-medium);
         }
-
+        
         .muscle-instruction {
             display: none;
             padding: 1.2rem;
@@ -395,16 +409,16 @@
             color: var(--text-light);
             font-weight: 500;
         }
-
+        
         .muscle-instruction.visible {
             display: block;
         }
-
+        
         .muscle-instruction p {
             margin-bottom: 0.7rem;
             text-shadow: 0 1px 1px var(--black-transparent-light);
         }
-
+        
         .relaxation-progress {
             height: 10px;
             background-color: var(--primary-medium);
@@ -412,14 +426,14 @@
             margin: 1rem 0;
             overflow: hidden;
         }
-
+        
         .relaxation-progress-bar {
             height: 100%;
             background-color: var(--accent);
             width: 0;
             transition: width var(--transition-speed);
         }
-
+        
         .visualization-scene {
             position: relative;
             height: 200px;
@@ -429,26 +443,26 @@
             background-size: cover;
             background-position: center;
         }
-
+        
         .visualization-scene-tabs .exercise-tab.active {
         background-color: var(--accent);
         color: var(--primary-dark);
         box-shadow: 0 0 8px var(--accent);
         transform: translateY(-2px);
         }
-
+        
         .visualization-beach {
             background-image: linear-gradient(to bottom, #87CEEB, #1E90FF);
         }
-
+        
         .visualization-forest {
             background-image: linear-gradient(to bottom, #228B22, #006400);
         }
-
+        
         .visualization-sky {
             background-image: linear-gradient(to bottom, #4169E1, #191970);
         }
-
+        
         .visualization-overlay {
             position: absolute;
             top: 0;
@@ -463,20 +477,19 @@
             padding: 1rem;
             background-color: var(--black-transparent-light);
         }
-
+        
         .visualization-text {
             font-size: 1.2rem;
             max-width: 80%;
             text-align: center;
-            transition: opacity 0.5s ease;
         }
-
+        
         .exercise-navigation {
             display: flex;
             justify-content: space-between;
             margin-top: 1rem;
         }
-
+        
         .nav-btn {
             background-color: var(--primary-light);
             color: var(--text-light);
@@ -486,19 +499,19 @@
             cursor: pointer;
             transition: all var(--transition-speed);
         }
-
+        
         .nav-btn:hover {
             background-color: var(--accent);
             color: var(--primary-dark);
         }
-
+        
         .exercise-tabs {
             display: flex;
             justify-content: center;
             margin-bottom: 1.5rem;
             flex-wrap: wrap;
         }
-
+        
         .exercise-tab {
             padding: 0.7rem 1.2rem;
             margin: 0.3rem;
@@ -509,22 +522,22 @@
             cursor: pointer;
             transition: all var(--transition-speed);
         }
-
+        
         .exercise-tab.active {
             background-color: var(--accent);
             color: var(--primary-dark);
             box-shadow: 0 0 8px var(--accent);
             transform: translateY(-2px);
         }
-
+        
         .exercise-content {
             display: none;
         }
-
+        
         .exercise-content.active {
             display: block;
         }
-
+        
         /* Stylowanie opisów ćwiczeń */
         .exercise-intro {
             font-size: 1.15rem;
@@ -538,22 +551,22 @@
             border-left: 4px solid var(--accent);
             text-shadow: 0 1px 2px var(--black-transparent-light);
         }
-
+        
         @keyframes inhale {
             from { transform: scale(1); background-color: var(--accent-transparent-light); }
             to { transform: scale(1.5); background-color: var(--accent-transparent-medium); }
         }
-
+        
         @keyframes hold {
             from { transform: scale(1.5); background-color: var(--accent-transparent-medium); }
             to { transform: scale(1.5); background-color: var(--accent-transparent-medium); }
         }
-
+        
         @keyframes exhale {
             from { transform: scale(1.5); background-color: var(--accent-transparent-medium); }
             to { transform: scale(1); background-color: var(--accent-transparent-light); }
         }
-
+        
         /* Animacja fali dla wizualizacji plaży */
         .wave {
             position: absolute;
@@ -565,61 +578,61 @@
             border-radius: 50% 50% 0 0;
             animation: wave 8s infinite linear;
         }
-
+        
         .wave:nth-child(2) {
             height: 15px;
             bottom: 10px;
             opacity: 0.6;
             animation-delay: 0.5s;
         }
-
+        
         .wave:nth-child(3) {
             height: 10px;
             bottom: 15px;
             opacity: 0.4;
             animation-delay: 1s;
         }
-
+        
         @keyframes wave {
             0% { transform: translateX(-50%); }
             100% { transform: translateX(50%); }
         }
-
+        
         /* Sekcja porad dotyczących snu */
         .sleep-tips {
             padding: 1.5rem;
         }
-
+        
         .tip-item {
             margin-bottom: 1.5rem;
             padding-bottom: 1.5rem;
             border-bottom: 1px solid var(--primary-light);
         }
-
+        
         .tip-item:last-child {
             border-bottom: none;
             margin-bottom: 0;
             padding-bottom: 0;
         }
-
+        
         .tip-item p {
             color: var(--text-light);
             font-size: 1rem;
             line-height: 1.6;
         }
-
+        
         .tip-item h4 {
             color: var(--accent);
             font-size: 1.2rem;
             margin-bottom: 0.8rem;
             font-weight: 600;
         }
-
+        
         .tip-icon {
             color: var(--accent);
             margin-right: 0.5rem;
         }
-
+        
         /* Przełącznik trybu jasny/ciemny */
         .theme-toggle {
             position: absolute;
@@ -633,11 +646,11 @@
             z-index: 10;
             transition: transform var(--transition-speed);
         }
-
+        
         .theme-toggle:hover {
             transform: rotate(30deg);
         }
-
+        
         /* Stopka */
         footer {
             text-align: center;
@@ -646,7 +659,7 @@
             color: var(--text-light);
             opacity: 0.7;
         }
-
+        
         /* Animacja księżyca */
         .moon {
             position: absolute;
@@ -660,12 +673,12 @@
             z-index: 0;
             transition: background-color var(--transition-speed), box-shadow var(--transition-speed);
         }
-
+        
         .light-mode .moon {
             background-color: #fbbf24;
             box-shadow: 0 0 30px rgba(251, 191, 36, 0.7);
         }
-
+        
         /* Toast powiadomienia */
         .toast-container {
             position: fixed;
@@ -673,23 +686,23 @@
             right: 20px;
             z-index: 1000;
         }
-
+        
         .custom-toast {
             background-color: var(--primary-medium);
             color: var(--text-light);
             border-left: 4px solid var(--accent);
             box-shadow: var(--shadow-md);
         }
-
+        
         /* Stylowanie dla bajek na dobranoc */
         .bedtime-stories {
             margin-top: 1.5rem;
         }
-
+        
         .story-accordion {
             margin-bottom: 1.5rem;
         }
-
+        
         .story-header {
             padding: 1rem;
             background-color: var(--primary-light);
@@ -702,34 +715,34 @@
             align-items: center;
             justify-content: space-between;
         }
-
+        
         .story-header:hover {
             background-color: var(--accent-transparent-light);
         }
-
+        
         .story-header.active {
             background-color: var(--accent-dark);
         }
-
+        
         .story-header h4 {
             color: var(--text-light);
             margin: 0;
             font-size: 1.1rem;
             font-weight: 600;
         }
-
+        
         .story-header.active h4 {
             color: white;
         }
-
+        
         .story-toggle-icon {
             transition: transform var(--transition-speed);
         }
-
+        
         .story-header.active .story-toggle-icon {
             transform: rotate(180deg);
         }
-
+        
         .story-content {
             display: none;
             padding: 1rem;
@@ -739,109 +752,55 @@
             border-left: 4px solid var(--accent);
             line-height: 1.6;
         }
-
+        
         .story-content.visible {
             display: block;
         }
-
+        
         .story-content p {
             margin-bottom: 1rem;
             text-shadow: 0 1px 1px var(--black-transparent-light);
-            color: var(--text-light); /* Jawne określenie koloru dla zapewnienia widoczności /
+            color: var(--text-light); /* Jawne określenie koloru dla zapewnienia widoczności */
             }
-        / Responsywność */
+        /* Responsywność */
         @media (max-width: 768px) {
             h1 {
                 font-size: 2.2rem;
             }
-
+            
             h2 {
                 font-size: 1.5rem;
             }
-
+            
             .sound-btn {
                 padding: 0.6rem 1rem;
                 margin: 0.3rem;
                 font-size: 0.9rem;
             }
-
+            
             .timer-display {
                 font-size: 1.8rem;
             }
-
+            
             .moon {
                 width: 40px;
                 height: 40px;
                 top: 15px;
                 left: 15px;
             }
-
+            
             .breathing-circle {
                 width: 120px;
                 height: 120px;
             }
         }
-
-        /* Dodatkowe style dla Canvas */
-        #stars-canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: -1;
-        }
-
-        /* Timer wizualizacja */
-        .timer-circle {
-            position: relative;
-            width: 150px;
-            height: 150px;
-            margin: 1rem auto;
-            border-radius: 50%;
-            background-color: var(--primary-medium);
-            overflow: hidden;
-        }
-
-        .timer-progress {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            background: conic-gradient(var(--accent) 0deg, transparent 0deg);
-            transform: rotate(-90deg);
-            transform-origin: 50% 50%;
-            transition: background 0.5s linear;
-        }
-
-        .timer-time {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 1.6rem;
-            font-weight: bold;
-            color: var(--accent);
-            z-index: 2;
-        }
-
-        @media (max-width: 576px) {
-            .timer-circle {
-                width: 120px;
-                height: 120px;
-            }
-
-            .timer-time {
-                font-size: 1.2rem;
-            }
-        }
     </style>
 </head>
 <body>
-    <!-- Tło z gwiazdami - teraz używamy Canvas zamiast wielu elementów DOM -->
+    <!-- Tło z gwiazdami i chmurami -->
     <div class="stars" id="stars"></div>
     <div class="moon"></div>
-
+    
     <!-- Toast powiadomienia -->
     <div class="toast-container">
         <div class="toast custom-toast" role="alert" aria-live="assertive" aria-atomic="true" id="app-toast">
@@ -854,26 +813,26 @@
             </div>
         </div>
     </div>
-
+    
     <div class="container">
         <!-- Przełącznik trybu jasny/ciemny -->
         <button class="theme-toggle" id="theme-toggle" title="Zmień motyw">
             <i class="fas fa-moon" id="theme-icon"></i>
         </button>
-
+        
         <!-- Nagłówek -->
         <header>
             <h1>Śpij Słoneczko</h1>
             <p class="lead">Relaksująca aplikacja stworzona przez dziubaska dla Renatki</p>
         </header>
-
+        
         <!-- Główna zawartość -->
         <main>
             <!-- Odtwarzacz dźwięków i timer -->
             <div class="card sound-player">
                 <div class="card-body">
                     <h2><i class="fas fa-music"></i> Relaksujące dźwięki</h2>
-
+                    
                     <!-- Przyciski dźwięków -->
                     <div class="d-flex flex-wrap justify-content-center mb-4">
                         <button class="sound-btn" data-sound="ocean"><i class="fas fa-water"></i> Szum morza</button>
@@ -884,29 +843,23 @@
                         <button class="sound-btn" data-sound="dziubasek"><i class="fas fa-heart"></i> Dziubasek</button>
                         <button class="sound-btn" data-sound="dziubasek-vol2"><i class="fas fa-heartbeat"></i> Dziubasek Vol.2</button>
                     </div>
-
+                    
                     <!-- Wizualizacja aktywnych dźwięków -->
                     <div class="active-sounds my-3" id="active-sounds-container">
                         <!-- Aktywne dźwięki będą dodawane tutaj dynamicznie -->
                     </div>
-
+                    
                     <div class="controls">
                         <!-- Kontrola głośności -->
                         <div class="slider-container">
                             <label for="volume" class="form-label"><i class="fas fa-volume-up"></i> Głośność</label>
                             <input type="range" class="form-range" id="volume" min="0" max="1" step="0.01" value="0.5">
                         </div>
-
+                        
                         <!-- Timer -->
                         <div class="timer-container">
                             <h3><i class="fas fa-clock"></i> Timer snu</h3>
-
-                            <!-- Dodano wizualny timer -->
-                            <div class="timer-circle">
-                                <div class="timer-progress" id="timer-progress"></div>
-                                <div class="timer-time" id="timer-display">00:00:00</div>
-                            </div>
-
+                            <div class="timer-display" id="timer-display">00:00:00</div>
                             <div class="d-flex flex-wrap justify-content-center">
                                 <button class="sound-btn timer-btn" data-time="5">5 min</button>
                                 <button class="sound-btn timer-btn" data-time="15">15 min</button>
@@ -914,7 +867,7 @@
                                 <button class="sound-btn timer-btn" data-time="60">1 godz</button>
                                 <button class="sound-btn timer-btn" data-time="0"><i class="fas fa-stop"></i> Wyłącz</button>
                             </div>
-
+                            
                             <!-- Niestandardowy timer -->
                             <div class="custom-timer-container mt-3">
                                 <input type="number" min="1" max="480" class="custom-timer-input" id="custom-timer-input" placeholder="min">
@@ -924,19 +877,19 @@
                     </div>
                 </div>
             </div>
-
+            
             <!-- Rozbudowane ćwiczenia relaksacyjne -->
             <div class="card relaxation-exercises">
                 <div class="card-body">
                     <h2><i class="fas fa-spa"></i> Ćwiczenia relaksacyjne</h2>
-
+                    
                     <div class="exercise-tabs">
                         <button class="exercise-tab active" data-tab="breathing"><i class="fas fa-lungs"></i> Techniki oddechowe</button>
                         <button class="exercise-tab" data-tab="muscle"><i class="fas fa-walking"></i> Relaksacja mięśni</button>
                         <button class="exercise-tab" data-tab="visualization"><i class="fas fa-cloud-sun"></i> Wizualizacje</button>
                         <button class="exercise-tab" data-tab="stories"><i class="fas fa-book"></i> Bajki na dobranoc</button>
                     </div>
-
+                    
                     <!-- Techniki oddechowe -->
                     <div class="exercise-content active" id="breathing-content">
                         <div class="exercise-tabs">
@@ -944,7 +897,7 @@
                             <button class="exercise-tab" data-breathing="box"><i class="fas fa-square"></i> Oddychanie kwadratowe 4-4-4-4</button>
                             <button class="exercise-tab" data-breathing="diaphragm"><i class="fas fa-circle"></i> Oddychanie przeponowe</button>
                         </div>
-
+                        
                         <div class="breathing-exercise">
                             <p id="breathing-description">Technika 4-7-8 pomaga zrelaksować się i przygotować do snu</p>
                             <div class="breathing-circle" id="breathing-circle">
@@ -953,15 +906,15 @@
                             <button class="sound-btn mt-4" id="start-breathing-btn">Rozpocznij ćwiczenie</button>
                         </div>
                     </div>
-
+                    
                     <!-- Progresywna relaksacja mięśni -->
                     <div class="exercise-content" id="muscle-content">
                         <p class="exercise-intro">Progresywna relaksacja mięśni polega na naprzemiennym napinaniu i rozluźnianiu poszczególnych grup mięśni. Wykonuj to ćwiczenie w wygodnej pozycji, najlepiej leżącej.</p>
-
+                        
                         <div class="relaxation-progress">
                             <div class="relaxation-progress-bar" id="muscle-progress"></div>
                         </div>
-
+                        
                         <div class="muscle-relaxation-section">
                             <div class="muscle-group" data-group="hands">
                                 <h4><i class="fas fa-hand-paper"></i> Dłonie i przedramiona</h4>
@@ -972,7 +925,7 @@
                                     <p>4. Odpoczywaj przez 10 sekund, skupiając się na uczuciu rozluźnienia</p>
                                 </div>
                             </div>
-
+                            
                             <div class="muscle-group" data-group="arms">
                                 <h4><i class="fas fa-running"></i> Ramiona i bicepsy</h4>
                                 <div class="muscle-instruction">
@@ -982,7 +935,7 @@
                                     <p>4. Odpoczywaj przez 10 sekund, zauważając różnicę między napięciem a rozluźnieniem</p>
                                 </div>
                             </div>
-
+                            
                             <div class="muscle-group" data-group="shoulders">
                                 <h4><i class="fas fa-user"></i> Barki i kark</h4>
                                 <div class="muscle-instruction">
@@ -992,7 +945,7 @@
                                     <p>4. Odpoczywaj przez 10 sekund, skupiając się na cieple rozchodzącym się po barkach</p>
                                 </div>
                             </div>
-
+                            
                             <div class="muscle-group" data-group="face">
                                 <h4><i class="fas fa-smile"></i> Twarz i szczęka</h4>
                                 <div class="muscle-instruction">
@@ -1002,7 +955,7 @@
                                     <p>4. Odpoczywaj przez 10 sekund, pozwalając twarzy być całkowicie rozluźnioną</p>
                                 </div>
                             </div>
-
+                            
                             <div class="muscle-group" data-group="chest">
                                 <h4><i class="fas fa-lungs"></i> Klatka piersiowa i brzuch</h4>
                                 <div class="muscle-instruction">
@@ -1012,7 +965,7 @@
                                     <p>4. Odpoczywaj przez 10 sekund, oddychając naturalnie</p>
                                 </div>
                             </div>
-
+                            
                             <div class="muscle-group" data-group="legs">
                                 <h4><i class="fas fa-shoe-prints"></i> Nogi i stopy</h4>
                                 <div class="muscle-instruction">
@@ -1023,22 +976,22 @@
                                 </div>
                             </div>
                         </div>
-
+                        
                         <div class="text-center mt-4">
                             <button class="sound-btn" id="start-muscle-relaxation">Rozpocznij pełne ćwiczenie</button>
                         </div>
                     </div>
-
+                    
                     <!-- Wizualizacje relaksacyjne -->
                     <div class="exercise-content" id="visualization-content">
                         <p class="exercise-intro">Wybierz scenę do wizualizacji. Zamknij oczy, słuchaj opisu i spróbuj wyobrazić sobie to miejsce wszystkimi zmysłami.</p>
-
+                        
                         <div class="exercise-tabs visualization-scene-tabs">
                             <button class="exercise-tab active" data-scene="beach"><i class="fas fa-umbrella-beach"></i> Plaża</button>
                             <button class="exercise-tab" data-scene="forest"><i class="fas fa-tree"></i> Las</button>
                             <button class="exercise-tab" data-scene="sky"><i class="fas fa-cloud-moon"></i> Rozgwieżdżone niebo</button>
                         </div>
-
+                        
                         <div class="visualization-scene visualization-beach" id="visualization-scene">
                             <div class="wave"></div>
                             <div class="wave"></div>
@@ -1050,16 +1003,16 @@
                                 </p>
                             </div>
                         </div>
-
+                        
                         <div class="text-center mt-3">
                             <button class="sound-btn" id="start-visualization">Rozpocznij wizualizację</button>
                         </div>
                     </div>
-
+                    
                     <!-- Bajki na dobranoc -->
                     <div class="exercise-content" id="stories-content">
                         <p class="exercise-intro">Wybierz jedną z bajek na dobranoc. Przeczytaj lub opowiedz ją, aby pomóc w wyciszeniu się przed snem.</p>
-
+                        
                         <div class="bedtime-stories">
                             <div class="story-accordion">
                                 <div class="story-header" data-story="star">
@@ -1079,7 +1032,7 @@
                                     <p>I tak Renatka odkryła, że kiedy jest się z kimś, kto daje wsparcie i miłość, wszystkie lęki stają się mniejsze, a nasze wewnętrzne światło świeci najjaśniej.</p>
                                 </div>
                             </div>
-
+                            
                             <div class="story-accordion">
                                 <div class="story-header" data-story="forest">
                                     <h4><i class="fas fa-tree tip-icon"></i> Dziubasek i Las Pięknych Snów</h4>
@@ -1098,7 +1051,7 @@
                                     <p>I tak Renatka odkryła, że najpiękniejsze sny rodzą się z miłości i troski, a najlepszym przewodnikiem do krainy spokojnego snu jest ktoś, kto troszczy się o nas całym sercem.</p>
                                 </div>
                             </div>
-
+                            
                             <div class="story-accordion">
                                 <div class="story-header" data-story="moon">
                                     <h4><i class="fas fa-moon tip-icon"></i> Renatka, Księżyc i Nocne Marzenia</h4>
@@ -1117,7 +1070,7 @@
                                     <p>I tak, każdej nocy, gdy patrzysz na niebo i widzisz Księżyc otoczony gwiazdami, pamiętaj – to Renatka i Dziubasek opiekują się twoimi najcenniejszymi marzeniami, aż nadejdzie czas, by stały się rzeczywistością.</p>
                                 </div>
                             </div>
-
+                            
                             <div class="story-accordion">
                                 <div class="story-header" data-story="cloud">
                                     <h4><i class="fas fa-cloud tip-icon"></i> Dziubasek, Chmurka Pełna Miłości</h4>
@@ -1144,7 +1097,7 @@
                     </div>
                 </div>
             </div>
-
+            
             <!-- Porady dotyczące snu -->
             <div class="card sleep-tips">
                 <div class="card-body">
@@ -1176,14 +1129,14 @@
                 </div>
             </div>
         </main>
-
+        
         <!-- Stopka -->
         <footer>
             <p>© 2025 Śpij Słoneczko | Stworzone z miłością przez dziubaska dla Renatki 💝🌞💝</p>
             <p><a href="#" id="save-preferences" class="text-decoration-none" style="color: var(--accent)">Zapisz preferencje</a></p>
         </footer>
     </div>
-
+    
     <!-- Szablony HTML -->
     <template id="sound-card-template">
         <div class="sound-card mb-2">
@@ -1203,10 +1156,10 @@
             </div>
         </div>
     </template>
-
+    
     <!-- Bootstrap JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-
+    
     <!-- Główny skrypt JavaScript -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -1215,104 +1168,73 @@
             tooltipTriggerList.map(function (tooltipTriggerEl) {
                 return new bootstrap.Tooltip(tooltipTriggerEl);
             });
-
+            
             // Inicjalizacja toastów
             const toastEl = document.getElementById('app-toast');
             const toast = new bootstrap.Toast(toastEl, {
                 autohide: true,
                 delay: 3000
             });
-
+            
             // Funkcja do pokazywania powiadomień
             function showToast(title, message) {
                 document.getElementById('toast-title').textContent = title;
                 document.getElementById('toast-message').textContent = message;
                 toast.show();
             }
-
-            // Tworzenie gwiazdnego tła za pomocą Canvas
-            function createStarryBackground() {
-                const starsContainer = document.getElementById('stars');
-                const canvas = document.createElement('canvas');
-                canvas.id = 'stars-canvas';
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight;
-                starsContainer.appendChild(canvas);
-
-                const ctx = canvas.getContext('2d');
-                const starsCount = 150;
-                const stars = [];
-
-                // Tworzenie gwiazd z ich właściwościami
-                for (let i = 0; i < starsCount; i++) {
-                    stars.push({
-                        x: Math.random() * canvas.width,
-                        y: Math.random() * canvas.height,
-                        size: Math.random() * 2 + 1,
-                        intensity: 0.2 + Math.random() * 0.8,
-                        phase: Math.random() * Math.PI * 2
-                    });
-                }
-
-                // Dodanie kilku chmur
-                const clouds = [];
-                for (let i = 0; i < 5; i++) {
-                    clouds.push({
-                        x: Math.random() * canvas.width,
-                        y: Math.random() * (canvas.height / 2),
-                        width: 100 + Math.random() * 200,
-                        height: 50 + Math.random() * 100,
-                        speed: 0.1 + Math.random() * 0.2,
-                        opacity: 0.1 + Math.random() * 0.2
-                    });
-                }
-
-                // Funkcja animacji
-                function animate() {
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    const time = Date.now() / 1000;
-
-                    // Rysuj gwiazdy
-                    stars.forEach(star => {
-                        const intensity = star.intensity * (0.5 + 0.5 * Math.sin(time + star.phase));
-                        ctx.fillStyle = rgba(255, 255, 255, ${intensity});
-                        ctx.beginPath();
-                        ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
-                        ctx.fill();
-                    });
-
-                    // Rysuj chmury
-                    clouds.forEach(cloud => {
-                        cloud.x += cloud.speed;
-                        if (cloud.x > canvas.width + cloud.width) {
-                            cloud.x = -cloud.width;
-                        }
-
-                        ctx.fillStyle = rgba(255, 255, 255, ${cloud.opacity});
-                        ctx.beginPath();
-                        ctx.ellipse(cloud.x, cloud.y, cloud.width / 2, cloud.height / 2, 0, 0, Math.PI * 2);
-                        ctx.fill();
-                    });
-
-                    requestAnimationFrame(animate);
-                }
-
-                animate();
-
-                // Obsługa zmiany rozmiaru okna
-                window.addEventListener('resize', function() {
-                    canvas.width = window.innerWidth;
-                    canvas.height = window.innerHeight;
-                });
+            
+            // Tworzenie gwiazd dla animowanego tła
+            const starsContainer = document.getElementById('stars');
+            const starsCount = 150; // Liczba gwiazd
+            
+            // Tworzenie gwiazd
+            for (let i = 0; i < starsCount; i++) {
+                const star = document.createElement('div');
+                star.classList.add('star');
+                
+                // Losowa pozycja
+                star.style.left = `${Math.random() * 100}%`;
+                star.style.top = `${Math.random() * 100}%`;
+                
+                // Losowy rozmiar (1-3px)
+                const size = Math.random() * 2 + 1;
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+                
+                // Losowa intensywność blasku
+                star.style.setProperty('--intensity', 0.2 + Math.random() * 0.8);
+                
+                // Losowe opóźnienie i czas trwania animacji
+                star.style.setProperty('--delay', `${Math.random() * 4}s`);
+                star.style.setProperty('--duration', `${3 + Math.random() * 5}s`);
+                
+                starsContainer.appendChild(star);
             }
-
-            // Inicjalizacja tła gwieździstego
-            createStarryBackground();
-
+            
+            // Dodanie kilku przesuwających się chmur
+            for (let i = 0; i < 5; i++) {
+                const cloud = document.createElement('div');
+                cloud.classList.add('cloud');
+                
+                // Losowa pozycja
+                cloud.style.left = `${Math.random() * 100}%`;
+                cloud.style.top = `${Math.random() * 100}%`;
+                
+                // Losowy rozmiar
+                const size = 100 + Math.random() * 200;
+                cloud.style.width = `${size}px`;
+                cloud.style.height = `${size / 2}px`;
+                
+                // Losowe opóźnienie i czas trwania animacji
+                cloud.style.setProperty('--duration', `${50 + Math.random() * 30}s`);
+                
+                starsContainer.appendChild(cloud);
+            }
+            
             // ========== PRZEŁĄCZNIK TRYBU JASNY/CIEMNY ==========
             const themeToggle = document.getElementById('theme-toggle');
             const themeIcon = document.getElementById('theme-icon');
-
+            
             // Sprawdź, czy użytkownik ma zapisane preferencje
             const savedTheme = localStorage.getItem('spijSloneczko-theme');
             if (savedTheme === 'light') {
@@ -1320,10 +1242,10 @@
                 themeIcon.classList.remove('fa-moon');
                 themeIcon.classList.add('fa-sun');
             }
-
+            
             themeToggle.addEventListener('click', function() {
                 document.body.classList.toggle('light-mode');
-
+                
                 if (document.body.classList.contains('light-mode')) {
                     themeIcon.classList.remove('fa-moon');
                     themeIcon.classList.add('fa-sun');
@@ -1334,42 +1256,26 @@
                     localStorage.setItem('spijSloneczko-theme', 'dark');
                 }
             });
-
+            
             // ========== SYSTEM ODTWARZANIA DŹWIĘKÓW ==========
-
+            
             // Pobranie elementów DOM
             const soundButtons = document.querySelectorAll('.sound-btn[data-sound]');
             const volumeSlider = document.getElementById('volume');
             const timerButtons = document.querySelectorAll('.timer-btn');
             const timerDisplay = document.getElementById('timer-display');
-            const timerProgress = document.getElementById('timer-progress');
             const customTimerInput = document.getElementById('custom-timer-input');
             const customTimerBtn = document.getElementById('custom-timer-btn');
             const activeContainer = document.getElementById('active-sounds-container');
             const soundCardTemplate = document.getElementById('sound-card-template');
-
+            
             // Timer
             let timerInterval = null;
             let timerEndTime = null;
-            let timerStartTime = null;
-
+            
             // Przechowywanie aktywnych dźwięków (jako mapa)
             const activeSounds = new Map();
-
-            // Pula Audio - optymalizacja tworzenia obiektów Audio
-            const audioPool = {
-                pool: new Map(),
-
-                getAudio: function(source) {
-                    if (!this.pool.has(source)) {
-                        const audio = new Audio(source);
-                        audio.load(); // Preload audio
-                        this.pool.set(source, audio);
-                    }
-                    return this.pool.get(source).cloneNode(); // Zawsze zwracaj kopię
-                }
-            };
-
+            
             // ===== KONFIGURACJA DŹWIĘKÓW =====
             const sounds = {
                 'ocean': 'sounds/ocean.wav',
@@ -1380,7 +1286,7 @@
                 'dziubasek': 'sounds/dziubasek.mp3',
                 'dziubasek-vol2': 'sounds/dziubasek-vol2.mp3'
             };
-
+            
             // Mapowanie nazw dźwięków na przyjazne nazwy polskie
             const soundNames = {
                 'ocean': 'Szum morza',
@@ -1391,7 +1297,7 @@
                 'dziubasek': 'Dziubasek',
                 'dziubasek-vol2': 'Dziubasek Vol.2'
             };
-
+            
             // Mapowanie nazw dźwięków na ikony
             const soundIcons = {
                 'ocean': 'fa-water',
@@ -1402,46 +1308,46 @@
                 'dziubasek': 'fa-heart',
                 'dziubasek-vol2': 'fa-heartbeat'
             };
-
+            
             // Funkcja tworząca element karty dźwięku
             function createSoundCard(soundName, audio) {
                 const template = soundCardTemplate.content.cloneNode(true);
                 const card = template.querySelector('.sound-card');
                 card.dataset.sound = soundName;
-
+                
                 // Ustaw nazwę dźwięku
                 const nameElement = card.querySelector('.sound-name');
                 nameElement.textContent = soundNames[soundName] || soundName;
-
+                
                 // Dodaj ikonę
                 const iconClass = soundIcons[soundName];
                 if (iconClass) {
                     const icon = document.createElement('i');
-                    icon.className = fas ${iconClass} me-2;
+                    icon.className = `fas ${iconClass} me-2`;
                     nameElement.prepend(icon);
                 }
-
+                
                 // Ustaw klasę aktywną dla wizualizacji dźwięku
                 card.classList.add('active');
                 const soundWave = card.querySelector('.sound-wave');
                 soundWave.classList.add('active');
-
+                
                 // Obsługa indywidualnej głośności
                 const volumeControl = card.querySelector('.individual-volume');
                 volumeControl.value = audio.volume;
                 volumeControl.addEventListener('input', function() {
                     audio.volume = parseFloat(this.value);
                 });
-
+                
                 // Obsługa przycisku zamykania
                 const closeBtn = card.querySelector('.sound-close');
                 closeBtn.addEventListener('click', function() {
                     stopSound(soundName);
                 });
-
+                
                 return card;
             }
-
+            
             // Funkcja odtwarzania dźwięku
             function playSound(soundName) {
                 // Jeśli dźwięk jest już odtwarzany, zatrzymaj go
@@ -1449,97 +1355,82 @@
                     stopSound(soundName);
                     return;
                 }
-
+                
                 try {
                     // Sprawdź, czy ścieżka do dźwięku istnieje
                     if (!sounds[soundName]) {
-                        showToast("Błąd", Brak pliku dźwiękowego dla: ${soundName});
+                        showToast("Błąd", `Brak pliku dźwiękowego dla: ${soundName}`);
                         return;
                     }
-
-                    // Pobierz dźwięk z puli
-                    const audio = audioPool.getAudio(sounds[soundName]);
-
+                    
+                    // Utwórz element audio
+                    const audio = new Audio(sounds[soundName]);
+                    
                     // Ustawienia
                     audio.loop = true; // Zapętlenie dźwięku
-
+                    
                     // Pobierz aktualną wartość głośności z suwaka
                     const volume = parseFloat(volumeSlider.value);
                     audio.volume = volume;
-
-                    // Rozszerzona obsługa błędów
-                    audio.onerror = function(e) {
-                        console.error(Błąd ładowania dźwięku ${soundName}:, e);
-                        showToast("Błąd", Nie można załadować dźwięku: ${soundNames[soundName]});
-                        stopSound(soundName);
+                    
+                    // Obsługa błędów ładowania pliku
+                    audio.onerror = function() {
+                        showToast("Błąd", `Nie można załadować pliku: ${sounds[soundName]}`);
                     };
-
+                    
                     // Rozpocznij odtwarzanie
                     audio.play().catch(err => {
-                        console.error("Błąd odtwarzania:", err);
                         showToast("Błąd", "Błąd odtwarzania dźwięku. Sprawdź uprawnienia przeglądarki.");
                     });
-
+                    
                     // Dodaj dźwięk do aktywnych
                     activeSounds.set(soundName, audio);
-
+                    
                     // Dodaj klasę active do przycisku
-                    document.querySelector(.sound-btn[data-sound="${soundName}"]).classList.add('active');
-
+                    document.querySelector(`.sound-btn[data-sound="${soundName}"]`).classList.add('active');
+                    
                     // Dodaj kartę dźwięku do kontenera
                     const soundCard = createSoundCard(soundName, audio);
                     activeContainer.appendChild(soundCard);
-
+                    
                 } catch (error) {
-                    console.error("Nieoczekiwany błąd:", error);
                     showToast("Błąd", "Wystąpił nieoczekiwany błąd podczas odtwarzania dźwięku");
                 }
             }
-
+            
             // Zatrzymanie pojedynczego dźwięku
             function stopSound(soundName) {
                 if (activeSounds.has(soundName)) {
                     const audio = activeSounds.get(soundName);
                     audio.pause();
                     audio.currentTime = 0;
-
-                    // Wyczyść nasłuchiwacze zdarzeń - zapobieganie wyciekom pamięci
-                    audio.onended = null;
-                    audio.onerror = null;
-                    audio.oncanplay = null;
-
                     activeSounds.delete(soundName);
-
+                    
                     // Usuń klasę active z przycisku
-                    const button = document.querySelector(.sound-btn[data-sound="${soundName}"]);
+                    const button = document.querySelector(`.sound-btn[data-sound="${soundName}"]`);
                     if (button) button.classList.remove('active');
-
+                    
                     // Usuń kartę dźwięku
-                    const card = document.querySelector(.sound-card[data-sound="${soundName}"]);
+                    const card = document.querySelector(`.sound-card[data-sound="${soundName}"]`);
                     if (card) card.remove();
                 }
             }
-
+            
             // Zatrzymanie wszystkich dźwięków
             function stopAllSounds() {
                 for (const [soundName, audio] of activeSounds.entries()) {
                     audio.pause();
                     audio.currentTime = 0;
-
-                    // Wyczyść nasłuchiwacze zdarzeń
-                    audio.onended = null;
-                    audio.onerror = null;
-                    audio.oncanplay = null;
-
+                    
                     // Usuń klasę active z przycisku
-                    const button = document.querySelector(.sound-btn[data-sound="${soundName}"]);
+                    const button = document.querySelector(`.sound-btn[data-sound="${soundName}"]`);
                     if (button) button.classList.remove('active');
                 }
-
+                
                 activeSounds.clear();
                 activeContainer.innerHTML = '';
             }
-
+            
             // Funkcja do płynnego wyciszania dźwięków
             function fadeOutAllSounds(duration = 3000) {
                 // Zapisz początkowe głośności dla każdego dźwięku
@@ -1547,17 +1438,17 @@
                 for (const [soundName, audio] of activeSounds.entries()) {
                     initialVolumes.set(soundName, audio.volume);
                 }
-
+                
                 const startTime = Date.now();
                 const fadeInterval = setInterval(() => {
                     const elapsed = Date.now() - startTime;
                     const ratio = 1 - Math.min(elapsed / duration, 1);
-
+                    
                     // Aktualizuj głośność każdego dźwięku
                     for (const [soundName, audio] of activeSounds.entries()) {
                         audio.volume = initialVolumes.get(soundName) * ratio;
                     }
-
+                    
                     // Zatrzymaj interwał i dźwięki po zakończeniu wyciszania
                     if (elapsed >= duration) {
                         clearInterval(fadeInterval);
@@ -1565,52 +1456,50 @@
                     }
                 }, 50);
             }
-
+            
             // Ustawienie timera
             function setTimer(minutes) {
                 // Wyczyszczenie istniejącego timera
                 clearInterval(timerInterval);
-
+                
                 // Usunięcie klasy active ze wszystkich przycisków timera
                 timerButtons.forEach(btn => btn.classList.remove('active'));
-
+                
                 // Jeśli minutes wynosi 0, wyczyść timer
                 if (minutes === 0) {
                     timerDisplay.textContent = '00:00:00';
-                    timerProgress.style.background = 'conic-gradient(var(--accent) 0deg, transparent 0deg)';
                     timerEndTime = null;
-                    timerStartTime = null;
                     return;
                 }
-
+                
                 // Aktywuj przycisk timera jeśli jest standardowym timerem
-                const timerBtn = document.querySelector(.timer-btn[data-time="${minutes}"]);
+                const timerBtn = document.querySelector(`.timer-btn[data-time="${minutes}"]`);
                 if (timerBtn) {
                     timerBtn.classList.add('active');
                 }
-
+                
                 // Oblicz czas zakończenia
-                timerStartTime = new Date();
-                timerEndTime = new Date(timerStartTime.getTime() + minutes * 60000);
-
+                const now = new Date();
+                timerEndTime = new Date(now.getTime() + minutes * 60000);
+                
                 // Natychmiast aktualizuj wyświetlanie timera
                 updateTimerDisplay();
-
+                
                 // Ustaw interwał do aktualizacji wyświetlania
                 timerInterval = setInterval(function() {
                     if (!updateTimerDisplay()) {
                         // Timer zakończony
                         clearInterval(timerInterval);
-
+                        
                         // Płynnie wycisz wszystkie dźwięki
                         fadeOutAllSounds(5000);
-
+                        
                         // Usuń aktywne klasy z przycisków timera
                         timerButtons.forEach(btn => btn.classList.remove('active'));
-
+                        
                         // Powiadomienie
                         showToast('Timer zakończony', 'Dźwięki zostały płynnie wyciszone.');
-
+                        
                         // Powiadomienie przeglądarki (opcjonalnie)
                         if ('Notification' in window && Notification.permission === 'granted') {
                             new Notification('Śpij Słoneczko', {
@@ -1620,46 +1509,36 @@
                         }
                     }
                 }, 1000);
-
+                
                 // Pokaż powiadomienie o ustawieniu timera
-                showToast('Timer ustawiony', Timer ustawiony na ${minutes} minut.);
+                showToast('Timer ustawiony', `Timer ustawiony na ${minutes} minut.`);
             }
-
+            
             // Aktualizacja wyświetlania timera
             function updateTimerDisplay() {
-                if (!timerEndTime || !timerStartTime) return false;
-
+                if (!timerEndTime) return false;
+                
                 const now = new Date();
                 const diff = timerEndTime - now;
-
+                
                 // Jeśli timer się zakończył
                 if (diff <= 0) {
                     timerDisplay.textContent = '00:00:00';
-                    timerProgress.style.background = 'conic-gradient(var(--accent) 0deg, transparent 0deg)';
                     return false;
                 }
-
+                
                 // Oblicz godziny, minuty, sekundy
                 const hours = Math.floor(diff / 3600000);
                 const minutes = Math.floor((diff % 3600000) / 60000);
                 const seconds = Math.floor((diff % 60000) / 1000);
-
+                
                 // Formatuj wyświetlanie
                 timerDisplay.textContent = 
-                    ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')};
-
-                // Aktualizuj wizualny wskaźnik
-                const totalDuration = timerEndTime - timerStartTime;
-                const elapsed = now - timerStartTime;
-                const percentage = (elapsed / totalDuration) * 100;
-                const degrees = (percentage / 100) * 360;
-
-                timerProgress.style.background = 
-                    conic-gradient(var(--accent) ${degrees}deg, transparent ${degrees}deg);
-
+                    `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
                 return true;
             }
-
+            
             // =========== ROZBUDOWANE ĆWICZENIA RELAKSACYJNE ===========
             // Zmienne dla ćwiczeń oddechowych
             const breathingCircle = document.getElementById('breathing-circle');
@@ -1668,7 +1547,7 @@
             const startBreathingBtn = document.getElementById('start-breathing-btn');
             let breathingInterval = null;
             let currentBreathingType = '478'; // domyślnie 4-7-8
-
+            
             // Definicje ćwiczeń oddechowych
             const breathingTypes = {
                 '478': {
@@ -1696,7 +1575,7 @@
                     ]
                 }
             };
-
+            
             // Funkcja rozpoczynająca ćwiczenie oddechowe
             function startBreathingExercise() {
                 // Zatrzymaj istniejący interwał jeśli istnieje
@@ -1707,37 +1586,37 @@
                     startBreathingBtn.textContent = 'Rozpocznij ćwiczenie';
                     return;
                 }
-
+                
                 const exerciseConfig = breathingTypes[currentBreathingType];
                 let phase = 0;
                 const phases = exerciseConfig.phases;
-
+                
                 function updateBreathingPhase() {
                     const currentPhase = phases[phase];
-
+                    
                     // Usuń wszystkie klasy animacji
                     breathingCircle.className = 'breathing-circle';
-
+                    
                     // Dodaj nową klasę animacji
                     setTimeout(() => {
                         breathingCircle.classList.add(currentPhase.name);
                         breathingText.textContent = currentPhase.text;
                     }, 10);
-
+                    
                     // Przejdź do następnej fazy
                     phase = (phase + 1) % phases.length;
-
+                    
                     // Ustaw timeout dla następnej fazy
                     breathingInterval = setTimeout(updateBreathingPhase, currentPhase.duration);
                 }
-
+                
                 // Rozpocznij od pierwszej fazy
                 updateBreathingPhase();
-
+                
                 // Zmień tekst przycisku
                 startBreathingBtn.textContent = 'Zatrzymaj ćwiczenie';
             }
-
+            
             // Obsługa przycisków wyboru techniki oddechowej
             document.querySelectorAll('.exercise-tab[data-breathing]').forEach(tab => {
                 tab.addEventListener('click', function() {
@@ -1749,13 +1628,13 @@
                         breathingText.textContent = 'Kliknij, aby rozpocząć';
                         startBreathingBtn.textContent = 'Rozpocznij ćwiczenie';
                     }
-
+                    
                     // Ustaw nowy typ oddychania
                     currentBreathingType = this.dataset.breathing;
-
+                    
                     // Aktualizuj opis
                     breathingDescription.textContent = breathingTypes[currentBreathingType].description;
-
+                    
                     // Aktualizuj aktywny przycisk
                     document.querySelectorAll('.exercise-tab[data-breathing]').forEach(t => {
                         t.classList.remove('active');
@@ -1763,7 +1642,7 @@
                     this.classList.add('active');
                 });
             });
-
+            
             // Obsługa przycisku ćwiczenia oddechowego
             startBreathingBtn.addEventListener('click', function() {
                 if (this.textContent.includes('Rozpocznij')) {
@@ -1778,32 +1657,31 @@
                     this.textContent = 'Rozpocznij ćwiczenie';
                 }
             });
-
+            
             // Umożliwienie kliknięcia bezpośrednio na kółko
             breathingCircle.addEventListener('click', function() {
                 startBreathingBtn.click();
             });
-
+            
             // =========== PROGRESYWNA RELAKSACJA MIĘŚNI ===========
             const muscleGroups = document.querySelectorAll('.muscle-group');
             const startMuscleBtn = document.getElementById('start-muscle-relaxation');
             const muscleProgress = document.getElementById('muscle-progress');
             let muscleRelaxationInterval = null;
             let currentMuscleGroup = 0;
-
-            // Obsługa kliknięć w grupy
+            
             // Obsługa kliknięć w grupy mięśniowe
             muscleGroups.forEach(group => {
                 group.addEventListener('click', function() {
                     // Przełącz widoczność instrukcji
                     const instruction = this.querySelector('.muscle-instruction');
                     instruction.classList.toggle('visible');
-
+                    
                     // Przełącz stan aktywny grupy
                     this.classList.toggle('active');
                 });
             });
-
+            
             // Funkcja prowadząca przez pełne ćwiczenie relaksacji mięśniowej
             function startMuscleRelaxation() {
                 // Zatrzymanie istniejącego ćwiczenia
@@ -1818,16 +1696,16 @@
                     muscleProgress.style.width = '0%';
                     return;
                 }
-
+                
                 // Przygotuj wszystkie grupy
                 muscleGroups.forEach(group => {
                     group.classList.remove('active');
                     group.querySelector('.muscle-instruction').classList.remove('visible');
                 });
-
+                
                 currentMuscleGroup = 0;
                 startMuscleBtn.textContent = 'Zatrzymaj ćwiczenie';
-
+                
                 // Funkcja przechodząca przez poszczególne grupy mięśniowe
                 function goToNextMuscleGroup() {
                     // Zakończ ćwiczenie po przejściu przez wszystkie grupy
@@ -1835,10 +1713,10 @@
                         clearInterval(muscleRelaxationInterval);
                         muscleRelaxationInterval = null;
                         startMuscleBtn.textContent = 'Rozpocznij pełne ćwiczenie';
-
+                        
                         // Pokaż powiadomienie o zakończeniu
                         showToast('Ćwiczenie zakończone', 'Gratulacje! Ukończyłeś/aś ćwiczenie relaksacji mięśni.');
-
+                        
                         // Resetuj grupy mięśniowe
                         muscleGroups.forEach(group => {
                             group.classList.remove('active');
@@ -1846,52 +1724,52 @@
                         });
                         return;
                     }
-
+                    
                     // Aktualizuj pasek postępu
                     const progressPercentage = (currentMuscleGroup / muscleGroups.length) * 100;
-                    muscleProgress.style.width = ${progressPercentage}%;
-
+                    muscleProgress.style.width = `${progressPercentage}%`;
+                    
                     // Usuń aktywną klasę ze wszystkich grup
                     muscleGroups.forEach(group => {
                         group.classList.remove('active');
                         group.querySelector('.muscle-instruction').classList.remove('visible');
                     });
-
+                    
                     // Aktywuj bieżącą grupę
                     const currentGroup = muscleGroups[currentMuscleGroup];
                     currentGroup.classList.add('active');
                     currentGroup.querySelector('.muscle-instruction').classList.add('visible');
-
+                    
                     // Przewiń do aktywnej grupy
                     currentGroup.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
+                    
                     // Przejdź do następnej grupy po 20 sekundach (5s napięcie + 15s relaks)
                     currentMuscleGroup++;
-
+                    
                     // Pokaż powiadomienie
                     if (currentMuscleGroup <= muscleGroups.length) {
                         const groupName = currentGroup.querySelector('h4').textContent;
                         showToast('Grupa mięśniowa', groupName);
                     }
                 }
-
+                
                 // Rozpocznij od pierwszej grupy
                 goToNextMuscleGroup();
-
+                
                 // Ustaw interwał 20 sekund między grupami
                 muscleRelaxationInterval = setInterval(goToNextMuscleGroup, 20000);
             }
-
+            
             // Obsługa przycisku rozpoczęcia ćwiczenia relaksacji mięśni
             startMuscleBtn.addEventListener('click', startMuscleRelaxation);
-
+            
             // =========== WIZUALIZACJE RELAKSACYJNE ===========
             const visualizationScene = document.getElementById('visualization-scene');
             const visualizationText = document.getElementById('visualization-text');
             const startVisualizationBtn = document.getElementById('start-visualization');
             let visualizationInterval = null;
             let currentScene = 'beach'; // domyślna scena
-
+            
             // Teksty dla różnych scen wizualizacji
             const visualizationScenes = {
                 'beach': [
@@ -1916,16 +1794,16 @@
                     'Problemy i zmartwienia maleją, stają się małe jak drobne punkty na niebie. Czujesz głęboki spokój i połączenie z wszechświatem.'
                 ]
             };
-
+            
             // Funkcja zmieniająca scenę wizualizacji
             function changeVisualizationScene(sceneName) {
                 // Usuń wszystkie klasy scen i dodaj odpowiednią
                 visualizationScene.className = 'visualization-scene';
-                visualizationScene.classList.add(visualization-${sceneName});
-
+                visualizationScene.classList.add(`visualization-${sceneName}`);
+                
                 // Dodaj lub usuń elementy specyficzne dla sceny
                 visualizationScene.innerHTML = '';
-
+                
                 if (sceneName === 'beach') {
                     // Dodaj fale dla plaży
                     for (let i = 0; i < 3; i++) {
@@ -1934,17 +1812,17 @@
                         visualizationScene.appendChild(wave);
                     }
                 }
-
+                
                 // Dodaj overlay z tekstem
                 const overlay = document.createElement('div');
                 overlay.className = 'visualization-overlay';
-                overlay.innerHTML = <p class="visualization-text" id="visualization-text">${visualizationScenes[sceneName][0]}</p>;
+                overlay.innerHTML = `<p class="visualization-text" id="visualization-text">${visualizationScenes[sceneName][0]}</p>`;
                 visualizationScene.appendChild(overlay);
-
+                
                 // Aktualizuj referencję do elementu tekstu
                 visualizationText = document.querySelector('#visualization-text');
             }
-
+            
             // Funkcja rozpoczynająca wizualizację
             function startVisualization() {
                 // Zatrzymaj istniejącą wizualizację jeśli istnieje
@@ -1954,33 +1832,33 @@
                     startVisualizationBtn.textContent = 'Rozpocznij wizualizację';
                     return;
                 }
-
+                
                 startVisualizationBtn.textContent = 'Zatrzymaj wizualizację';
-
+                
                 let currentTextIndex = 0;
                 const texts = visualizationScenes[currentScene];
-
+                
                 // Funkcja aktualizująca tekst wizualizacji
                 function updateVisualizationText() {
                     // Płynna zmiana tekstu
                     visualizationText.style.opacity = '0';
-
+                    
                     setTimeout(() => {
                         visualizationText.textContent = texts[currentTextIndex];
                         visualizationText.style.opacity = '1';
-
+                        
                         // Przejdź do następnego tekstu
                         currentTextIndex = (currentTextIndex + 1) % texts.length;
                     }, 500);
                 }
-
+                
                 // Rozpocznij od pierwszego tekstu
                 updateVisualizationText();
-
+                
                 // Ustaw interwał do zmiany tekstów co 10 sekund
                 visualizationInterval = setInterval(updateVisualizationText, 10000);
             }
-
+            
             // Obsługa przycisków wyboru sceny wizualizacji
             document.querySelectorAll('.visualization-scene-tabs .exercise-tab[data-scene]').forEach(tab => {
                 tab.addEventListener('click', function() {
@@ -1990,11 +1868,11 @@
                         visualizationInterval = null;
                         startVisualizationBtn.textContent = 'Rozpocznij wizualizację';
                     }
-
+                    
                     // Ustaw nową scenę
                     currentScene = this.dataset.scene;
                     changeVisualizationScene(currentScene);
-
+                    
                     // Aktualizuj aktywny przycisk
                     document.querySelectorAll('.visualization-scene-tabs .exercise-tab').forEach(t => {
                         t.classList.remove('active');
@@ -2002,55 +1880,55 @@
                     this.classList.add('active');
                 });
             });
-
+            
             // Obsługa przycisku rozpoczęcia wizualizacji
             startVisualizationBtn.addEventListener('click', startVisualization);
-
+            
             // =========== BAJKI NA DOBRANOC ===========
             // Obsługa akordeonu z bajkami
             const storyHeaders = document.querySelectorAll('.story-header');
-
+            
             storyHeaders.forEach(header => {
                 header.addEventListener('click', function() {
                     const storyId = this.dataset.story;
-                    const content = document.getElementById(${storyId}-story);
-
+                    const content = document.getElementById(`${storyId}-story`);
+                    
                     // Przełącz widoczność zawartości
                     content.classList.toggle('visible');
-
+                    
                     // Przełącz stan aktywny nagłówka
                     this.classList.toggle('active');
-
+                    
                     // Zamknij inne otwarte bajki
                     storyHeaders.forEach(otherHeader => {
                         if (otherHeader !== this && otherHeader.classList.contains('active')) {
                             otherHeader.classList.remove('active');
                             const otherId = otherHeader.dataset.story;
-                            document.getElementById(${otherId}-story).classList.remove('visible');
+                            document.getElementById(`${otherId}-story`).classList.remove('visible');
                         }
                     });
                 });
             });
-
+            
             // Obsługa głównych zakładek ćwiczeń
             document.querySelectorAll('.exercise-tab[data-tab]').forEach(tab => {
                 tab.addEventListener('click', function() {
                     const tabName = this.dataset.tab;
-
+                    
                     // Ukryj wszystkie treści ćwiczeń
                     document.querySelectorAll('.exercise-content').forEach(content => {
                         content.classList.remove('active');
                     });
-
+                    
                     // Pokaż wybraną treść
-                    document.getElementById(${tabName}-content).classList.add('active');
-
+                    document.getElementById(`${tabName}-content`).classList.add('active');
+                    
                     // Aktualizuj aktywny przycisk
                     document.querySelectorAll('.exercise-tab[data-tab]').forEach(t => {
                         t.classList.remove('active');
                     });
                     this.classList.add('active');
-
+                    
                     // Zatrzymaj wszystkie aktywne ćwiczenia
                     if (breathingInterval) {
                         clearInterval(breathingInterval);
@@ -2059,7 +1937,7 @@
                         breathingText.textContent = 'Kliknij, aby rozpocząć';
                         startBreathingBtn.textContent = 'Rozpocznij ćwiczenie';
                     }
-
+                    
                     if (muscleRelaxationInterval) {
                         clearInterval(muscleRelaxationInterval);
                         muscleRelaxationInterval = null;
@@ -2070,7 +1948,7 @@
                         });
                         muscleProgress.style.width = '0%';
                     }
-
+                    
                     if (visualizationInterval) {
                         clearInterval(visualizationInterval);
                         visualizationInterval = null;
@@ -2078,9 +1956,9 @@
                     }
                 });
             });
-
+            
             // =========== NASŁUCHIWACZE ZDARZEŃ ===========
-
+            
             // Nasłuchiwacze zdarzeń dla przycisków dźwięku
             soundButtons.forEach(button => {
                 button.addEventListener('click', function() {
@@ -2088,20 +1966,20 @@
                     playSound(soundName);
                 });
             });
-
+            
             // Nasłuchiwacze zdarzeń dla suwaka głośności głównej
             volumeSlider.addEventListener('input', function() {
                 const value = parseFloat(this.value);
                 for (const audio of activeSounds.values()) {
                     audio.volume = value;
                 }
-
+                
                 // Aktualizuj wszystkie suwaki indywidualnej głośności
                 document.querySelectorAll('.individual-volume').forEach(slider => {
                     slider.value = value;
                 });
             });
-
+            
             // Nasłuchiwacze zdarzeń dla przycisków timera
             timerButtons.forEach(button => {
                 button.addEventListener('click', function() {
@@ -2109,7 +1987,7 @@
                     setTimer(minutes);
                 });
             });
-
+            
             // Nasłuchiwacz dla niestandardowego timera
             customTimerBtn.addEventListener('click', function() {
                 const minutes = parseInt(customTimerInput.value);
@@ -2118,48 +1996,48 @@
                     return;
                 }
                 setTimer(minutes);
-
+                
                 // Wyczyść pole input
                 customTimerInput.value = '';
             });
-
+            
             // Obsługa Enter w polu niestandardowego timera
             customTimerInput.addEventListener('keydown', function(e) {
                 if (e.key === 'Enter') {
                     customTimerBtn.click();
                 }
             });
-
+            
             // Obsługa zapisywania preferencji
             document.getElementById('save-preferences').addEventListener('click', function(e) {
                 e.preventDefault();
-
+                
                 // Zapisz preferencje w localStorage
                 const preferences = {
                     volume: volumeSlider.value,
                     theme: document.body.classList.contains('light-mode') ? 'light' : 'dark',
                     activeSounds: Array.from(activeSounds.keys())
                 };
-
+                
                 localStorage.setItem('spijSloneczko-preferences', JSON.stringify(preferences));
                 showToast('Zapisano', 'Twoje preferencje zostały zapisane!');
             });
-
+            
             // Ładowanie zapisanych preferencji
             function loadSavedPreferences() {
                 const savedPrefs = localStorage.getItem('spijSloneczko-preferences');
                 if (!savedPrefs) return;
-
+                
                 try {
                     const preferences = JSON.parse(savedPrefs);
-
+                    
                     // Ustaw głośność
                     if (preferences.volume) {
                         volumeSlider.value = preferences.volume;
                     }
-
+                    
                     // Ustaw motyw (już obsłużone wcześniej)
-
+                    
                     // Odtwórz zapisane dźwięki
                     if (preferences.activeSounds && Array.isArray(preferences.activeSounds)) {
                         preferences.activeSounds.forEach(sound => {
@@ -2168,628 +2046,32 @@
                             }, 500);
                         });
                     }
-
+                    
                 } catch (error) {
                     console.error('Błąd podczas wczytywania preferencji:', error);
                 }
             }
-
+            
             // Sprawdzenie dostępności plików dźwiękowych
             function checkSoundFiles() {
                 Object.entries(sounds).forEach(([name, path]) => {
                     const testAudio = new Audio();
                     testAudio.addEventListener('error', () => {
-                        console.warn(Plik dźwiękowy "${path}" dla "${name}" nie został znaleziony.);
+                        console.warn(`Plik dźwiękowy "${path}" dla "${name}" nie został znaleziony.`);
                     });
                     testAudio.src = path;
                 });
             }
-
+            
             // Zapytanie o pozwolenie na powiadomienia
             if ('Notification' in window && Notification.permission !== 'granted' && Notification.permission !== 'denied') {
                 Notification.requestPermission();
             }
-
+            
             // Wczytaj preferencje po załadowaniu strony
             setTimeout(() => {
                 loadSavedPreferences();
                 checkSoundFiles();
             }, 1000);
         });
-        // ========== GENERATOR BAJEK NA DOBRANOC ==========
-
-// Konfiguracja zewnętrznego API
-const STORY_API_CONFIG = {
-    // Ustawienia API dla OpenRouter
-    openrouter: {
-        apiKey: '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',
-        endpoint: 'https://openrouter.ai/api/v1/chat/completions',
-        model: 'deepseek-chat-v3-0324:free', // Zmieniono na darmowy model deepseek
-        maxTokens: 1500,
-        temperature: 0.7,
-        referer: 'https://spijsloneczko.pl', // Zmień na URL Twojej strony
-        siteTitle: 'Śpij Słoneczko', // Tytuł Twojej aplikacji
-        enabled: true
-    },
-    
-    // Globalne ustawienia dla generowania bajek
-    settings: {
-        useExternalApi: true, // Główny przełącznik dla korzystania z API
-        fallbackToLocal: true, // Użycie lokalnego generatora w przypadku błędu API
-        maxStoriesToKeep: 30, // Maksymalna liczba bajek do przechowywania
-        
-        // Instrukcje dla modelu AI - dopasowane do istniejących bajek
-        prompt: `Wygeneruj oryginalną, uspokajającą bajkę na dobranoc dla dzieci (około 10 akapitów).
-        Bajka MUSI zawierać dokładnie te dwie postacie: 
-        1. Renatka - główna bohaterka, dziewczynka (lub w niektórych bajkach może być przedstawiona symbolicznie jako gwiazda, księżyc itp.)
-        2. Dziubasek - jej przyjaciel i opiekun (często przedstawiany jako mądry ptaszek, gwiazda lub inny element natury)
-        
-        Bajka powinna utrzymać następujący charakter:
-        - Mieć magiczny, kojący nastrój idealny do zasypiania
-        - Zawierać motywy nieba, gwiazd, chmur, lasu lub morza
-        - Podkreślać tematy miłości, przyjaźni, troski i opiekuńczości
-        - Mieć spokojne, pozytywne zakończenie
-        - Nie zawierać strasznych postaci ani niepokojących elementów
-        
-        Tytuł powinien zawierać imię "Renatka" lub "Dziubasek".
-        
-        Odpowiedź sformatuj jako JSON z polami:
-        - title: tytuł bajki
-        - icon: wybierz ikonę (star, moon, cloud, tree, heart)
-        - content: treść bajki podzielona na akapity (używaj podwójnych znaków nowej linii między akapitami)`
-    }
-};
-
-// Funkcja do generowania nowych bajek
-const bajkiGenerator = {
-    // Sprawdza czy należy wygenerować nową bajkę
-    shouldGenerateNewStory: function() {
-        const lastGenerationDate = localStorage.getItem('lastStoryGenerationDate');
-        
-        // Jeśli nie ma zapisanej daty, oznacza to, że należy wygenerować bajkę
-        if (!lastGenerationDate) {
-            return true;
-        }
-        
-        // Sprawdź czy minął przynajmniej jeden dzień od ostatniego generowania
-        const lastDate = new Date(lastGenerationDate);
-        const currentDate = new Date();
-        
-        // Resetujemy godziny, minuty, sekundy aby porównać tylko daty
-        lastDate.setHours(0, 0, 0, 0);
-        currentDate.setHours(0, 0, 0, 0);
-        
-        // Oblicz różnicę w dniach
-        const diffTime = currentDate.getTime() - lastDate.getTime();
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        
-        return diffDays >= 1;
-    },
-    
-    // Pobiera zapisane bajki z localStorage
-    getSavedStories: function() {
-        const savedStories = localStorage.getItem('generatedStories');
-        return savedStories ? JSON.parse(savedStories) : [];
-    },
-    
-    // Zapisuje nową bajkę do localStorage
-    saveStory: function(story) {
-        const savedStories = this.getSavedStories();
-        savedStories.push(story);
-        
-        // Zapisz bajki i datę generowania
-        localStorage.setItem('generatedStories', JSON.stringify(savedStories));
-        localStorage.setItem('lastStoryGenerationDate', new Date().toISOString());
-    },
-    
-    // Lista predefiniowanych szablonów bajek
-    storyTemplates: [
-        {
-            title: "Renatka i Zaczarowany Las",
-            icon: "tree",
-            generate: function() {
-                return [
-                    `Dawno, dawno temu, na skraju wielkiego, gęstego lasu mieszkała dziewczynka o imieniu Renatka. Renatka zawsze była ciekawa, co kryje się w najgłębszych zakamarkach tego lasu, którego dorośli często unikali.`,
-                    `Pewnego spokojnego wieczoru, gdy gwiazdy zaczęły już migotać na niebie, Renatka usłyszała delikatny głos dochodzący z kierunku drzew. "Przyjdź... przyjdź do nas..." - szeptał głos melodyjnie.`,
-                    `Wiedziona ciekawością, Renatka wymknęła się z domu i podążyła w kierunku lasu. Z każdym krokiem drzewa stawały się wyższe, a światło księżyca tańczyło wśród liści, tworząc magiczne wzory na ścieżce.`,
-                    `Nagle, na małej polance, Renatka zobaczyła małego, świecącego ptaszka o niezwykle mądrych oczach. "Witaj Renatko," powiedział ptaszek. "Jestem Dziubasek, opiekun tego lasu i jego skarbów."`,
-                    `"Dziubasku," zapytała zdziwiona Renatka, "czy to ty mnie wołałeś?" Mądry ptaszek pokiwał głową i odparł: "Las cię wybrał, Renatko. Od dawna obserwuję twoją dobroć i czystość serca. Potrzebujemy twojej pomocy."`,
-                    `Dziubasek opowiedział Renatce, że las powoli traci swoją magię, ponieważ ludzie zapomnieli o radości, jaką daje kontakt z naturą. "Tylko ktoś, kto kocha naturę tak jak ty, może przywrócić magię," wyjaśnił Dziubasek.`,
-                    `Z pomocą Dziubaska, Renatka przemierzała zakątki lasu, rozmawiając z każdym drzewem, kwiatem i zwierzęciem, przypominając im o miłości, która je łączy. Z każdą taką rozmową, las stawał się jaśniejszy, a jego kolory żywsze.`,
-                    `"To działa!" zawołał radośnie Dziubasek, kiedy zobaczył, jak małe świetliste iskierki zaczynają unosić się z każdego miejsca, które odwiedziła Renatka. "Twoja miłość i troska przywracają magię!"`,
-                    `Gdy nastał świt, Renatka musiała wrócić do domu. "Będę tęsknić, Dziubasku," powiedziała ze smutkiem. Mądry ptaszek usiadł na jej ramieniu. "Nie musisz tęsknić, Renatko. Teraz jestem twoim przyjacielem i będę przy tobie zawsze, gdy będziesz mnie potrzebować."`,
-                    `I tak, dzięki przyjaźni Renatki i Dziubaska, las odzyskał swoją magię, a Renatka zyskała najwspanialszego przyjaciela, który czuwał nad jej snami każdej nocy, opowiadając jej historie o cudach natury, aż zasypiała z uśmiechem na twarzy.`
-                ].join('\n\n');
-            }
-        },
-        {
-            title: "Renatka i Gwiaździste Niebo",
-            icon: "moon",
-            generate: function() {
-                return [
-                    `W małym domku z czerwonym dachem mieszkała dziewczynka o imieniu Renatka. Renatka miała problem - bardzo bała się ciemności i każdej nocy trudno jej było zasnąć, choć zmęczone oczka aż się zamykały.`,
-                    `Pewnej wyjątkowej nocy, gdy księżyc był wyjątkowo jasny i okrągły, przez uchylone okno do pokoju Renatki wleciał mały, świecący punkcik. A potem drugi. I trzeci...`,
-                    `Renatka z zaciekawieniem obserwowała, jak do pokoju wlatuje coraz więcej drobnych świetlików, które zaczęły tańczyć w powietrzu, tworząc różne kształty i obrazy. Nagle świetliki ułożyły się w kształt małego ptaszka.`,
-                    `"Witaj, Renatko," usłyszała delikatny głos. "Jestem Dziubasek, strażnik nocnych snów. Przybywam do dzieci, które boją się ciemności, by pokazać im piękno nocy."`,
-                    `Dziubasek, mieniący się delikatnym, niebieskim światłem, usiadł na brzegu łóżka Renatki. "Nie musisz bać się ciemności," powiedział łagodnie. "Ciemność to tylko miejsce, gdzie gwiazdy mogą pokazać swoje piękno."`,
-                    `"Chcę ci coś pokazać," szepnął Dziubasek. "Zamknij oczy i podaj mi dłoń." Renatka, choć trochę niepewnie, zrobiła to, o co prosił świetlisty przyjaciel.`,
-                    `W jednej chwili poczuła, jak unosi się w powietrzu. Gdy otworzyła oczy, zobaczyła, że lecą wysoko ponad dachami domów! "Dziubasku, latamy!" zawołała zdumiona Renatka. Jej strach zniknął, zastąpiony fascynacją.`,
-                    `Dziubasek zabrał Renatkę w podróż po nocnym niebie. Pokazał jej, jak gwiazdy tworzą konstelacje - opowieści zapisane na niebie. Przedstawił jej Księżyc, który opowiedział, jak każdej nocy czuwa nad snem wszystkich dzieci.`,
-                    `"Widzisz, Renatko," powiedział Dziubasek, gdy wracali do jej pokoju, "noc nie jest straszna. Jest pełna magii i piękna, tak jak dzień, tylko inaczej."`,
-                    `Od tej nocy Renatka nie bała się już ciemności. A Dziubasek odwiedzał ją często, zabierając w kolejne podróże po gwiaździstym niebie. Nawet jeśli Dziubasek nie mógł przybyć, Renatka wiedziała, że wystarczy spojrzeć w niebo, by zobaczyć jego światło wśród gwiazd, czuwające nad jej spokojnym snem.`
-                ].join('\n\n');
-            }
-        },
-        {
-            title: "Dziubasek i Podróż Małej Chmurki",
-            icon: "cloud",
-            generate: function() {
-                return [
-                    `Wysoko na niebie, pośród rozległego błękitu, żyła mała chmurka o imieniu Renatka. W przeciwieństwie do innych chmur, Renatka nigdy nie uroniła ani jednej kropli deszczu, gdyż bała się, że gdy odda swoją wodę, po prostu zniknie.`,
-                    `"Co się stanie, gdy wszystkie moje krople spadną na ziemię?" - pytała siebie codziennie, obserwując, jak inne chmury z radością podlewały rośliny, napełniały strumyki i dawały orzeźwienie spragnionym.`,
-                    `Pewnego dnia pojawił się mały ptaszek o imieniu Dziubasek, który potrafił latać wyżej niż wszystkie inne ptaki. Gdy zobaczył samotną chmurkę, podleciał do niej. "Dlaczego jesteś taka smutna?" - zapytał łagodnie.`,
-                    `Renatka opowiedziała mu o swoim strachu. Dziubasek wysłuchał jej uważnie, a potem powiedział: "Każda kropla, którą dajesz ziemi, wraca do ciebie, gdy tylko słońce ją ogrzeje. To jest cykl życia, którego jesteś ważną częścią."`,
-                    `Renatka nie do końca rozumiała, co miał na myśli, ale zaufała mu na tyle, by razem polecieć nad wyjątkowo suchym i spragnionym regionem, gdzie od miesięcy nie spadła ani jedna kropla deszczu.`,
-                    `Poniżej Renatka zobaczyła zwiędłe kwiaty, spragnione zwierzęta i ludzi patrzących w niebo z nadzieją. Jej serce wypełniło się współczuciem, które było silniejsze niż strach.`,
-                    `"Może oddam im tylko kilka kropelek," pomyślała. I tak, niepewnie, uwolniła swoje pierwsze krople, które spadły na ziemię jako delikatna mżawka. Dziubasek latał pod nią, obserwując z radością.`,
-                    `Z każdą kolejną kroplą Renatka czuła coś niezwykłego - zamiast maleć, czuła się coraz lżejsza i szczęśliwsza. Widziała radość, jaką przynosiła, i to dawało jej siłę. "Dziubasku, miałeś rację!" - zawołała radośnie.`,
-                    `Gdy oddała wszystkie swoje krople, stała się niewidoczna - ale nie zniknęła. Stała się lekkim, ciepłym powietrzem, które Dziubasek pomógł jej wznieść ku górze, zbierając po drodze parującą wodę ze stawów, rzek i mokrej trawy.`,
-                    `Wkrótce Renatka znów była puszystą chmurką, pełną nowych kropel i nowego zrozumienia - im więcej dajemy innym, tym więcej otrzymujemy z powrotem. A Dziubasek został jej najlepszym przyjacielem, który towarzyszył jej w każdej podróży po błękitnym niebie, zawsze gotów dodać otuchy, gdy nadchodziły burzowe myśli.`
-                ].join('\n\n');
-            }
-        },
-        {
-            title: "Renatka i Magiczna Poduszka Snów",
-            icon: "star",
-            generate: function() {
-                return [
-                    `W małym miasteczku, gdzie domy miały czerwone dachy, a wszystkie drzwi były pomalowane na niebiesko, mieszkała dziewczynka o imieniu Renatka. Renatka miała problem - nie potrafiła śnić kolorowych snów jak inne dzieci.`,
-                    `Nocami, gdy wszyscy opowiadali o swoich przygodach w krainie snów, Renatka mogła tylko słuchać z zazdrością. Jej sny były jak puste, białe kartki - bez kolorów, bez przygód, bez magii.`,
-                    `Pewnego wieczoru, gdy smutek Renatki był wyjątkowo głęboki, na parapecie jej okna przysiadł mały ptaszek o pięknych, mieniących się piórach. "Cześć, jestem Dziubasek," powiedział ptaszek, ku zdumieniu Renatki.`,
-                    `"Jak to możliwe, że mówisz?" - zapytała Renatka. Dziubasek zaćwierkał radośnie: "W świecie snów wszystko jest możliwe. A ja przybywam właśnie z tego świata. Słyszałem, że masz problemy z kolorowymi snami."`,
-                    `Dziubasek wyjaśnił Renatce, że jest strażnikiem snów i ma dla niej specjalny prezent. Z małej torby, której Renatka wcześniej nie zauważyła, wyciągnął maleńką poduszkę, nie większą od dłoni dziewczynki.`,
-                    `"To Poduszka Snów," powiedział Dziubasek. "Została utkana z promieni księżyca i porannej rosy. Gdy położysz ją pod swoją poduszką, otworzy drzwi do krainy snów, gdzie będę na ciebie czekać każdej nocy."`,
-                    `Tej nocy Renatka zrobiła, jak radził Dziubasek. Gdy tylko zasnęła, znalazła się na łące pełnej kwiatów, których kolory były intensywniejsze niż cokolwiek, co widziała na jawie. A obok niej stał Dziubasek, tym razem wielkości człowieka.`,
-                    `"Witaj w Krainie Snów," powiedział z uśmiechem. "Tutaj będziemy przeżywać przygody każdej nocy." I tak zaczęła się ich wspólna podróż - latali na grzbietach smoków, nurkowali w głębinach oceanu pełnego świecących ryb, odwiedzali zamki zbudowane z chmur.`,
-                    `Z każdą kolejną nocą sny Renatki stawały się coraz piękniejsze, a jej przyjaźń z Dziubaskiem coraz silniejsza. Pewnego ranka Renatka obudziła się i zauważyła, że magiczna poduszka zniknęła.`,
-                    `Z początku się przestraszyła, ale gdy nadeszła noc, odkryła, że nie potrzebuje już magicznej poduszki. Dziubasek nauczył ją, jak odnaleźć drogę do Krainy Snów samodzielnie - wystarczyło zamknąć oczy i pomyśleć o nim z miłością. Bo największa magia nie mieszka w przedmiotach, ale w sercu, które wierzy i kocha.`
-                ].join('\n\n');
-            }
-        },
-        {
-            title: "Renatka i Melodia Gwiazd",
-            icon: "music",
-            generate: function() {
-                return [
-                    `W małym domku na skraju lasu mieszkała dziewczynka o imieniu Renatka. Renatka kochała muzykę ponad wszystko, a jej śmiech brzmiał jak najsłodsza melodia, która sprawiała, że nawet ptaki milkły, by jej słuchać.`,
-                    `Pewnego wieczoru, gdy niebo było wyjątkowo gwiaździste, Renatka siedziała na ganku, nuciła cichą melodię i patrzyła w niebo. Nagle zauważyła, że jedna z gwiazd migocze w rytm jej piosenki. Zdumiona, przestała nucić, a gwiazda również przestała mrugać.`,
-                    `"To niemożliwe," pomyślała i zaczęła nucić znowu. Ku jej zdumieniu, gwiazda znów zaczęła migotać dokładnie w tym samym rytmie. Jeszcze bardziej zaskakujące było to, że gwiazda zaczęła się zbliżać, stając się coraz większa i jaśniejsza.`,
-                    `Z bliższej odległości Renatka zobaczyła, że to, co wzięła za gwiazdę, było w rzeczywistości małym ptaszkiem, który świecił delikatnym, srebrzystym blaskiem. Ptaszek wylądował na poręczy ganku.`,
-                    `"Witaj, Renatko," powiedział ptaszek. "Jestem Dziubasek, strażnik Melodii Gwiazd. Twoja muzyka przyciągnęła mnie z daleka, bo jest w niej coś wyjątkowego - echo Pierwotnej Melodii, którą gwiazdy śpiewają od początku czasu."`,
-                    `Dziubasek wyjaśnił Renatce, że każda gwiazda na niebie śpiewa własną pieśń, a wszystkie razem tworzą harmonię, która utrzymuje wszechświat w równowadze. "Ale ostatnio niektóre gwiazdy zapomniały swoje melodie i zapadają w sen. Potrzebuję twojej pomocy, by je obudzić."`,
-                    `Tej nocy Dziubasek zabrał Renatkę w niezwykłą podróż po nocnym niebie. Unosili się między gwiazdami, a Renatka śpiewała dla każdej uśpionej gwiazdy, przypominając jej zapomnianą melodię. Z każdą przebudzoną gwiazdą niebo stawało się jaśniejsze.`,
-                    `"Masz dar, Renatko," powiedział Dziubasek, gdy wracali nad ranem. "Twój głos niesie nie tylko melodię, ale i miłość, która potrafi przebudzić nawet najgłębiej uśpione serca."`,
-                    `Od tej nocy Renatka i Dziubasek spotykali się często. Choć nie każdej nocy mogli podróżować między gwiazdami, Dziubasek nauczył Renatkę rozpoznawać melodie gwiazd nawet z ziemi. Wystarczyło wsłuchać się sercem w nocną ciszę.`,
-                    `I gdy inne dzieci bały się ciemności, Renatka czekała na nią z niecierpliwością. Bo wiedziała to, czego inni nie rozumieli - że noc nie jest ciemna, lecz pełna świetlistej muzyki, którą można usłyszeć, gdy się naprawdę słucha. A Dziubasek zawsze był blisko, by pomóc jej wsłuchać się w najpiękniejsze melodie wszechświata.`
-                ].join('\n\n');
-            }
-        }
-    ],
-    
-    // Generuje nową bajkę lokalnie
-    generateNewStory: function() {
-        // Losowo wybierz szablon
-        const randomIndex = Math.floor(Math.random() * this.storyTemplates.length);
-        const template = this.storyTemplates[randomIndex];
-        
-        // Lista imion do losowego wyboru
-        const names = ["Marek", "Ania", "Wojtek", "Zosia", "Kuba", "Julka", "Bartek", "Klara", 
-                      "Filip", "Emilka", "Olek", "Hania", "Mikołaj", "Tosia", "Igor", "Natalka"];
-        const randomName = names[Math.floor(Math.random() * names.length)];
-        
-        // Wygeneruj treść bajki
-        const storyContent = template.generate(randomName);
-        
-        // Utwórz obiekt bajki
-        const newStory = {
-            id: 'story-' + Date.now(),
-            title: template.title.replace(/Zuzia|Tomek|Maja|Oliver|Lena/, randomName),
-            icon: template.icon,
-            content: storyContent,
-            dateGenerated: new Date().toISOString(),
-            source: 'local'
-        };
-        
-        return newStory;
-    },
-    
-    // Tworzy element DOM dla nowej bajki
-    createStoryElement: function(story) {
-        // Utwórz główny kontener bajki
-        const storyAccordion = document.createElement('div');
-        storyAccordion.className = 'story-accordion';
-        
-        // Utwórz nagłówek
-        const storyHeader = document.createElement('div');
-        storyHeader.className = 'story-header';
-        storyHeader.setAttribute('data-story', story.id);
-        
-        // Dodaj tytuł z ikoną
-        const storyTitle = document.createElement('h4');
-        storyTitle.innerHTML = `<i class="fas fa-${story.icon} tip-icon"></i> ${story.title}`;
-        
-        // Dodaj ikonę strzałki
-        const storyToggleIcon = document.createElement('i');
-        storyToggleIcon.className = 'fas fa-chevron-down story-toggle-icon';
-        
-        // Dodaj elementy do nagłówka
-        storyHeader.appendChild(storyTitle);
-        
-        storyHeader.appendChild(storyToggleIcon);
-        
-        // Utwórz kontener treści
-        const storyContent = document.createElement('div');
-        storyContent.className = 'story-content';
-        storyContent.id = `${story.id}-story`;
-        
-        // Podziel treść na akapity i dodaj do kontenera
-        // Obsługujemy zarówno \n\n jak i pojedyncze \n (różne formaty z API)
-        let paragraphs = [];
-        if (story.content.includes('\n\n')) {
-            paragraphs = story.content.split('\n\n');
-        } else {
-            paragraphs = story.content.split('\n').filter(p => p.trim() !== '');
-        }
-        
-        paragraphs.forEach(paragraph => {
-            const p = document.createElement('p');
-            p.textContent = paragraph.trim();
-            storyContent.appendChild(p);
-        });
-        
-        // Dodaj nagłówek i treść do głównego kontenera
-        storyAccordion.appendChild(storyHeader);
-        storyAccordion.appendChild(storyContent);
-        
-        // Dodaj funkcjonalność akordeonu
-        storyHeader.addEventListener('click', function() {
-            // Przełącz widoczność treści
-            storyContent.classList.toggle('visible');
-            
-            // Przełącz stan aktywny nagłówka
-            this.classList.toggle('active');
-            
-            // Zamknij inne otwarte bajki
-            const allHeaders = document.querySelectorAll('.story-header');
-            allHeaders.forEach(header => {
-                if (header !== this && header.classList.contains('active')) {
-                    header.classList.remove('active');
-                    const otherId = header.dataset.story;
-                    document.getElementById(`${otherId}-story`).classList.remove('visible');
-                }
-            });
-        });
-        
-        return storyAccordion;
-    },
-    
-    // Dodaje wszystkie zapisane bajki do interfejsu
-    renderSavedStories: function() {
-        const stories = this.getSavedStories();
-        const storiesContainer = document.querySelector('.bedtime-stories');
-        
-        // Dodaj tylko nowe bajki (te, których jeszcze nie ma w interfejsie)
-        stories.forEach(story => {
-            // Sprawdź czy bajka już istnieje w interfejsie
-            if (!document.querySelector(`.story-header[data-story="${story.id}"]`)) {
-                const storyElement = this.createStoryElement(story);
-                storiesContainer.appendChild(storyElement);
-            }
-        });
-    },
-    
-    // Generuje i dodaje nową bajkę jeśli spełnione są warunki
-    checkAndGenerateNewStory: async function() {
-        if (this.shouldGenerateNewStory()) {
-            try {
-                // Próbuj wygenerować bajkę z API jeśli jest włączone
-                let newStory = null;
-                if (STORY_API_CONFIG.settings.useExternalApi && STORY_API_CONFIG.openai.enabled) {
-                    newStory = await this.generateStoryWithAPI();
-                }
-                
-                // Jeśli nie udało się wygenerować bajki z API, użyj lokalnego generatora
-                if (!newStory) {
-                    newStory = this.generateNewStory();
-                }
-                
-                // Zapisz bajkę
-                this.saveStory(newStory);
-                
-                // Limituj liczbę przechowywanych bajek
-                this.limitStoredStories();
-                
-                // Dodaj bajkę do interfejsu
-                const storyElement = this.createStoryElement(newStory);
-                const storiesContainer = document.querySelector('.bedtime-stories');
-                
-                // Dodaj nową bajkę na początek listy
-                if (storiesContainer.firstChild) {
-                    storiesContainer.insertBefore(storyElement, storiesContainer.firstChild);
-                } else {
-                    storiesContainer.appendChild(storyElement);
-                }
-                
-                // Pokaż powiadomienie
-                const toastEl = document.getElementById('app-toast');
-                if (toastEl) {
-                    document.getElementById('toast-title').textContent = 'Nowa bajka!';
-                    document.getElementById('toast-message').textContent = `Dodano nową bajkę: "${newStory.title}"`;
-                    const toast = new bootstrap.Toast(toastEl);
-                    toast.show();
-                }
-                
-                return true;
-            } catch (error) {
-                console.error('Błąd podczas generowania bajki:', error);
-                return false;
-            }
-        }
-        
-        return false;
-    },
-    
-    // Generuje bajkę przy użyciu zewnętrznego API
-    generateStoryWithAPI: async function() {
-        try {
-            const apiConfig = STORY_API_CONFIG.openrouter; // Korzystamy z OpenRouter API
-            
-            // Sprawdź, czy API jest włączone i czy klucz API jest dostępny
-            if (!STORY_API_CONFIG.settings.useExternalApi || !apiConfig.enabled || !apiConfig.apiKey) {
-                console.log('API zewnętrzne wyłączone lub brak klucza API. Używanie generatora lokalnego.');
-                return null;
-            }
-            
-            // Przygotuj zapytanie API
-            const promptText = STORY_API_CONFIG.settings.prompt;
-            
-            // Skonfiguruj zapytanie do OpenRouter API
-            const response = await fetch(apiConfig.endpoint, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${apiConfig.apiKey}`,
-                    'HTTP-Referer': apiConfig.referer || window.location.origin,
-                    'X-Title': apiConfig.siteTitle || 'Śpij Słoneczko'
-                },
-                body: JSON.stringify({
-                    model: apiConfig.model,
-                    messages: [
-                        { role: "system", content: "Jesteś pomocnym asystentem specjalizującym się w tworzeniu bajek dla dzieci w języku polskim." },
-                        { role: "user", content: promptText }
-                    ],
-                    max_tokens: apiConfig.maxTokens,
-                    temperature: apiConfig.temperature
-                })
-            });
-            
-            if (!response.ok) {
-                throw new Error(`Błąd API: ${response.status} ${response.statusText}`);
-            }
-            
-            const data = await response.json();
-            const content = data.choices && data.choices[0] && data.choices[0].message ? data.choices[0].message.content : null;
-            
-            if (!content) {
-                throw new Error("Otrzymano pustą odpowiedź z API");
-            }
-            
-            // Próbujemy sparsować odpowiedź jako JSON
-            try {
-                // Znajdź JSON w odpowiedzi (czasem model może dodać komentarze przed lub po JSON)
-                const jsonMatch = content.match(/\{[\s\S]*\}/);
-                let storyData;
-                
-                if (jsonMatch) {
-                    storyData = JSON.parse(jsonMatch[0]);
-                } else {
-                    // Jeśli nie możemy znaleźć JSON, próbujemy przetworzyć odpowiedź w inny sposób
-                    // Zakładamy, że pierwsza linia to tytuł, a reszta to treść
-                    const lines = content.split('\n').filter(line => line.trim() !== '');
-                    const title = lines[0].replace(/^#+ /, ''); // Usuń znaczniki Markdown nagłówka
-                    const storyContent = lines.slice(1).join('\n\n');
-                    
-                    storyData = {
-                        title: title,
-                        icon: "star", // Domyślna ikona
-                        content: storyContent
-                    };
-                }
-                
-                // Utwórz obiekt bajki
-                const newStory = {
-                    id: 'story-api-' + Date.now(),
-                    title: storyData.title || `Bajka o Renatce i Dziubasku`,
-                    icon: storyData.icon || "star",
-                    content: storyData.content || content,
-                    dateGenerated: new Date().toISOString(),
-                    source: 'api'
-                };
-                
-                return newStory;
-                
-            } catch (jsonError) {
-                console.error("Błąd parsowania JSON z odpowiedzi API:", jsonError);
-                
-                // Tworzymy bajkę z surowej odpowiedzi
-                return {
-                    id: 'story-api-' + Date.now(),
-                    title: `Bajka o Renatce i Dziubasku`,
-                    icon: "star",
-                    content: content,
-                    dateGenerated: new Date().toISOString(),
-                    source: 'api'
-                };
-            }
-        } catch (error) {
-            console.error('Błąd podczas generowania bajki przez API:', error);
-            
-            // Jeśli włączony jest tryb awaryjny, zwróć null aby uruchomić lokalny generator
-            if (STORY_API_CONFIG.settings.fallbackToLocal) {
-                console.log('Przełączanie na lokalny generator bajek...');
-                return null;
-            }
-            
-            // W przeciwnym wypadku rzuć wyjątek dalej
-            throw error;
-        }
-    },
-    
-    // Ogranicza liczbę przechowywanych bajek do maksymalnej wartości
-    limitStoredStories: function() {
-        const maxStories = STORY_API_CONFIG.settings.maxStoriesToKeep;
-        let stories = this.getSavedStories();
-        
-        if (stories.length > maxStories) {
-            // Sortuj według daty generowania (najnowsze pierwsze)
-            stories.sort((a, b) => new Date(b.dateGenerated) - new Date(a.dateGenerated));
-            
-            // Zachowaj tylko określoną liczbę bajek
-            stories = stories.slice(0, maxStories);
-            
-            // Zapisz z powrotem do localStorage
-            localStorage.setItem('generatedStories', JSON.stringify(stories));
-            
-            console.log(`Ograniczono liczbę przechowywanych bajek do ${maxStories}`);
-        }
-    },
-    
-    // Inicjalizuje generator bajek
-    init: function() {
-        console.log('Inicjalizacja generatora bajek...');
-        
-        // Renderuj zapisane bajki
-        this.renderSavedStories();
-        
-        // Ogranicz liczbę przechowywanych bajek
-        this.limitStoredStories();
-        
-        // Sprawdź czy należy wygenerować nową bajkę
-        this.checkAndGenerateNewStory();
-        
-        // Dodaj przycisk do ręcznego generowania bajek
-        const storiesContent = document.getElementById('stories-content');
-        if (storiesContent) {
-            // Sprawdź czy przycisk już istnieje
-            if (!document.getElementById('generate-story-btn')) {
-                const generateButton = document.createElement('button');
-                generateButton.id = 'generate-story-btn';
-                generateButton.className = 'sound-btn mt-3 mb-3';
-                generateButton.innerHTML = '<i class="fas fa-magic"></i> Wygeneruj nową bajkę';
-                
-                generateButton.addEventListener('click', async () => {
-                    // Zmień etykietę przycisku podczas generowania
-                    generateButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generowanie...';
-                    generateButton.disabled = true;
-                    
-                    try {
-                        // Próbuj wygenerować bajkę z API jeśli jest włączone
-                        let newStory = null;
-                        if (STORY_API_CONFIG.settings.useExternalApi && STORY_API_CONFIG.openai.enabled) {
-                            newStory = await this.generateStoryWithAPI();
-                        }
-                        
-                        // Jeśli nie udało się wygenerować bajki z API, użyj lokalnego generatora
-                        if (!newStory) {
-                            newStory = this.generateNewStory();
-                        }
-                        
-                        // Zapisz bajkę
-                        this.saveStory(newStory);
-                        
-                        // Limituj liczbę przechowywanych bajek
-                        this.limitStoredStories();
-                        
-                        // Dodaj bajkę do interfejsu
-                        const storyElement = this.createStoryElement(newStory);
-                        const storiesContainer = document.querySelector('.bedtime-stories');
-                        
-                        // Dodaj nową bajkę na początek listy
-                        if (storiesContainer.firstChild) {
-                            storiesContainer.insertBefore(storyElement, storiesContainer.firstChild);
-                        } else {
-                            storiesContainer.appendChild(storyElement);
-                        }
-                        
-                        // Pokaż powiadomienie
-                        const toastEl = document.getElementById('app-toast');
-                        if (toastEl) {
-                            document.getElementById('toast-title').textContent = 'Nowa bajka!';
-                            document.getElementById('toast-message').textContent = `Dodano nową bajkę: "${newStory.title}"`;
-                            const toast = new bootstrap.Toast(toastEl);
-                            toast.show();
-                        }
-                        
-                        // Zapisz datę wygenerowania bajki
-                        localStorage.setItem('lastStoryGenerationDate', new Date().toISOString());
-                        
-                    } catch (error) {
-                        console.error('Błąd podczas generowania bajki:', error);
-                        
-                        // Wygeneruj bajkę lokalnie w przypadku błędu
-                        if (STORY_API_CONFIG.settings.fallbackToLocal) {
-                            try {
-                                const localStory = this.generateNewStory();
-                                this.saveStory(localStory);
-                                
-                                // Dodaj bajkę do interfejsu
-                                const storyElement = this.createStoryElement(localStory);
-                                const storiesContainer = document.querySelector('.bedtime-stories');
-                                if (storiesContainer.firstChild) {
-                                    storiesContainer.insertBefore(storyElement, storiesContainer.firstChild);
-                                } else {
-                                    storiesContainer.appendChild(storyElement);
-                                }
-                                
-                                // Pokaż powiadomienie o użyciu lokalnego generatora
-                                const toastEl = document.getElementById('app-toast');
-                                if (toastEl) {
-                                    document.getElementById('toast-title').textContent = 'Nowa bajka';
-                                    document.getElementById('toast-message').textContent = `Dodano nową bajkę: "${localStory.title}"`;
-                                    const toast = new bootstrap.Toast(toastEl);
-                                    toast.show();
-                                }
-                                
-                                // Zapisz datę wygenerowania bajki
-                                localStorage.setItem('lastStoryGenerationDate', new Date().toISOString());
-                            } catch (localError) {
-                                console.error('Błąd podczas generowania lokalnej bajki:', localError);
-                            }
-                        }
-                    } finally {
-                        // Przywróć etykietę przycisku
-                        generateButton.innerHTML = '<i class="fas fa-magic"></i> Wygeneruj nową bajkę';
-                        generateButton.disabled = false;
-                    }
-                });
-                
-                // Wstaw przycisk przed kontenerem bajek
-                const bedtimeStories = storiesContent.querySelector('.bedtime-stories');
-                if (bedtimeStories) {
-                    storiesContent.insertBefore(generateButton, bedtimeStories);
-                } else {
-                    storiesContent.appendChild(generateButton);
-                }
-            }
-        }
-    }
-};
-
-// Inicjalizacja generatora bajek po załadowaniu strony
-document.addEventListener('DOMContentLoaded', function() {
-    // Dodaj inicjalizację generatora bajek do istniejących inicjalizacji
-    setTimeout(() => {
-        bajkiGenerator.init();
-    }, 1500); // Małe opóźnienie, aby upewnić się, że strona jest w pełni załadowana
-});
     </script>
