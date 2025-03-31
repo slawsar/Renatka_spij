@@ -2372,8 +2372,9 @@ const bajkiGenerator = {
             try {
                 // Próbuj wygenerować bajkę z API jeśli jest włączone
                 let newStory = null;
-                if (STORY_API_CONFIG.settings.useExternalApi && STORY_API_CONFIG.openai.enabled) {
-                    newStory = await this.generateStoryWithAPI();
+                if (STORY_API_CONFIG.settings.useExternalApi && STORY_API_CONFIG.openrouter.enabled) {
+                newStory = await this.generateStoryWithAPI();
+                }
                 }
                 
                 // Jeśli nie udało się wygenerować bajki z API, użyj lokalnego generatora
@@ -2573,8 +2574,9 @@ const bajkiGenerator = {
                     try {
                         // Próbuj wygenerować bajkę z API jeśli jest włączone
                         let newStory = null;
-                        if (STORY_API_CONFIG.settings.useExternalApi && STORY_API_CONFIG.openai.enabled) {
-                            newStory = await this.generateStoryWithAPI();
+                        if (STORY_API_CONFIG.settings.useExternalApi && STORY_API_CONFIG.openrouter.enabled) {
+                        newStory = await this.generateStoryWithAPI();
+                        }
                         }
                         
                         // Jeśli nie udało się wygenerować bajki z API, użyj lokalnego generatora
