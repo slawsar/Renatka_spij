@@ -2220,7 +2220,7 @@ const STORY_API_CONFIG = {
         checkNewStoryOnLoad: true, // Czy sprawdzać automatycznie przy ładowaniu strony
         prompt: `Wygeneruj oryginalną, uspokajającą bajkę na dobranoc dla dziewczyny (około 10 akapitów).
         Bajka MUSI zawierać dokładnie te dwie postacie: 
-        1. Renatka, Słoneczko - główna bohaterka, dziewczynka (lub w niektórych bajkach może być przedstawiona symbolicznie jako gwiazda, księżyc itp.)
+        1. Renatka lub Słoneczko - główna bohaterka, dziewczynka (lub w niektórych bajkach może być przedstawiona symbolicznie jako gwiazda, księżyc itp.)
         2. Dziubasek - jej przyjaciel i opiekun (często przedstawiany jako mądry ptaszek, gwiazda lub inny element natury)
         
         Bajka powinna utrzymać następujący charakter:
@@ -2796,7 +2796,7 @@ document.addEventListener('DOMContentLoaded', function() {
         bajkiGenerator.init();
     }, 1500); // Małe opóźnienie, aby upewnić się, że strona jest w pełni załadowana
 });
-        // Manager Klucza API dla OpenRouter
+       // Manager Klucza API dla OpenRouter
 const ApiKeyManager = {
     // Klucz do przechowywania klucza API w localStorage
     STORAGE_KEY: 'openrouter-api-key',
@@ -2832,23 +2832,31 @@ const ApiKeyManager = {
         // Utwórz kontener na UI zarządzania kluczem API
         const apiKeyManager = document.createElement('div');
         apiKeyManager.id = 'api-key-manager';
-        apiKeyManager.className = 'mb-4 mt-2';
+        apiKeyManager.className = 'mb-4 mt-3 p-3';
+        
+        // Dodaj stylizację dostosowaną do ciemnego tła
+        apiKeyManager.style.backgroundColor = 'var(--primary-light)';
+        apiKeyManager.style.borderRadius = 'var(--radius-md)';
+        apiKeyManager.style.boxShadow = 'var(--shadow-sm)';
+        apiKeyManager.style.borderLeft = '4px solid var(--accent)';
         
         // Dodaj tytuł
         const title = document.createElement('h5');
         title.innerHTML = '<i class="fas fa-key"></i> Klucz API OpenRouter';
         title.className = 'mb-2';
+        title.style.color = 'var(--accent)'; // Używa koloru akcentowego do lepszej widoczności
         apiKeyManager.appendChild(title);
         
         // Dodaj opis
         const description = document.createElement('p');
-        description.className = 'small mb-2';
+        description.className = 'small mb-3';
         description.textContent = 'Aby generować bajki przy użyciu AI, wprowadź swój klucz API OpenRouter. Klucz jest przechowywany tylko na twoim urządzeniu.';
+        description.style.color = 'var(--text-light)';  // Użyj zmiennej koloru tekstu
         apiKeyManager.appendChild(description);
         
         // Utwórz kontener na input i przyciski
         const inputGroup = document.createElement('div');
-        inputGroup.className = 'd-flex flex-wrap gap-2 align-items-center';
+        inputGroup.className = 'd-flex flex-wrap gap-2 align-items-center mb-2';
         
         // Input na klucz API
         const apiKeyInput = document.createElement('input');
@@ -2857,6 +2865,14 @@ const ApiKeyManager = {
         apiKeyInput.className = 'form-control flex-grow-1';
         apiKeyInput.placeholder = 'Wprowadź klucz API OpenRouter';
         apiKeyInput.value = this.getApiKey() || '';
+        
+        // Stylizacja pola wprowadzania
+        apiKeyInput.style.backgroundColor = 'var(--primary-medium)';
+        apiKeyInput.style.color = 'var(--text-light)';
+        apiKeyInput.style.border = '2px solid var(--accent-transparent-medium)';
+        apiKeyInput.style.padding = '0.5rem';
+        apiKeyInput.style.borderRadius = 'var(--radius-sm)';
+        
         inputGroup.appendChild(apiKeyInput);
         
         // Przycisk do zapisania klucza
@@ -2919,11 +2935,106 @@ const ApiKeyManager = {
         
         apiKeyManager.appendChild(inputGroup);
         
-        // Dodaj link do OpenRouter
+        // Dodaj link do OpenRouter i status klucza API
+        const statusContainer = document.createElement('div');
+        statusContainer.className = 'mt-2 d-flex justify-content-between align-items-center';
+        
+        // Link do OpenRouter
         const linkContainer = document.createElement('div');
-        linkContainer.className = 'mt-2 small';
-        linkContainer.innerHTML = 'Nie masz klucza API? <a href="https://openrouter.ai" target="_blank" rel="noopener">Utwórz konto na OpenRouter</a> i wygeneruj klucz.';
-        apiKeyManager.appendChild(linkContainer);
+        linkContainer.className = 'small';
+        linkContainer.innerHTML = 'Nie masz klucza API? <a href="https://openrouter.ai" target="_blank" rel="noopener" style="color: var(--accent);">Utwórz konto na OpenRouter</a>';
+        statusContainer.appendChild(linkContainer);
+        
+        // Status klucza API
+        const statusIndicator = document.createElement('div');
+        statusIndicator.className = 'small d-flex align-items-center';
+        
+        const statusDot = document.createElement('span');
+        statusDot.style.width = '10px';
+        statusDot.style.height = '10px';
+        statusDot.style.borderRadius = '50%';
+        statusDot.style.marginRight = '6px';
+        
+        const statusText = document.createElement('span');
+        
+        if (this.hasApiKey()) {
+            statusDot.style.backgroundColor = '#4caf50'; // zielony
+            statusText.textContent = 'Klucz API skonfigurowany';
+        } else {
+            statusDot.style.backgroundColor = '#f44336'; // czerwony
+            statusText.textContent = 'Brak klucza API';
+        }
+        
+        statusIndicator.appendChild(statusDot);
+        statusIndicator.appendChild(statusText);
+        statusContainer.appendChild(statusIndicator);
+        
+        apiKeyManager.appendChild(statusContainer);
+        
+        // Dodaj informację o modelach
+        const modelsInfo = document.createElement('div');
+        modelsInfo.className = 'mt-3 small';
+        modelsInfo.style.color = 'var(--text-light)';
+        modelsInfo.innerHTML = '<strong>Polecane modele:</strong> deepseek/deepseek-chat-v3-0324:free, anthropic/claude-3-haiku, meta-llama/llama-3-8b-instruct';
+        apiKeyManager.appendChild(modelsInfo);
+        
+        // Zmiana modelu
+        const modelContainer = document.createElement('div');
+        modelContainer.className = 'mt-2';
+        
+        const modelLabel = document.createElement('label');
+        modelLabel.htmlFor = 'model-select';
+        modelLabel.className = 'small';
+        modelLabel.textContent = 'Wybierz model AI:';
+        modelLabel.style.display = 'block';
+        modelLabel.style.marginBottom = '0.5rem';
+        modelLabel.style.color = 'var(--accent)';
+        modelContainer.appendChild(modelLabel);
+        
+        const modelSelect = document.createElement('select');
+        modelSelect.id = 'model-select';
+        modelSelect.className = 'form-select';
+        modelSelect.style.backgroundColor = 'var(--primary-medium)';
+        modelSelect.style.color = 'var(--text-light)';
+        modelSelect.style.border = '2px solid var(--accent-transparent-medium)';
+        modelSelect.style.borderRadius = 'var(--radius-sm)';
+        
+        // Opcje modeli
+        const models = [
+            { value: 'deepseek/deepseek-chat-v3-0324:free', label: 'DeepSeek v3 Chat (Free)' },
+            { value: 'anthropic/claude-3-haiku', label: 'Claude 3 Haiku' },
+            { value: 'google/gemini-pro', label: 'Google Gemini Pro' },
+            { value: 'meta-llama/llama-3-8b-instruct', label: 'Llama 3 8B' },
+            { value: 'mistralai/mistral-7b', label: 'Mistral 7B' },
+            { value: 'openai/gpt-3.5-turbo', label: 'GPT-3.5 Turbo' }
+        ];
+        
+        models.forEach(model => {
+            const option = document.createElement('option');
+            option.value = model.value;
+            option.textContent = model.label;
+            if (model.value === STORY_API_CONFIG.openrouter.model) {
+                option.selected = true;
+            }
+            modelSelect.appendChild(option);
+        });
+        
+        modelSelect.addEventListener('change', function() {
+            STORY_API_CONFIG.openrouter.model = this.value;
+            // Zapisz wybór w localStorage
+            localStorage.setItem('openrouter-model', this.value);
+            // Pokaż powiadomienie
+            const toastEl = document.getElementById('app-toast');
+            if (toastEl) {
+                document.getElementById('toast-title').textContent = 'Model zaktualizowany';
+                document.getElementById('toast-message').textContent = `Wybrano model: ${this.options[this.selectedIndex].textContent}`;
+                const toast = new bootstrap.Toast(toastEl);
+                toast.show();
+            }
+        });
+        
+        modelContainer.appendChild(modelSelect);
+        apiKeyManager.appendChild(modelContainer);
         
         // Dodaj do DOM
         const bedtimeStories = storiesContent.querySelector('.bedtime-stories');
@@ -2936,6 +3047,13 @@ const ApiKeyManager = {
         // Aktualizuj konfigurację API, jeśli klucz istnieje
         if (this.hasApiKey()) {
             STORY_API_CONFIG.openrouter.apiKey = this.getApiKey();
+        }
+        
+        // Załaduj zapisany model z localStorage
+        const savedModel = localStorage.getItem('openrouter-model');
+        if (savedModel) {
+            STORY_API_CONFIG.openrouter.model = savedModel;
+            modelSelect.value = savedModel;
         }
     }
 };
