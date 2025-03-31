@@ -2196,4 +2196,606 @@
                 checkSoundFiles();
             }, 1000);
         });
+        // ========== GENERATOR BAJEK NA DOBRANOC ==========
+
+// Konfiguracja zewnętrznego API
+const STORY_API_CONFIG = {
+    // Ustawienia API dla OpenRouter
+    openrouter: {
+        apiKey: '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',
+        endpoint: 'https://openrouter.ai/api/v1/chat/completions',
+        model: 'deepseek/deepseek-chat-v3-0324:free', // Model DeepSeek dla płynnej generacji bajek
+        maxTokens: 1500,
+        temperature: 0.7,
+        referer: window.location.origin, // Dynamiczne pobieranie URL strony
+        siteTitle: 'Śpij Słoneczko',
+        enabled: true // Czy API jest włączone
+    },
+    
+    // Dodatkowe ustawienia systemu
+    settings: {
+        useExternalApi: true, // Czy używać zewnętrznego API
+        fallbackToLocal: true, // Czy używać lokalnego generatora jako awaryjnego
+        maxStoriesToKeep: 30, // Maksymalna liczba bajek do przechowywania
+        checkNewStoryOnLoad: true, // Czy sprawdzać automatycznie przy ładowaniu strony
+        prompt: `Wygeneruj oryginalną, uspokajającą bajkę na dobranoc dla dziewczyny (około 10 akapitów).
+        Bajka MUSI zawierać dokładnie te dwie postacie: 
+        1. Renatka, Słoneczko - główna bohaterka, dziewczynka (lub w niektórych bajkach może być przedstawiona symbolicznie jako gwiazda, księżyc itp.)
+        2. Dziubasek - jej przyjaciel i opiekun (często przedstawiany jako mądry ptaszek, gwiazda lub inny element natury)
+        
+        Bajka powinna utrzymać następujący charakter:
+        - Mieć magiczny, kojący nastrój idealny do zasypiania
+        - Zawierać motywy nieba, gwiazd, chmur, lasu lub morza
+        - Podkreślać tematy miłości, przyjaźni, troski i opiekuńczości
+        - Mieć spokojne, pozytywne zakończenie
+        - Nie zawierać strasznych postaci ani niepokojących elementów
+        
+        Tytuł powinien zawierać imię "Renatka" lub "Dziubasek".
+        
+        Odpowiedź sformatuj jako JSON z polami:
+        - title: tytuł bajki
+        - icon: wybierz ikonę (star, moon, cloud, tree, heart)
+        - content: treść bajki podzielona na akapity (używaj podwójnych znaków nowej linii między akapitami)`
+    }
+};
+
+// Główny obiekt generatora bajek
+const bajkiGenerator = {
+    // Sprawdza czy należy wygenerować nową bajkę
+    shouldGenerateNewStory: function() {
+        const lastGenerationDate = localStorage.getItem('lastStoryGenerationDate');
+        
+        // Jeśli nie ma zapisanej daty, oznacza to, że należy wygenerować bajkę
+        if (!lastGenerationDate) {
+            return true;
+        }
+        
+        // Sprawdź czy minął przynajmniej jeden dzień od ostatniego generowania
+        const lastDate = new Date(lastGenerationDate);
+        const currentDate = new Date();
+        
+        // Resetujemy godziny, minuty, sekundy aby porównać tylko daty
+        lastDate.setHours(0, 0, 0, 0);
+        currentDate.setHours(0, 0, 0, 0);
+        
+        // Oblicz różnicę w dniach
+        const diffTime = currentDate.getTime() - lastDate.getTime();
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        return diffDays >= 1;
+    },
+    
+    // Pobiera zapisane bajki z localStorage
+    getSavedStories: function() {
+        const savedStories = localStorage.getItem('generatedStories');
+        return savedStories ? JSON.parse(savedStories) : [];
+    },
+    
+    // Zapisuje nową bajkę do localStorage
+    saveStory: function(story) {
+        const savedStories = this.getSavedStories();
+        savedStories.push(story);
+        
+        // Zapisz bajki i datę generowania
+        localStorage.setItem('generatedStories', JSON.stringify(savedStories));
+        localStorage.setItem('lastStoryGenerationDate', new Date().toISOString());
+    },
+    
+    // Lista predefiniowanych szablonów bajek (do użycia w trybie lokalnym)
+    storyTemplates: [
+        {
+            title: "Renatka i Zaczarowany Las",
+            icon: "tree",
+            generate: function() {
+                return [
+                    `Dawno, dawno temu, na skraju wielkiego, gęstego lasu mieszkała dziewczynka o imieniu Renatka. Renatka zawsze była ciekawa, co kryje się w najgłębszych zakamarkach tego lasu, którego dorośli często unikali.`,
+                    `Pewnego spokojnego wieczoru, gdy gwiazdy zaczęły już migotać na niebie, Renatka usłyszała delikatny głos dochodzący z kierunku drzew. "Przyjdź... przyjdź do nas..." - szeptał głos melodyjnie.`,
+                    `Wiedziona ciekawością, Renatka wymknęła się z domu i podążyła w kierunku lasu. Z każdym krokiem drzewa stawały się wyższe, a światło księżyca tańczyło wśród liści, tworząc magiczne wzory na ścieżce.`,
+                    `Nagle, na małej polance, Renatka zobaczyła małego, świecącego ptaszka o niezwykle mądrych oczach. "Witaj Renatko," powiedział ptaszek. "Jestem Dziubasek, opiekun tego lasu i jego skarbów."`,
+                    `"Dziubasku," zapytała zdziwiona Renatka, "czy to ty mnie wołałeś?" Mądry ptaszek pokiwał głową i odparł: "Las cię wybrał, Renatko. Od dawna obserwuję twoją dobroć i czystość serca. Potrzebujemy twojej pomocy."`,
+                    `Dziubasek opowiedział Renatce, że las powoli traci swoją magię, ponieważ ludzie zapomnieli o radości, jaką daje kontakt z naturą. "Tylko ktoś, kto kocha naturę tak jak ty, może przywrócić magię," wyjaśnił Dziubasek.`,
+                    `Z pomocą Dziubaska, Renatka przemierzała zakątki lasu, rozmawiając z każdym drzewem, kwiatem i zwierzęciem, przypominając im o miłości, która je łączy. Z każdą taką rozmową, las stawał się jaśniejszy, a jego kolory żywsze.`,
+                    `"To działa!" zawołał radośnie Dziubasek, kiedy zobaczył, jak małe świetliste iskierki zaczynają unosić się z każdego miejsca, które odwiedziła Renatka. "Twoja miłość i troska przywracają magię!"`,
+                    `Gdy nastał świt, Renatka musiała wrócić do domu. "Będę tęsknić, Dziubasku," powiedziała ze smutkiem. Mądry ptaszek usiadł na jej ramieniu. "Nie musisz tęsknić, Renatko. Teraz jestem twoim przyjacielem i będę przy tobie zawsze, gdy będziesz mnie potrzebować."`,
+                    `I tak, dzięki przyjaźni Renatki i Dziubaska, las odzyskał swoją magię, a Renatka zyskała najwspanialszego przyjaciela, który czuwał nad jej snami każdej nocy, opowiadając jej historie o cudach natury, aż zasypiała z uśmiechem na twarzy.`
+                ].join('\n\n');
+            }
+        },
+        {
+            title: "Renatka i Gwiaździste Niebo",
+            icon: "moon",
+            generate: function() {
+                return [
+                    `W małym domku z czerwonym dachem mieszkała dziewczynka o imieniu Renatka. Renatka miała problem - bardzo bała się ciemności i każdej nocy trudno jej było zasnąć, choć zmęczone oczka aż się zamykały.`,
+                    `Pewnej wyjątkowej nocy, gdy księżyc był wyjątkowo jasny i okrągły, przez uchylone okno do pokoju Renatki wleciał mały, świecący punkcik. A potem drugi. I trzeci...`,
+                    `Renatka z zaciekawieniem obserwowała, jak do pokoju wlatuje coraz więcej drobnych świetlików, które zaczęły tańczyć w powietrzu, tworząc różne kształty i obrazy. Nagle świetliki ułożyły się w kształt małego ptaszka.`,
+                    `"Witaj, Renatko," usłyszała delikatny głos. "Jestem Dziubasek, strażnik nocnych snów. Przybywam do dzieci, które boją się ciemności, by pokazać im piękno nocy."`,
+                    `Dziubasek, mieniący się delikatnym, niebieskim światłem, usiadł na brzegu łóżka Renatki. "Nie musisz bać się ciemności," powiedział łagodnie. "Ciemność to tylko miejsce, gdzie gwiazdy mogą pokazać swoje piękno."`,
+                    `"Chcę ci coś pokazać," szepnął Dziubasek. "Zamknij oczy i podaj mi dłoń." Renatka, choć trochę niepewnie, zrobiła to, o co prosił świetlisty przyjaciel.`,
+                    `W jednej chwili poczuła, jak unosi się w powietrzu. Gdy otworzyła oczy, zobaczyła, że lecą wysoko ponad dachami domów! "Dziubasku, latamy!" zawołała zdumiona Renatka. Jej strach zniknął, zastąpiony fascynacją.`,
+                    `Dziubasek zabrał Renatkę w podróż po nocnym niebie. Pokazał jej, jak gwiazdy tworzą konstelacje - opowieści zapisane na niebie. Przedstawił jej Księżyc, który opowiedział, jak każdej nocy czuwa nad snem wszystkich dzieci.`,
+                    `"Widzisz, Renatko," powiedział Dziubasek, gdy wracali do jej pokoju, "noc nie jest straszna. Jest pełna magii i piękna, tak jak dzień, tylko inaczej."`,
+                    `Od tej nocy Renatka nie bała się już ciemności. A Dziubasek odwiedzał ją często, zabierając w kolejne podróże po gwiaździstym niebie. Nawet jeśli Dziubasek nie mógł przybyć, Renatka wiedziała, że wystarczy spojrzeć w niebo, by zobaczyć jego światło wśród gwiazd, czuwające nad jej spokojnym snem.`
+                ].join('\n\n');
+            }
+        },
+        {
+            title: "Dziubasek i Podróż Małej Chmurki",
+            icon: "cloud",
+            generate: function() {
+                return [
+                    `Wysoko na niebie, pośród rozległego błękitu, żyła mała chmurka o imieniu Renatka. W przeciwieństwie do innych chmur, Renatka nigdy nie uroniła ani jednej kropli deszczu, gdyż bała się, że gdy odda swoją wodę, po prostu zniknie.`,
+                    `"Co się stanie, gdy wszystkie moje krople spadną na ziemię?" - pytała siebie codziennie, obserwując, jak inne chmury z radością podlewały rośliny, napełniały strumyki i dawały orzeźwienie spragnionym.`,
+                    `Pewnego dnia pojawił się mały ptaszek o imieniu Dziubasek, który potrafił latać wyżej niż wszystkie inne ptaki. Gdy zobaczył samotną chmurkę, podleciał do niej. "Dlaczego jesteś taka smutna?" - zapytał łagodnie.`,
+                    `Renatka opowiedziała mu o swoim strachu. Dziubasek wysłuchał jej uważnie, a potem powiedział: "Każda kropla, którą dajesz ziemi, wraca do ciebie, gdy tylko słońce ją ogrzeje. To jest cykl życia, którego jesteś ważną częścią."`,
+                    `Renatka nie do końca rozumiała, co miał na myśli, ale zaufała mu na tyle, by razem polecieć nad wyjątkowo suchym i spragnionym regionem, gdzie od miesięcy nie spadła ani jedna kropla deszczu.`,
+                    `Poniżej Renatka zobaczyła zwiędłe kwiaty, spragnione zwierzęta i ludzi patrzących w niebo z nadzieją. Jej serce wypełniło się współczuciem, które było silniejsze niż strach.`,
+                    `"Może oddam im tylko kilka kropelek," pomyślała. I tak, niepewnie, uwolniła swoje pierwsze krople, które spadły na ziemię jako delikatna mżawka. Dziubasek latał pod nią, obserwując z radością.`,
+                    `Z każdą kolejną kroplą Renatka czuła coś niezwykłego - zamiast maleć, czuła się coraz lżejsza i szczęśliwsza. Widziała radość, jaką przynosiła, i to dawało jej siłę. "Dziubasku, miałeś rację!" - zawołała radośnie.`,
+                    `Gdy oddała wszystkie swoje krople, stała się niewidoczna - ale nie zniknęła. Stała się lekkim, ciepłym powietrzem, które Dziubasek pomógł jej wznieść ku górze, zbierając po drodze parującą wodę ze stawów, rzek i mokrej trawy.`,
+                    `Wkrótce Renatka znów była puszystą chmurką, pełną nowych kropel i nowego zrozumienia - im więcej dajemy innym, tym więcej otrzymujemy z powrotem. A Dziubasek został jej najlepszym przyjacielem, który towarzyszył jej w każdej podróży po błękitnym niebie, zawsze gotów dodać otuchy, gdy nadchodziły burzowe myśli.`
+                ].join('\n\n');
+            }
+        },
+        {
+            title: "Renatka i Magiczna Poduszka Snów",
+            icon: "star",
+            generate: function() {
+                return [
+                    `W małym miasteczku, gdzie domy miały czerwone dachy, a wszystkie drzwi były pomalowane na niebiesko, mieszkała dziewczynka o imieniu Renatka. Renatka miała problem - nie potrafiła śnić kolorowych snów jak inne dzieci.`,
+                    `Nocami, gdy wszyscy opowiadali o swoich przygodach w krainie snów, Renatka mogła tylko słuchać z zazdrością. Jej sny były jak puste, białe kartki - bez kolorów, bez przygód, bez magii.`,
+                    `Pewnego wieczoru, gdy smutek Renatki był wyjątkowo głęboki, na parapecie jej okna przysiadł mały ptaszek o pięknych, mieniących się piórach. "Cześć, jestem Dziubasek," powiedział ptaszek, ku zdumieniu Renatki.`,
+                    `"Jak to możliwe, że mówisz?" - zapytała Renatka. Dziubasek zaćwierkał radośnie: "W świecie snów wszystko jest możliwe. A ja przybywam właśnie z tego świata. Słyszałem, że masz problemy z kolorowymi snami."`,
+                    `Dziubasek wyjaśnił Renatce, że jest strażnikiem snów i ma dla niej specjalny prezent. Z małej torby, której Renatka wcześniej nie zauważyła, wyciągnął maleńką poduszkę, nie większą od dłoni dziewczynki.`,
+                    `"To Poduszka Snów," powiedział Dziubasek. "Została utkana z promieni księżyca i porannej rosy. Gdy położysz ją pod swoją poduszką, otworzy drzwi do krainy snów, gdzie będę na ciebie czekać każdej nocy."`,
+                    `Tej nocy Renatka zrobiła, jak radził Dziubasek. Gdy tylko zasnęła, znalazła się na łące pełnej kwiatów, których kolory były intensywniejsze niż cokolwiek, co widziała na jawie. A obok niej stał Dziubasek, tym razem wielkości człowieka.`,
+                    `"Witaj w Krainie Snów," powiedział z uśmiechem. "Tutaj będziemy przeżywać przygody każdej nocy." I tak zaczęła się ich wspólna podróż - latali na grzbietach smoków, nurkowali w głębinach oceanu pełnego świecących ryb, odwiedzali zamki zbudowane z chmur.`,
+                    `Z każdą kolejną nocą sny Renatki stawały się coraz piękniejsze, a jej przyjaźń z Dziubaskiem coraz silniejsza. Pewnego ranka Renatka obudziła się i zauważyła, że magiczna poduszka zniknęła.`,
+                    `Z początku się przestraszyła, ale gdy nadeszła noc, odkryła, że nie potrzebuje już magicznej poduszki. Dziubasek nauczył ją, jak odnaleźć drogę do Krainy Snów samodzielnie - wystarczyło zamknąć oczy i pomyśleć o nim z miłością. Bo największa magia nie mieszka w przedmiotach, ale w sercu, które wierzy i kocha.`
+                ].join('\n\n');
+            }
+        },
+        {
+            title: "Renatka i Melodia Gwiazd",
+            icon: "music",
+            generate: function() {
+                return [
+                    `W małym domku na skraju lasu mieszkała dziewczynka o imieniu Renatka. Renatka kochała muzykę ponad wszystko, a jej śmiech brzmiał jak najsłodsza melodia, która sprawiała, że nawet ptaki milkły, by jej słuchać.`,
+                    `Pewnego wieczoru, gdy niebo było wyjątkowo gwiaździste, Renatka siedziała na ganku, nuciła cichą melodię i patrzyła w niebo. Nagle zauważyła, że jedna z gwiazd migocze w rytm jej piosenki. Zdumiona, przestała nucić, a gwiazda również przestała mrugać.`,
+                    `"To niemożliwe," pomyślała i zaczęła nucić znowu. Ku jej zdumieniu, gwiazda znów zaczęła migotać dokładnie w tym samym rytmie. Jeszcze bardziej zaskakujące było to, że gwiazda zaczęła się zbliżać, stając się coraz większa i jaśniejsza.`,
+                    `Z bliższej odległości Renatka zobaczyła, że to, co wzięła za gwiazdę, było w rzeczywistości małym ptaszkiem, który świecił delikatnym, srebrzystym blaskiem. Ptaszek wylądował na poręczy ganku.`,
+                    `"Witaj, Renatko," powiedział ptaszek. "Jestem Dziubasek, strażnik Melodii Gwiazd. Twoja muzyka przyciągnęła mnie z daleka, bo jest w niej coś wyjątkowego - echo Pierwotnej Melodii, którą gwiazdy śpiewają od początku czasu."`,
+                    `Dziubasek wyjaśnił Renatce, że każda gwiazda na niebie śpiewa własną pieśń, a wszystkie razem tworzą harmonię, która utrzymuje wszechświat w równowadze. "Ale ostatnio niektóre gwiazdy zapomniały swoje melodie i zapadają w sen. Potrzebuję twojej pomocy, by je obudzić."`,
+                    `Tej nocy Dziubasek zabrał Renatkę w niezwykłą podróż po nocnym niebie. Unosili się między gwiazdami, a Renatka śpiewała dla każdej uśpionej gwiazdy, przypominając jej zapomnianą melodię. Z każdą przebudzoną gwiazdą niebo stawało się jaśniejsze.`,
+                    `"Masz dar, Renatko," powiedział Dziubasek, gdy wracali nad ranem. "Twój głos niesie nie tylko melodię, ale i miłość, która potrafi przebudzić nawet najgłębiej uśpione serca."`,
+                    `Od tej nocy Renatka i Dziubasek spotykali się często. Choć nie każdej nocy mogli podróżować między gwiazdami, Dziubasek nauczył Renatkę rozpoznawać melodie gwiazd nawet z ziemi. Wystarczyło wsłuchać się sercem w nocną ciszę.`,
+                    `I gdy inne dzieci bały się ciemności, Renatka czekała na nią z niecierpliwością. Bo wiedziała to, czego inni nie rozumieli - że noc nie jest ciemna, lecz pełna świetlistej muzyki, którą można usłyszeć, gdy się naprawdę słucha. A Dziubasek zawsze był blisko, by pomóc jej wsłuchać się w najpiękniejsze melodie wszechświata.`
+                ].join('\n\n');
+            }
+        }
+    ],
+    
+    // Generuje nową bajkę lokalnie
+    generateNewStory: function() {
+        // Losowo wybierz szablon
+        const randomIndex = Math.floor(Math.random() * this.storyTemplates.length);
+        const template = this.storyTemplates[randomIndex];
+        
+        // Lista imion do losowego wyboru (używana tylko dla dywersyfikacji)
+        const names = ["Marek", "Ania", "Wojtek", "Zosia", "Kuba", "Julka", "Bartek", "Klara", 
+                        "Filip", "Emilka", "Olek", "Hania", "Mikołaj", "Tosia", "Igor", "Natalka"];
+        const randomName = names[Math.floor(Math.random() * names.length)];
+        
+        // Wygeneruj treść bajki
+        const storyContent = template.generate(randomName);
+        
+        // Utwórz obiekt bajki
+        const newStory = {
+            id: 'story-' + Date.now(),
+            title: template.title.replace(/Zuzia|Tomek|Maja|Oliver|Lena/, randomName),
+            icon: template.icon,
+            content: storyContent,
+            dateGenerated: new Date().toISOString(),
+            source: 'local'
+        };
+        
+        return newStory;
+    },
+    
+    // Tworzy element DOM dla nowej bajki
+    createStoryElement: function(story) {
+        // Utwórz główny kontener bajki
+        const storyAccordion = document.createElement('div');
+        storyAccordion.className = 'story-accordion';
+        
+        // Utwórz nagłówek
+        const storyHeader = document.createElement('div');
+        storyHeader.className = 'story-header';
+        storyHeader.setAttribute('data-story', story.id);
+        
+        // Dodaj tytuł z ikoną
+        const storyTitle = document.createElement('h4');
+        storyTitle.innerHTML = `<i class="fas fa-${story.icon} tip-icon"></i> ${story.title}`;
+        
+        // Dodaj ikonę strzałki
+        const storyToggleIcon = document.createElement('i');
+        storyToggleIcon.className = 'fas fa-chevron-down story-toggle-icon';
+        
+        // Dodaj elementy do nagłówka
+        storyHeader.appendChild(storyTitle);
+        storyHeader.appendChild(storyToggleIcon);
+        
+        // Utwórz kontener treści
+        const storyContent = document.createElement('div');
+        storyContent.className = 'story-content';
+        storyContent.id = `${story.id}-story`;
+        
+        // Podziel treść na akapity i dodaj do kontenera
+        // Obsługujemy zarówno \n\n jak i pojedyncze \n (różne formaty z API)
+        let paragraphs = [];
+        if (story.content.includes('\n\n')) {
+            paragraphs = story.content.split('\n\n');
+        } else {
+            paragraphs = story.content.split('\n').filter(p => p.trim() !== '');
+        }
+        
+        paragraphs.forEach(paragraph => {
+            const p = document.createElement('p');
+            p.textContent = paragraph.trim();
+            storyContent.appendChild(p);
+        });
+        
+        // Dodaj nagłówek i treść do głównego kontenera
+        storyAccordion.appendChild(storyHeader);
+        storyAccordion.appendChild(storyContent);
+        
+        // Dodaj funkcjonalność akordeonu
+        storyHeader.addEventListener('click', function() {
+            // Przełącz widoczność treści
+            storyContent.classList.toggle('visible');
+            
+            // Przełącz stan aktywny nagłówka
+            this.classList.toggle('active');
+            
+            // Zamknij inne otwarte bajki
+            const allHeaders = document.querySelectorAll('.story-header');
+            allHeaders.forEach(header => {
+                if (header !== this && header.classList.contains('active')) {
+                    header.classList.remove('active');
+                    const otherId = header.dataset.story;
+                    document.getElementById(`${otherId}-story`).classList.remove('visible');
+                }
+            });
+        });
+        
+        return storyAccordion;
+    },
+    
+    // Dodaje wszystkie zapisane bajki do interfejsu
+    renderSavedStories: function() {
+        const stories = this.getSavedStories();
+        const storiesContainer = document.querySelector('.bedtime-stories');
+        
+        if (!storiesContainer) {
+            console.error('Nie znaleziono kontenera na bajki (.bedtime-stories)');
+            return;
+        }
+        
+        // Dodaj tylko nowe bajki (te, których jeszcze nie ma w interfejsie)
+        stories.forEach(story => {
+            // Sprawdź czy bajka już istnieje w interfejsie
+            if (!document.querySelector(`.story-header[data-story="${story.id}"]`)) {
+                const storyElement = this.createStoryElement(story);
+                storiesContainer.appendChild(storyElement);
+            }
+        });
+    },
+    
+    // Generuje i dodaje nową bajkę jeśli spełnione są warunki
+    checkAndGenerateNewStory: async function() {
+        if (this.shouldGenerateNewStory()) {
+            try {
+                // Próbuj wygenerować bajkę z API jeśli jest włączone
+                let newStory = null;
+                if (STORY_API_CONFIG.settings.useExternalApi && STORY_API_CONFIG.openrouter.enabled) {
+                    console.log('Próba generowania bajki przez API OpenRouter...');
+                    newStory = await this.generateStoryWithAPI();
+                }
+                
+                // Jeśli nie udało się wygenerować bajki z API, użyj lokalnego generatora
+                if (!newStory) {
+                    console.log('Używanie lokalnego generatora bajek...');
+                    newStory = this.generateNewStory();
+                }
+                
+                // Zapisz bajkę i aktualizuj interfejs
+                this.saveStory(newStory);
+                this.limitStoredStories();
+                
+                // Dodaj bajkę do interfejsu
+                const storyElement = this.createStoryElement(newStory);
+                const storiesContainer = document.querySelector('.bedtime-stories');
+                
+                // Dodaj nową bajkę na początek listy
+                if (storiesContainer.firstChild) {
+                    storiesContainer.insertBefore(storyElement, storiesContainer.firstChild);
+                } else {
+                    storiesContainer.appendChild(storyElement);
+                }
+                
+                // Pokaż powiadomienie
+                const toastEl = document.getElementById('app-toast');
+                if (toastEl) {
+                    document.getElementById('toast-title').textContent = 'Nowa bajka!';
+                    document.getElementById('toast-message').textContent = `Dodano nową bajkę: "${newStory.title}"`;
+                    const toast = new bootstrap.Toast(toastEl);
+                    toast.show();
+                }
+                
+                return true;
+            } catch (error) {
+                console.error('Błąd podczas generowania bajki:', error);
+                return false;
+            }
+        }
+        
+        return false;
+    },
+    
+    // Generuje bajkę przy użyciu zewnętrznego API
+    generateStoryWithAPI: async function() {
+        try {
+            const apiConfig = STORY_API_CONFIG.openrouter; // Korzystamy z OpenRouter API
+            
+            // Sprawdź, czy API jest włączone i czy klucz API jest dostępny
+            if (!STORY_API_CONFIG.settings.useExternalApi || !apiConfig.enabled || !apiConfig.apiKey) {
+                console.log('API zewnętrzne wyłączone lub brak klucza API. Używanie generatora lokalnego.');
+                return null;
+            }
+            
+            // Przygotuj zapytanie API
+            const promptText = STORY_API_CONFIG.settings.prompt;
+            
+            // Skonfiguruj zapytanie do OpenRouter API
+            const response = await fetch(apiConfig.endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiConfig.apiKey}`,
+                    'HTTP-Referer': apiConfig.referer || window.location.origin,
+                    'X-Title': apiConfig.siteTitle || 'Śpij Słoneczko'
+                },
+                body: JSON.stringify({
+                    model: apiConfig.model,
+                    messages: [
+                        { role: "system", content: "Jesteś pomocnym asystentem specjalizującym się w tworzeniu bajek dla dzieci w języku polskim." },
+                        { role: "user", content: promptText }
+                    ],
+                    max_tokens: apiConfig.maxTokens,
+                    temperature: apiConfig.temperature
+                })
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Błąd API: ${response.status} ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            const content = data.choices && data.choices[0] && data.choices[0].message ? data.choices[0].message.content : null;
+            
+            if (!content) {
+                throw new Error("Otrzymano pustą odpowiedź z API");
+            }
+            
+            // Próbujemy sparsować odpowiedź jako JSON
+            try {
+                // Znajdź JSON w odpowiedzi (czasem model może dodać komentarze przed lub po JSON)
+                const jsonMatch = content.match(/\{[\s\S]*\}/);
+                let storyData;
+                
+                if (jsonMatch) {
+                    storyData = JSON.parse(jsonMatch[0]);
+                } else {
+                    // Jeśli nie możemy znaleźć JSON, próbujemy przetworzyć odpowiedź w inny sposób
+                    // Zakładamy, że pierwsza linia to tytuł, a reszta to treść
+                    const lines = content.split('\n').filter(line => line.trim() !== '');
+                    const title = lines[0].replace(/^#+ /, ''); // Usuń znaczniki Markdown nagłówka
+                    const storyContent = lines.slice(1).join('\n\n');
+                    
+                    storyData = {
+                        title: title,
+                        icon: "star", // Domyślna ikona
+                        content: storyContent
+                    };
+                }
+                
+                // Utwórz obiekt bajki
+                const newStory = {
+                    id: 'story-api-' + Date.now(),
+                    title: storyData.title || `Bajka o Renatce i Dziubasku`,
+                    icon: storyData.icon || "star",
+                    content: storyData.content || content,
+                    dateGenerated: new Date().toISOString(),
+                    source: 'api'
+                };
+                
+                return newStory;
+                
+            } catch (jsonError) {
+                console.error("Błąd parsowania JSON z odpowiedzi API:", jsonError);
+                
+                // Tworzymy bajkę z surowej odpowiedzi
+                return {
+                    id: 'story-api-' + Date.now(),
+                    title: `Bajka o Renatce i Dziubasku`,
+                    icon: "star",
+                    content: content,
+                    dateGenerated: new Date().toISOString(),
+                    source: 'api'
+                };
+            }
+        } catch (error) {
+            console.error('Błąd podczas generowania bajki przez API:', error);
+            
+            // Jeśli włączony jest tryb awaryjny, zwróć null aby uruchomić lokalny generator
+            if (STORY_API_CONFIG.settings.fallbackToLocal) {
+                console.log('Przełączanie na lokalny generator bajek...');
+                return null;
+            }
+            
+            // W przeciwnym wypadku rzuć wyjątek dalej
+            throw error;
+        }
+    },
+    
+    // Ogranicza liczbę przechowywanych bajek do maksymalnej wartości
+    limitStoredStories: function() {
+        const maxStories = STORY_API_CONFIG.settings.maxStoriesToKeep;
+        let stories = this.getSavedStories();
+        
+        if (stories.length > maxStories) {
+            // Sortuj według daty generowania (najnowsze pierwsze)
+            stories.sort((a, b) => new Date(b.dateGenerated) - new Date(a.dateGenerated));
+            
+            // Zachowaj tylko określoną liczbę bajek
+            stories = stories.slice(0, maxStories);
+            
+            // Zapisz z powrotem do localStorage
+            localStorage.setItem('generatedStories', JSON.stringify(stories));
+            
+            console.log(`Ograniczono liczbę przechowywanych bajek do ${maxStories}`);
+        }
+    },
+    
+    // Inicjalizuje generator bajek
+    init: function() {
+        console.log('Inicjalizacja generatora bajek...');
+        
+        // Renderuj zapisane bajki
+        this.renderSavedStories();
+        
+        // Ogranicz liczbę przechowywanych bajek
+        this.limitStoredStories();
+        
+        // Sprawdź czy należy wygenerować nową bajkę
+        if (STORY_API_CONFIG.settings.checkNewStoryOnLoad) {
+            this.checkAndGenerateNewStory();
+        }
+        
+        // Dodaj przycisk do ręcznego generowania bajek
+        const storiesContent = document.getElementById('stories-content');
+        if (storiesContent) {
+            // Sprawdź czy przycisk już istnieje
+            if (!document.getElementById('generate-story-btn')) {
+                const generateButton = document.createElement('button');
+                generateButton.id = 'generate-story-btn';
+                generateButton.className = 'sound-btn mt-3 mb-3';
+                generateButton.innerHTML = '<i class="fas fa-magic"></i> Wygeneruj nową bajkę';
+                
+                // Obsługa kliknięcia przycisku - generowanie nowej bajki
+                generateButton.addEventListener('click', async () => {
+                    // Zmień etykietę przycisku podczas generowania
+                    generateButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generowanie...';
+                    generateButton.disabled = true;
+                    
+                    try {
+                        // Próbuj wygenerować bajkę z API jeśli jest włączone
+                        let newStory = null;
+                        if (STORY_API_CONFIG.settings.useExternalApi && STORY_API_CONFIG.openrouter.enabled) {
+                            newStory = await this.generateStoryWithAPI();
+                        }
+                        
+                        // Jeśli nie udało się wygenerować bajki z API, użyj lokalnego generatora
+                        if (!newStory) {
+                            newStory = this.generateNewStory();
+                        }
+                        
+                        // Zapisz bajkę
+                        this.saveStory(newStory);
+                        
+                        // Limituj liczbę przechowywanych bajek
+                        this.limitStoredStories();
+                        
+                        // Dodaj bajkę do interfejsu
+                        const storyElement = this.createStoryElement(newStory);
+                        const storiesContainer = document.querySelector('.bedtime-stories');
+                        
+                        // Dodaj nową bajkę na początek listy
+                        if (storiesContainer.firstChild) {
+                            storiesContainer.insertBefore(storyElement, storiesContainer.firstChild);
+                        } else {
+                            storiesContainer.appendChild(storyElement);
+                        }
+                        
+                        // Pokaż powiadomienie
+                        const toastEl = document.getElementById('app-toast');
+                        if (toastEl) {
+                            document.getElementById('toast-title').textContent = 'Nowa bajka!';
+                            document.getElementById('toast-message').textContent = `Dodano nową bajkę: "${newStory.title}"`;
+                            const toast = new bootstrap.Toast(toastEl);
+                            toast.show();
+                        }
+                        
+                        // Zapisz datę wygenerowania bajki
+                        localStorage.setItem('lastStoryGenerationDate', new Date().toISOString());
+                        
+                    } catch (error) {
+                        console.error('Błąd podczas generowania bajki:', error);
+                        
+                        // Wygeneruj bajkę lokalnie w przypadku błędu
+                        if (STORY_API_CONFIG.settings.fallbackToLocal) {
+                            try {
+                                const localStory = this.generateNewStory();
+                                this.saveStory(localStory);
+                                
+                                // Dodaj bajkę do interfejsu
+                                const storyElement = this.createStoryElement(localStory);
+                                const storiesContainer = document.querySelector('.bedtime-stories');
+                                if (storiesContainer.firstChild) {
+                                    storiesContainer.insertBefore(storyElement, storiesContainer.firstChild);
+                                } else {
+                                    storiesContainer.appendChild(storyElement);
+                                }
+                                
+                                // Pokaż powiadomienie o użyciu lokalnego generatora
+                                const toastEl = document.getElementById('app-toast');
+                                if (toastEl) {
+                                    document.getElementById('toast-title').textContent = 'Nowa bajka';
+                                    document.getElementById('toast-message').textContent = `Dodano nową bajkę: "${localStory.title}"`;
+                                    const toast = new bootstrap.Toast(toastEl);
+                                    toast.show();
+                                }
+                                
+                                // Zapisz datę wygenerowania bajki
+                                localStorage.setItem('lastStoryGenerationDate', new Date().toISOString());
+                            } catch (localError) {
+                                console.error('Błąd podczas generowania lokalnej bajki:', localError);
+                            }
+                        }
+                    } finally {
+                        // Przywróć etykietę przycisku
+                        generateButton.innerHTML = '<i class="fas fa-magic"></i> Wygeneruj nową bajkę';
+                        generateButton.disabled = false;
+                    }
+                });
+                
+                // Wstaw przycisk przed kontenerem bajek
+                const bedtimeStories = storiesContent.querySelector('.bedtime-stories');
+                if (bedtimeStories) {
+                    storiesContent.insertBefore(generateButton, bedtimeStories);
+                } else {
+                    storiesContent.appendChild(generateButton);
+                }
+            }
+        }
+    }
+};
+
+// Inicjalizacja generatora bajek po załadowaniu strony
+document.addEventListener('DOMContentLoaded', function() {
+    // Dodaj inicjalizację generatora bajek do istniejących inicjalizacji
+    setTimeout(() => {
+        bajkiGenerator.init();
+    }, 1500); // Małe opóźnienie, aby upewnić się, że strona jest w pełni załadowana
+});
     </script>
