@@ -3031,4 +3031,395 @@ bajkiGenerator.generateStoryWithAPI = async function() {
     // Użyj oryginalnej funkcji
     return await originalGenerateStoryWithAPI.call(this);
 };
+        // Syntezator mowy do bajek na dobranoc
+const StoryVoiceSynthesizer = {
+    // Przechowuje instancję syntezatora
+    synth: window.speechSynthesis,
+    
+    // Bieżące wypowiadanie
+    currentUtterance: null,
+    
+    // Czy syntezator jest dostępny
+    isSupported: function() {
+        return 'speechSynthesis' in window;
+    },
+    
+    // Parametry głosu
+    voiceParams: {
+        rate: 0.9,      // Nieco wolniejsze tempo (0.1 to 10)
+        pitch: 0.9,     // Nieco niższy ton (0 to 2)
+        volume: 1.0     // Pełna głośność (0 to 1)
+    },
+    
+    // Inicjalizacja syntezatora
+    init: function() {
+        // Sprawdź wsparcie przeglądarki
+        if (!this.isSupported()) {
+            console.warn('Synteza mowy nie jest wspierana przez tę przeglądarkę.');
+            return false;
+        }
+        
+        // Ładowanie głosów 
+        this.loadVoices();
+        
+        // Nasłuchuj na zmiany głosów (ważne w Chrome)
+        if (this.synth.onvoiceschanged !== undefined) {
+            this.synth.onvoiceschanged = this.loadVoices.bind(this);
+        }
+        
+        // Inicjalizacja powiodła się
+        return true;
+    },
+    
+    // Ładowanie dostępnych głosów
+    loadVoices: function() {
+        this.voices = this.synth.getVoices();
+        
+        // Próba znalezienia głosu męskiego po języku polskim
+        this.selectedVoice = this.findBestMaleVoice();
+        
+        console.log('Dostępne głosy:', this.voices);
+        console.log('Wybrany głos:', this.selectedVoice);
+    },
+    
+    // Znajdowanie najlepszego męskiego głosu
+    findBestMaleVoice: function() {
+        // Priorytety dla wyszukiwania głosu:
+        // 1. Polski męski głos
+        // 2. Dowolny polski głos
+        // 3. Angielski męski głos
+        // 4. Dowolny męski głos
+        // 5. Pierwszy dostępny głos
+        
+        const voices = this.voices || [];
+        
+        // Szukamy polskiego męskiego głosu
+        let polishMaleVoice = voices.find(voice => 
+            voice.lang.startsWith('pl') && 
+            voice.name.toLowerCase().includes('male') ||
+            voice.name.toLowerCase().includes('męski') ||
+            voice.name.toLowerCase().includes('adam') ||
+            voice.name.toLowerCase().includes('jacek')
+        );
+        
+        if (polishMaleVoice) return polishMaleVoice;
+        
+        // Dowolny polski głos
+        let polishVoice = voices.find(voice => voice.lang.startsWith('pl'));
+        if (polishVoice) return polishVoice;
+        
+        // Angielski męski głos
+        let englishMaleVoice = voices.find(voice => 
+            voice.lang.startsWith('en') && 
+            (voice.name.toLowerCase().includes('male') ||
+             voice.name.toLowerCase().includes('david') ||
+             voice.name.toLowerCase().includes('mark') ||
+             voice.name.toLowerCase().includes('james'))
+        );
+        
+        if (englishMaleVoice) return englishMaleVoice;
+        
+        // Dowolny męski głos
+        let maleVoice = voices.find(voice => 
+            voice.name.toLowerCase().includes('male') ||
+            !voice.name.toLowerCase().includes('female')
+        );
+        
+        if (maleVoice) return maleVoice;
+        
+        // Fallback: pierwszy dostępny głos
+        return voices[0];
+    },
+    
+    // Funkcja czytająca tekst
+    speak: function(text) {
+        if (!this.isSupported() || !text) return;
+        
+        // Zatrzymaj aktualnie czytany tekst
+        this.stop();
+        
+        // Utwórz nową wypowiedź
+        this.currentUtterance = new SpeechSynthesisUtterance(text);
+        
+        // Ustaw parametry
+        this.currentUtterance.voice = this.selectedVoice;
+        this.currentUtterance.rate = this.voiceParams.rate;
+        this.currentUtterance.pitch = this.voiceParams.pitch;
+        this.currentUtterance.volume = this.voiceParams.volume;
+        
+        // Zdarzenia do zarządzania stanem odtwarzania
+        this.currentUtterance.onstart = () => {
+            this.isSpeaking = true;
+            this.updateButtonState();
+        };
+        
+        this.currentUtterance.onend = () => {
+            this.isSpeaking = false;
+            this.updateButtonState();
+        };
+        
+        this.currentUtterance.onerror = (event) => {
+            console.error('Błąd syntezy mowy:', event);
+            this.isSpeaking = false;
+            this.updateButtonState();
+        };
+        
+        // Rozpocznij czytanie
+        this.synth.speak(this.currentUtterance);
+        this.isSpeaking = true;
+        
+        // Aktualizuj stan przycisków
+        this.updateButtonState();
+    },
+    
+    // Wstrzymanie odtwarzania
+    pause: function() {
+        if (this.isSpeaking && this.synth) {
+            this.synth.pause();
+            this.isSpeaking = false;
+            this.isPaused = true;
+            this.updateButtonState();
+        }
+    },
+    
+    // Wznowienie odtwarzania
+    resume: function() {
+        if (this.isPaused && this.synth) {
+            this.synth.resume();
+            this.isSpeaking = true;
+            this.isPaused = false;
+            this.updateButtonState();
+        }
+    },
+    
+    // Zatrzymanie odtwarzania
+    stop: function() {
+        if (this.synth) {
+            this.synth.cancel();
+            this.isSpeaking = false;
+            this.isPaused = false;
+            this.updateButtonState();
+        }
+    },
+    
+    // Aktualizacja stanu przycisków
+    updateButtonState: function() {
+        const playButtons = document.querySelectorAll('.story-play-btn');
+        const pauseButtons = document.querySelectorAll('.story-pause-btn');
+        const stopButtons = document.querySelectorAll('.story-stop-btn');
+        
+        playButtons.forEach(btn => {
+            btn.style.display = (this.isSpeaking || this.isPaused) ? 'none' : 'inline-block';
+        });
+        
+        pauseButtons.forEach(btn => {
+            btn.style.display = this.isSpeaking ? 'inline-block' : 'none';
+        });
+        
+        stopButtons.forEach(btn => {
+            btn.style.display = (this.isSpeaking || this.isPaused) ? 'inline-block' : 'none';
+        });
+    },
+    
+    // Pobieranie tekstu bajki z elementu DOM
+    getStoryText: function(storyContentElement) {
+        if (!storyContentElement) return '';
+        
+        // Zbierz tekst ze wszystkich paragrafów
+        const paragraphs = Array.from(storyContentElement.querySelectorAll('p'));
+        return paragraphs.map(p => p.textContent).join(' ');
+    },
+    
+    // Dodanie przycisków do wszystkich bajek
+    addSpeechButtonsToStories: function() {
+        if (!this.isSupported()) return;
+        
+        // Dodaj przycisk do każdego nagłówka bajki
+        const storyHeaders = document.querySelectorAll('.story-header');
+        
+        storyHeaders.forEach(header => {
+            // Sprawdź czy przyciski już istnieją
+            if (header.querySelector('.story-speech-controls')) return;
+            
+            // Pobierz ID bajki
+            const storyId = header.dataset.story;
+            if (!storyId) return;
+            
+            // Znajdź treść bajki
+            const storyContent = document.getElementById(`${storyId}-story`);
+            if (!storyContent) return;
+            
+            // Utwórz kontener na przyciski
+            const speechControls = document.createElement('div');
+            speechControls.className = 'story-speech-controls';
+            speechControls.style.display = 'flex';
+            speechControls.style.alignItems = 'center';
+            speechControls.style.gap = '8px';
+            
+            // Przycisk odtwarzania
+            const playButton = document.createElement('button');
+            playButton.className = 'story-play-btn';
+            playButton.innerHTML = '<i class="fas fa-play"></i>';
+            playButton.title = 'Odtwórz bajkę głosem';
+            playButton.style.display = 'inline-block';
+            playButton.style.background = 'var(--accent)';
+            playButton.style.color = 'var(--primary-dark)';
+            playButton.style.border = 'none';
+            playButton.style.borderRadius = '50%';
+            playButton.style.width = '30px';
+            playButton.style.height = '30px';
+            playButton.style.cursor = 'pointer';
+            
+            // Przycisk pauzy
+            const pauseButton = document.createElement('button');
+            pauseButton.className = 'story-pause-btn';
+            pauseButton.innerHTML = '<i class="fas fa-pause"></i>';
+            pauseButton.title = 'Wstrzymaj odtwarzanie';
+            pauseButton.style.display = 'none';
+            pauseButton.style.background = 'var(--accent)';
+            pauseButton.style.color = 'var(--primary-dark)';
+            pauseButton.style.border = 'none';
+            pauseButton.style.borderRadius = '50%';
+            pauseButton.style.width = '30px';
+            pauseButton.style.height = '30px';
+            pauseButton.style.cursor = 'pointer';
+            
+            // Przycisk stop
+            const stopButton = document.createElement('button');
+            stopButton.className = 'story-stop-btn';
+            stopButton.innerHTML = '<i class="fas fa-stop"></i>';
+            stopButton.title = 'Zatrzymaj odtwarzanie';
+            stopButton.style.display = 'none';
+            stopButton.style.background = 'var(--accent)';
+            stopButton.style.color = 'var(--primary-dark)';
+            stopButton.style.border = 'none';
+            stopButton.style.borderRadius = '50%';
+            stopButton.style.width = '30px';
+            stopButton.style.height = '30px';
+            stopButton.style.cursor = 'pointer';
+            
+            // Dodaj obsługę zdarzeń
+            playButton.addEventListener('click', (e) => {
+                e.stopPropagation(); // Zapobiega zamknięciu/otwarciu bajki
+                
+                // Jeśli bajka nie jest otwarta, otwórz ją
+                if (!storyContent.classList.contains('visible')) {
+                    header.click();
+                }
+                
+                // Pobierz tekst bajki
+                const storyText = this.getStoryText(storyContent);
+                
+                // Rozpocznij czytanie
+                this.speak(storyText);
+            });
+            
+            pauseButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (this.isSpeaking) {
+                    this.pause();
+                } else if (this.isPaused) {
+                    this.resume();
+                }
+            });
+            
+            stopButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.stop();
+            });
+            
+            // Dodaj przyciski do kontenera
+            speechControls.appendChild(playButton);
+            speechControls.appendChild(pauseButton);
+            speechControls.appendChild(stopButton);
+            
+            // Znajdź pierwszy nagłówek h4 w nagłówku bajki
+            const h4 = header.querySelector('h4');
+            
+            if (h4) {
+                // Utwórz wrapper, aby zachować układ
+                const wrapper = document.createElement('div');
+                wrapper.style.display = 'flex';
+                wrapper.style.justifyContent = 'space-between';
+                wrapper.style.alignItems = 'center';
+                wrapper.style.width = '100%';
+                
+                // Dodaj nagłówek do wrappera
+                h4.parentNode.insertBefore(wrapper, h4);
+                wrapper.appendChild(h4);
+                
+                // Dodaj przyciski do wrappera
+                wrapper.appendChild(speechControls);
+            } else {
+                // Jeśli nie ma nagłówka h4, dodaj przyciski bezpośrednio do nagłówka
+                header.appendChild(speechControls);
+            }
+        });
+    },
+    
+    // Obserwator mutacji DOM, aby dodawać przyciski do nowo dodanych bajek
+    observeStoryAdditions: function() {
+        // Obserwator mutacji DOM
+        const observer = new MutationObserver((mutations) => {
+            let needsUpdate = false;
+            
+            mutations.forEach(mutation => {
+                // Sprawdź, czy dodano nowe elementy
+                if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+                    // Sprawdź, czy któryś z dodanych elementów jest bajką
+                    mutation.addedNodes.forEach(node => {
+                        if (node.nodeType === 1) { // Typ Node.ELEMENT_NODE
+                            if (node.classList && (
+                                node.classList.contains('story-accordion') || 
+                                node.querySelector('.story-accordion')
+                            )) {
+                                needsUpdate = true;
+                            }
+                        }
+                    });
+                }
+            });
+            
+            // Jeśli dodano nowe bajki, dodaj do nich przyciski
+            if (needsUpdate) {
+                this.addSpeechButtonsToStories();
+            }
+        });
+        
+        // Rozpocznij obserwację sekcji bajek
+        const storiesContainer = document.querySelector('.bedtime-stories');
+        if (storiesContainer) {
+            observer.observe(storiesContainer, { 
+                childList: true, 
+                subtree: true 
+            });
+        }
+    }
+};
+
+// Inicjalizacja syntezatora mowy po załadowaniu strony
+document.addEventListener('DOMContentLoaded', function() {
+    // Opóźnij inicjalizację syntezatora o 2 sekundy, aby dać przeglądarce czas na załadowanie głosów
+    setTimeout(() => {
+        // Inicjalizacja syntezatora
+        if (StoryVoiceSynthesizer.init()) {
+            // Dodaj przyciski do wszystkich bajek
+            StoryVoiceSynthesizer.addSpeechButtonsToStories();
+            // Obserwuj dodawanie nowych bajek
+            StoryVoiceSynthesizer.observeStoryAdditions();
+            
+            // Dodaj nasłuchiwacz do dodawania przycisków po kliknięciu na zakładkę bajek
+            const storiesTab = document.querySelector('.exercise-tab[data-tab="stories"]');
+            if (storiesTab) {
+                storiesTab.addEventListener('click', () => {
+                    setTimeout(() => StoryVoiceSynthesizer.addSpeechButtonsToStories(), 300);
+                });
+            }
+            
+            console.log('Syntezator mowy zainicjalizowany pomyślnie.');
+        } else {
+            console.warn('Nie udało się zainicjalizować syntezatora mowy.');
+        }
+    }, 2000);
+});
     </script>
