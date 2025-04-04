@@ -2979,7 +2979,7 @@ generateButton.addEventListener('click', async () => {
     const safetyTimeout = setTimeout(() => {
         // Jeśli generowanie trwa zbyt długo, przerwij je
         if (generateButton.disabled) {
-            console.log('Przekroczono maksymalny czas generowania bajki (45s)');
+            console.log('Przekroczono maksymalny czas generowania bajki (65s)');
             generateButton.innerHTML = '<i class="fas fa-magic"></i> Wygeneruj nową bajkę';
             generateButton.disabled = false;
             
@@ -3012,7 +3012,7 @@ generateButton.addEventListener('click', async () => {
                 console.error('Błąd podczas generowania lokalnej bajki:', e);
             }
         }
-    }, 55000); // 45 sekund
+    }, 65000); // 65 sekund
     
     try {
         // Próbuj wygenerować bajkę z API jeśli jest włączone
