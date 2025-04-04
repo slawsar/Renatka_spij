@@ -2206,7 +2206,7 @@ const STORY_API_CONFIG = {
         apiKey: '',
         endpoint: 'https://openrouter.ai/api/v1/chat/completions',
         model: 'deepseek/deepseek-chat-v3-0324:free', // Model DeepSeek dla płynnej generacji bajek
-        maxTokens: 1500,
+        maxTokens: 800,
         temperature: 0.7,
         referer: window.location.origin, // Dynamiczne pobieranie URL strony
         siteTitle: 'Śpij Słoneczko',
@@ -2749,40 +2749,67 @@ const bajkiGenerator = {
         return false;
     },
     
-    // Generuje bajkę przy użyciu zewnętrznego API - poprawiona wersja używająca getStoryPrompt()
+    // Generuje bajkę przy użyciu zewnętrznego API
     generateStoryWithAPI: async function() {
-        try {
-            const apiConfig = STORY_API_CONFIG.openrouter;
+    try {
+        const apiConfig = STORY_API_CONFIG.openrouter;
+        
+        // Sprawdź, czy API jest włączone i czy klucz API jest dostępny
+        if (!STORY_API_CONFIG.settings.useExternalApi || !apiConfig.enabled) {
+            console.log('API zewnętrzne wyłączone. Używanie generatora lokalnego.');
+            return null;
+        }
+        
+        // Dokładniejsza walidacja klucza API
+        const apiKey = apiConfig.apiKey;
+        if (!apiKey || apiKey.trim() === '') {
+            console.log('Brak klucza API. Używanie generatora lokalnego.');
             
-            // Sprawdź, czy API jest włączone i czy klucz API jest dostępny
-            if (!STORY_API_CONFIG.settings.useExternalApi || !apiConfig.enabled || !apiConfig.apiKey) {
-                console.log('API zewnętrzne wyłączone lub brak klucza API. Używanie generatora lokalnego.');
-                return null;
+            // Pokaż powiadomienie o braku klucza API
+            const toastEl = document.getElementById('app-toast');
+            if (toastEl) {
+                document.getElementById('toast-title').textContent = 'Brak klucza API';
+                document.getElementById('toast-message').textContent = 'Wprowadź klucz API OpenRouter, aby generować bajki z AI.';
+                const toast = new bootstrap.Toast(toastEl);
+                toast.show();
             }
             
-            // Pobierz prompt bezpośrednio z funkcji aby uniknąć cachowania
-            const promptText = getStoryPrompt();
+            return null;
+        }
+        
+        // Pobierz prompt bezpośrednio z funkcji
+        const promptText = getStoryPrompt();
+        
+        // Dodaj timeout do zapytania
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 sekund timeout
+        
+        try {
+            // Skonfiguruj zapytanie do OpenRouter API z poprawionymi nagłówkami
+            const response = await fetch(apiConfig.endpoint, {
+                method: 'POST',
+                signal: controller.signal,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`
+                    // Usunięto problematyczne nagłówki
+                },
+                body: JSON.stringify({
+                    model: apiConfig.model,
+                    messages: [
+                        { role: "system", content: "Jesteś pomocnym asystentem specjalizującym się w tworzeniu bajek na dobranoc dla kobiet w języku polskim." },
+                        { role: "user", content: promptText }
+                    ],
+                    max_tokens: apiConfig.maxTokens,
+                    temperature: apiConfig.temperature
+                })
+            });
             
-            // Skonfiguruj zapytanie do OpenRouter API
-const response = await fetch(apiConfig.endpoint, {
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiConfig.apiKey}`
-        // Usunięto problematyczne nagłówki
-    },
-    body: JSON.stringify({
-        model: apiConfig.model,
-        messages: [
-            { role: "system", content: "Jesteś pomocnym asystentem specjalizującym się w tworzeniu bajek na dobranoc dla kobiet w języku polskim." },
-            { role: "user", content: promptText }
-        ],
-        max_tokens: apiConfig.maxTokens,
-        temperature: apiConfig.temperature
-    })
-});
+            clearTimeout(timeoutId);
             
             if (!response.ok) {
+                const errorText = await response.text().catch(() => 'Nie można odczytać treści błędu');
+                console.error('Błąd API:', response.status, response.statusText, errorText);
                 throw new Error(`Błąd API: ${response.status} ${response.statusText}`);
             }
             
@@ -2803,7 +2830,6 @@ const response = await fetch(apiConfig.endpoint, {
                     storyData = JSON.parse(jsonMatch[0]);
                 } else {
                     // Jeśli nie możemy znaleźć JSON, próbujemy przetworzyć odpowiedź w inny sposób
-                    // Zakładamy, że pierwsza linia to tytuł, a reszta to treść
                     const lines = content.split('\n').filter(line => line.trim() !== '');
                     const title = lines[0].replace(/^#+ /, ''); // Usuń znaczniki Markdown nagłówka
                     const storyContent = lines.slice(1).join('\n\n');
@@ -2840,19 +2866,45 @@ const response = await fetch(apiConfig.endpoint, {
                     source: 'api'
                 };
             }
-        } catch (error) {
-            console.error('Błąd podczas generowania bajki przez API:', error);
-            
-            // Jeśli włączony jest tryb awaryjny, zwróć null aby uruchomić lokalny generator
-            if (STORY_API_CONFIG.settings.fallbackToLocal) {
-                console.log('Przełączanie na lokalny generator bajek...');
-                return null;
+        } catch (fetchError) {
+            clearTimeout(timeoutId);
+            if (fetchError.name === 'AbortError') {
+                console.error('Zapytanie do API zostało przerwane z powodu timeoutu');
+                
+                // Pokaż powiadomienie o przekroczeniu limitu czasu
+                const toastEl = document.getElementById('app-toast');
+                if (toastEl) {
+                    document.getElementById('toast-title').textContent = 'Przekroczono limit czasu';
+                    document.getElementById('toast-message').textContent = 'Generowanie bajki trwało zbyt długo. Używam lokalnego generatora.';
+                    const toast = new bootstrap.Toast(toastEl);
+                    toast.show();
+                }
+                
+                throw new Error('Upłynął limit czasu zapytania do API');
             }
-            
-            // W przeciwnym wypadku rzuć wyjątek dalej
-            throw error;
+            throw fetchError;
         }
-    },
+    } catch (error) {
+        console.error('Błąd podczas generowania bajki przez API:', error);
+        
+        // Pokaż powiadomienie o problemie
+        const toastEl = document.getElementById('app-toast');
+        if (toastEl) {
+            document.getElementById('toast-title').textContent = 'Problem z generacją bajki';
+            document.getElementById('toast-message').textContent = 'Wystąpił problem z połączeniem do API. Używam lokalnego generatora bajek.';
+            const toast = new bootstrap.Toast(toastEl);
+            toast.show();
+        }
+        
+        // Jeśli włączony jest tryb awaryjny, zwróć null aby uruchomić lokalny generator
+        if (STORY_API_CONFIG.settings.fallbackToLocal) {
+            console.log('Przełączanie na lokalny generator bajek...');
+            return null;
+        }
+        
+        throw error;
+    }
+}
     
     // Ogranicza liczbę przechowywanych bajek do maksymalnej wartości
     limitStoredStories: function() {
@@ -3428,5 +3480,16 @@ document.addEventListener('DOMContentLoaded', function() {
             console.warn('Nie udało się zainicjalizować syntezatora mowy.');
         }
     }, 2000);
+});
+        // Dodaj obsługę zdarzenia beforeunload, aby zapobiec utracie połączenia podczas generowania bajki
+window.addEventListener('beforeunload', function(e) {
+    // Sprawdź, czy trwa generowanie bajki
+    const generateButton = document.getElementById('generate-story-btn');
+    if (generateButton && generateButton.disabled && generateButton.innerHTML.includes('Generowanie')) {
+        // Pokaż powiadomienie o trwającej operacji
+        const message = 'Trwa generowanie bajki. Czy na pewno chcesz opuścić stronę?';
+        e.returnValue = message;
+        return message;
+    }
 });
     </script>
