@@ -2764,26 +2764,23 @@ const bajkiGenerator = {
             const promptText = getStoryPrompt();
             
             // Skonfiguruj zapytanie do OpenRouter API
-            const response = await fetch(apiConfig.endpoint, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${apiConfig.apiKey}`,
-                    // Dodaj nagłówki cache-control aby zapobiec cachowaniu
-                    'Cache-Control': 'no-cache, no-store, must-revalidate',
-                    'Pragma': 'no-cache',
-                    'Expires': '0'
-                },
-                body: JSON.stringify({
-                    model: apiConfig.model,
-                    messages: [
-                        { role: "system", content: "Jesteś pomocnym asystentem specjalizującym się w tworzeniu bajek na dobranoc dla kobiet w języku polskim." },
-                        { role: "user", content: promptText }
-                    ],
-                    max_tokens: apiConfig.maxTokens,
-                    temperature: apiConfig.temperature
-                })
-            });
+const response = await fetch(apiConfig.endpoint, {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiConfig.apiKey}`
+        // Usunięto problematyczne nagłówki
+    },
+    body: JSON.stringify({
+        model: apiConfig.model,
+        messages: [
+            { role: "system", content: "Jesteś pomocnym asystentem specjalizującym się w tworzeniu bajek na dobranoc dla kobiet w języku polskim." },
+            { role: "user", content: promptText }
+        ],
+        max_tokens: apiConfig.maxTokens,
+        temperature: apiConfig.temperature
+    })
+});
             
             if (!response.ok) {
                 throw new Error(`Błąd API: ${response.status} ${response.statusText}`);
