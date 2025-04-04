@@ -2218,24 +2218,7 @@ const STORY_API_CONFIG = {
         fallbackToLocal: true, // Czy używać lokalnego generatora jako awaryjnego
         maxStoriesToKeep: 30, // Maksymalna liczba bajek do przechowywania
         checkNewStoryOnLoad: true, // Czy sprawdzać automatycznie przy ładowaniu strony
-        prompt: `Napisz oryginalną, uspokajającą bajkę na dobranoc, przeznaczoną dla dziewczyny. Bajka powinna składać się z około 10 akapitów i zawierać następujące dwie postacie (w każdej bajce muszą wystąpić obie postacie, choć mogą być przedstawione w symboliczny sposób):
-Renatka lub Słoneczko – główna bohaterka, dziewczynka.
-Dziubasek – jej przyjaciel i opiekun.
-
-Charakter bajki:
-Nastrój bajki ma być magiczny i kojący, idealny do zasypiania.
-W treści powinny pojawić się motywy związane z niebem, gwiazdami, chmurami, lasem lub morzem.
-Bajka powinna podkreślać wartości takie jak miłość, przyjaźń, troska i opiekuńczość.
-Zakończenie bajki musi być spokojne i pozytywne.
-Unikaj wprowadzania strasznych postaci oraz elementów budzących niepokój.
-
-Dodatkowy wymóg:
-Tytuł bajki musi zawierać imię „Renatka” lub „Dziubasek”.
-        
-        Odpowiedź sformatuj jako JSON z polami:
-        - title: tytuł bajki
-        - icon: wybierz ikonę (star, moon, cloud, tree, heart)
-        - content: treść bajki podzielona na akapity (używaj podwójnych znaków nowej linii między akapitami)`
+        prompt: `Wygeneruj oryginalną, uspokajającą bajkę na dobranoc dla dziewczyny.\n\n**Postacie:**\n* Główna bohaterka: dziewczyna Renatka (można też używać zdrobnienia Słoneczko).\n* Jej przyjaciel i opiekun: Dziubasek.\nObie postacie muszą pojawić się w historii.\n\n**Wymagania dotyczące treści:**\n* **Nastrój:** Magiczny, kojący, senny, idealny do zasypiania.\n* **Tematyka:** Wpleć motywy związane z nocnym niebem, gwiazdami, księżycem, snem, przyrodą (np. cichy las, spokojne morze, miękkie chmury).\n* **Wartości:** Podkreślaj miłość, przyjaźń, poczucie bezpieczeństwa, troskę i wzajemną opiekę między Renatką a Dziubaskiem.\n* **Zakończenie:** Spokojne, pozytywne, dające poczucie bezpieczeństwa i zachęcające do snu.\n* **Czego unikać:** Żadnych strasznych postaci, konfliktów, napięcia, smutku czy elementów mogących budzić niepokój.\n* **Długość:** Około 8-10 krótkich akapitów.\n\n**Wymagania dotyczące formatowania:**\n* **Tytuł:** Musi zawierać imię „Renatka” lub „Dziubasek”.\n* **Format wyjściowy:** Cała odpowiedź ma być pojedynczym obiektem JSON z następującymi polami:\n    * `title`: (string) Wygenerowany tytuł bajki.\n    * `icon`: (string) Wybierz jedną ikonę najlepiej pasującą do treści bajki spośród: `star`, `moon`, `cloud`, `tree`, `heart`.\n    * `content`: (string) Pełna treść bajki. Akapity muszą być oddzielone podwójnym znakiem nowej linii (`\\n\\n`).`
     }
 };
 
