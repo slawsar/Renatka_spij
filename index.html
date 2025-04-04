@@ -2199,6 +2199,7 @@
         // ========== GENERATOR BAJEK NA DOBRANOC ==========
 
 // Konfiguracja zewnętrznego API
+// Konfiguracja zewnętrznego API
 const STORY_API_CONFIG = {
     // Ustawienia API dla OpenRouter
     openrouter: {
@@ -2217,11 +2218,11 @@ const STORY_API_CONFIG = {
         useExternalApi: true, // Czy używać zewnętrznego API
         fallbackToLocal: true, // Czy używać lokalnego generatora jako awaryjnego
         maxStoriesToKeep: 10, // Maksymalna liczba bajek do przechowywania
-        checkNewStoryOnLoad: true, // Czy sprawdzać automatycznie przy ładowaniu strony
-        prompt: ``
+        checkNewStoryOnLoad: true // Czy sprawdzać automatycznie przy ładowaniu strony
     }
-  };
-// Define a function to get the prompt directly
+};
+
+// Define a function to get the prompt directly - funkcja zwracająca prompt
 function getStoryPrompt() {
     return `Napisz oryginalną, uspokajającą bajkę na dobranoc, przeznaczoną dla dziewczyny. Bajka powinna składać się z około 10 akapitów i zawierać następujące dwie postacie (w każdej bajce muszą wystąpić obie postacie, choć mogą być przedstawione w symboliczny sposób):
  Renatka lub Słoneczko – główna bohaterka, dziewczynka,
@@ -2243,137 +2244,208 @@ function getStoryPrompt() {
          - content: treść bajki podzielona na akapity (używaj podwójnych znaków nowej linii między akapitami)`;
 }
 
-// Modify the generateStoryWithAPI function to use the getStoryPrompt function
-bajkiGenerator.generateStoryWithAPI = async function() {
-    try {
-        const apiConfig = STORY_API_CONFIG.openrouter;
+// Manager Klucza API dla OpenRouter - musi być przed bajkiGenerator
+const ApiKeyManager = {
+    // Klucz do przechowywania klucza API w localStorage
+    STORAGE_KEY: 'openrouter-api-key',
+    
+    // Pobierz klucz API z localStorage
+    getApiKey: function() {
+        return localStorage.getItem(this.STORAGE_KEY);
+    },
+    
+    // Zapisz klucz API w localStorage
+    saveApiKey: function(apiKey) {
+        localStorage.setItem(this.STORAGE_KEY, apiKey);
+    },
+    
+    // Usuń klucz API z localStorage
+    removeApiKey: function() {
+        localStorage.removeItem(this.STORAGE_KEY);
+    },
+    
+    // Sprawdź czy klucz API jest zapisany
+    hasApiKey: function() {
+        return !!this.getApiKey();
+    },
+    
+    // Dodaj UI do zarządzania kluczem API w sekcji bajek
+    addApiKeyUI: function() {
+        const storiesContent = document.getElementById('stories-content');
+        if (!storiesContent) return;
         
-        // Sprawdź, czy API jest włączone i czy klucz API jest dostępny
-        if (!STORY_API_CONFIG.settings.useExternalApi || !apiConfig.enabled || !apiConfig.apiKey) {
-            console.log('API zewnętrzne wyłączone lub brak klucza API. Używanie generatora lokalnego.');
-            return null;
-        }
+        // Sprawdź czy element istnieje już w DOM
+        if (document.getElementById('api-key-manager')) return;
         
-        // Get the prompt directly from the function to ensure it's not cached
-        const promptText = getStoryPrompt();
+        // Utwórz kontener na UI zarządzania kluczem API
+        const apiKeyManager = document.createElement('div');
+        apiKeyManager.id = 'api-key-manager';
+        apiKeyManager.className = 'mb-4 mt-3 p-3';
         
-        // Skonfiguruj zapytanie do OpenRouter API
-        const response = await fetch(apiConfig.endpoint, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${apiConfig.apiKey}`,
-                // Add cache control headers to prevent caching
-                'Cache-Control': 'no-cache, no-store, must-revalidate',
-                'Pragma': 'no-cache',
-                'Expires': '0'
-            },
-            body: JSON.stringify({
-                model: apiConfig.model,
-                messages: [
-                    { role: "system", content: "Jesteś pomocnym asystentem specjalizującym się w tworzeniu bajek na dobranoc dla kobiet w języku polskim." },
-                    { role: "user", content: promptText }
-                ],
-                max_tokens: apiConfig.maxTokens,
-                temperature: apiConfig.temperature
-            })
-        });
+        // Dodaj stylizację dostosowaną do ciemnego tła
+        apiKeyManager.style.backgroundColor = 'var(--primary-light)';
+        apiKeyManager.style.borderRadius = 'var(--radius-md)';
+        apiKeyManager.style.boxShadow = 'var(--shadow-sm)';
+        apiKeyManager.style.borderLeft = '4px solid var(--accent)';
         
-        if (!response.ok) {
-            throw new Error(`Błąd API: ${response.status} ${response.statusText}`);
-        }
+        // Dodaj tytuł
+        const title = document.createElement('h5');
+        title.innerHTML = '<i class="fas fa-key"></i> Klucz API OpenRouter';
+        title.className = 'mb-2';
+        title.style.color = 'var(--accent)'; // Używa koloru akcentowego do lepszej widoczności
+        apiKeyManager.appendChild(title);
         
-        const data = await response.json();
-        const content = data.choices && data.choices[0] && data.choices[0].message ? data.choices[0].message.content : null;
+        // Dodaj opis
+        const description = document.createElement('p');
+        description.className = 'small mb-3';
+        description.textContent = 'Aby generować bajki przy użyciu AI, wprowadź swój klucz API OpenRouter. Klucz jest przechowywany tylko na twoim urządzeniu.';
+        description.style.color = 'var(--text-light)';  // Użyj zmiennej koloru tekstu
+        apiKeyManager.appendChild(description);
         
-        if (!content) {
-            throw new Error("Otrzymano pustą odpowiedź z API");
-        }
+        // Utwórz kontener na input i przyciski
+        const inputGroup = document.createElement('div');
+        inputGroup.className = 'd-flex flex-wrap gap-2 align-items-center mb-2';
         
-        // Próbujemy sparsować odpowiedź jako JSON
-        try {
-            // Znajdź JSON w odpowiedzi (czasem model może dodać komentarze przed lub po JSON)
-            const jsonMatch = content.match(/\{[\s\S]*\}/);
-            let storyData;
-            
-            if (jsonMatch) {
-                storyData = JSON.parse(jsonMatch[0]);
-            } else {
-                // Jeśli nie możemy znaleźć JSON, próbujemy przetworzyć odpowiedź w inny sposób
-                // Zakładamy, że pierwsza linia to tytuł, a reszta to treść
-                const lines = content.split('\n').filter(line => line.trim() !== '');
-                const title = lines[0].replace(/^#+ /, ''); // Usuń znaczniki Markdown nagłówka
-                const storyContent = lines.slice(1).join('\n\n');
-                
-                storyData = {
-                    title: title,
-                    icon: "star", // Domyślna ikona
-                    content: storyContent
-                };
+        // Input na klucz API
+        const apiKeyInput = document.createElement('input');
+        apiKeyInput.type = 'password';
+        apiKeyInput.id = 'api-key-input';
+        apiKeyInput.className = 'form-control flex-grow-1';
+        apiKeyInput.placeholder = 'Wprowadź klucz API OpenRouter';
+        apiKeyInput.value = this.getApiKey() || '';
+        
+        // Stylizacja pola wprowadzania
+        apiKeyInput.style.backgroundColor = 'var(--primary-medium)';
+        apiKeyInput.style.color = 'var(--text-light)';
+        apiKeyInput.style.border = '2px solid var(--accent-transparent-medium)';
+        apiKeyInput.style.padding = '0.5rem';
+        apiKeyInput.style.borderRadius = 'var(--radius-sm)';
+        
+        inputGroup.appendChild(apiKeyInput);
+        
+        // Przycisk do zapisania klucza
+        const saveButton = document.createElement('button');
+        saveButton.className = 'sound-btn';
+        saveButton.innerHTML = '<i class="fas fa-save"></i> Zapisz';
+        saveButton.addEventListener('click', () => {
+            const apiKey = apiKeyInput.value.trim();
+            if (apiKey) {
+                this.saveApiKey(apiKey);
+                // Aktualizuj konfigurację API
+                STORY_API_CONFIG.openrouter.apiKey = apiKey;
+                // Pokaż powiadomienie
+                const toastEl = document.getElementById('app-toast');
+                if (toastEl) {
+                    document.getElementById('toast-title').textContent = 'Klucz API zapisany';
+                    document.getElementById('toast-message').textContent = 'Twój klucz API został zapisany lokalnie.';
+                    const toast = new bootstrap.Toast(toastEl);
+                    toast.show();
+                }
+                // Aktualizuj status
+                updateStatusIndicator();
             }
-            
-            // Utwórz obiekt bajki
-            const newStory = {
-                id: 'story-api-' + Date.now(),
-                title: storyData.title || `Bajka o Renatce i Dziubasku`,
-                icon: storyData.icon || "star",
-                content: storyData.content || content,
-                dateGenerated: new Date().toISOString(),
-                source: 'api'
-            };
-            
-            return newStory;
-            
-        } catch (jsonError) {
-            console.error("Błąd parsowania JSON z odpowiedzi API:", jsonError);
-            
-            // Tworzymy bajkę z surowej odpowiedzi
-            return {
-                id: 'story-api-' + Date.now(),
-                title: `Bajka o Renatce i Dziubasku`,
-                icon: "star",
-                content: content,
-                dateGenerated: new Date().toISOString(),
-                source: 'api'
-            };
-        }
-    } catch (error) {
-        console.error('Błąd podczas generowania bajki przez API:', error);
+        });
+        inputGroup.appendChild(saveButton);
         
-        // Jeśli włączony jest tryb awaryjny, zwróć null aby uruchomić lokalny generator
-        if (STORY_API_CONFIG.settings.fallbackToLocal) {
-            console.log('Przełączanie na lokalny generator bajek...');
-            return null;
+        // Przycisk do usunięcia klucza
+        const removeButton = document.createElement('button');
+        removeButton.className = 'sound-btn';
+        removeButton.innerHTML = '<i class="fas fa-trash"></i> Usuń';
+        removeButton.addEventListener('click', () => {
+            this.removeApiKey();
+            apiKeyInput.value = '';
+            // Aktualizuj konfigurację API
+            STORY_API_CONFIG.openrouter.apiKey = '';
+            // Pokaż powiadomienie
+            const toastEl = document.getElementById('app-toast');
+            if (toastEl) {
+                document.getElementById('toast-title').textContent = 'Klucz API usunięty';
+                document.getElementById('toast-message').textContent = 'Twój klucz API został usunięty.';
+                const toast = new bootstrap.Toast(toastEl);
+                toast.show();
+            }
+            // Aktualizuj status
+            updateStatusIndicator();
+        });
+        inputGroup.appendChild(removeButton);
+        
+        // Przycisk pokaż/ukryj hasło
+        const toggleButton = document.createElement('button');
+        toggleButton.className = 'sound-btn';
+        toggleButton.innerHTML = '<i class="fas fa-eye"></i>';
+        toggleButton.title = 'Pokaż/ukryj klucz API';
+        toggleButton.addEventListener('click', () => {
+            if (apiKeyInput.type === 'password') {
+                apiKeyInput.type = 'text';
+                toggleButton.innerHTML = '<i class="fas fa-eye-slash"></i>';
+            } else {
+                apiKeyInput.type = 'password';
+                toggleButton.innerHTML = '<i class="fas fa-eye"></i>';
+            }
+        });
+        inputGroup.appendChild(toggleButton);
+        
+        apiKeyManager.appendChild(inputGroup);
+        
+        // Dodaj link do OpenRouter i status klucza API
+        const statusContainer = document.createElement('div');
+        statusContainer.className = 'mt-2 d-flex justify-content-between align-items-center';
+        
+        // Link do OpenRouter
+        const linkContainer = document.createElement('div');
+        linkContainer.className = 'small';
+        linkContainer.innerHTML = 'Nie masz klucza API? <a href="https://openrouter.ai" target="_blank" rel="noopener" style="color: var(--accent);">Utwórz konto na OpenRouter</a>';
+        statusContainer.appendChild(linkContainer);
+        
+        // Status klucza API
+        const statusIndicator = document.createElement('div');
+        statusIndicator.id = 'api-key-status';
+        statusIndicator.className = 'small d-flex align-items-center';
+        
+        // Funkcja do aktualizacji wskaźnika statusu
+        const updateStatusIndicator = () => {
+            const hasKey = this.hasApiKey();
+            statusIndicator.innerHTML = '';
+            
+            const statusDot = document.createElement('span');
+            statusDot.style.width = '10px';
+            statusDot.style.height = '10px';
+            statusDot.style.borderRadius = '50%';
+            statusDot.style.marginRight = '6px';
+            statusDot.style.backgroundColor = hasKey ? '#4caf50' : '#f44336'; // zielony/czerwony
+            
+            const statusText = document.createElement('span');
+            statusText.textContent = hasKey ? 'Klucz API skonfigurowany' : 'Brak klucza API';
+            
+            statusIndicator.appendChild(statusDot);
+            statusIndicator.appendChild(statusText);
+        };
+        
+        // Inicjalizacja statusu
+        updateStatusIndicator();
+        
+        statusContainer.appendChild(statusIndicator);
+        
+        apiKeyManager.appendChild(statusContainer);
+        
+        // Dodaj do DOM
+        const bedtimeStories = storiesContent.querySelector('.bedtime-stories');
+        if (bedtimeStories) {
+            storiesContent.insertBefore(apiKeyManager, bedtimeStories);
+        } else {
+            storiesContent.appendChild(apiKeyManager);
         }
         
-        // W przeciwnym wypadku rzuć wyjątek dalej
-        throw error;
+        // Aktualizuj konfigurację API, jeśli klucz istnieje
+        if (this.hasApiKey()) {
+            STORY_API_CONFIG.openrouter.apiKey = this.getApiKey();
+        }
     }
 };
 
-// Update the wrapped version of generateStoryWithAPI to use the new implementation
-const originalGenerateStoryWithAPI = bajkiGenerator.generateStoryWithAPI;
-bajkiGenerator.generateStoryWithAPI = async function() {
-    // Sprawdź, czy mamy klucz API
-    if (!ApiKeyManager.hasApiKey()) {
-        console.log('Brak klucza API OpenRouter. Używanie lokalnego generatora bajek.');
-        // Pokaż powiadomienie
-        const toastEl = document.getElementById('app-toast');
-        if (toastEl) {
-            document.getElementById('toast-title').textContent = 'Brak klucza API';
-            document.getElementById('toast-message').textContent = 'Wprowadź klucz API OpenRouter, aby generować bajki z AI.';
-            const toast = new bootstrap.Toast(toastEl);
-            toast.show();
-        }
-        return null;
-    }
-    
-    // Aktualizuj klucz API w konfiguracji
-    STORY_API_CONFIG.openrouter.apiKey = ApiKeyManager.getApiKey();
-    
-    // Run the original function
-    return await originalGenerateStoryWithAPI.call(this);
-};
+// Ustaw klucz API z localStorage
+STORY_API_CONFIG.openrouter.apiKey = ApiKeyManager.getApiKey() || '';
+
 // Główny obiekt generatora bajek
 const bajkiGenerator = {
     // Sprawdza czy należy wygenerować nową bajkę
@@ -2677,44 +2749,41 @@ const bajkiGenerator = {
         return false;
     },
     
-    // Generuje bajkę przy użyciu zewnętrznego API
-// Generuje bajkę przy użyciu zewnętrznego API
-generateStoryWithAPI: async function() {
-    try {
-        const apiConfig = STORY_API_CONFIG.openrouter;
-        
-        // Sprawdź, czy API jest włączone i czy klucz API jest dostępny
-        if (!STORY_API_CONFIG.settings.useExternalApi || !apiConfig.enabled || !apiConfig.apiKey) {
-            console.log('API zewnętrzne wyłączone lub brak klucza API. Używanie generatora lokalnego.');
-            return null;
-        }
-        
-        // Get the prompt directly from the function to ensure it's not cached
-        const promptText = getStoryPrompt();
-        
-        // Skonfiguruj zapytanie do OpenRouter API
-        const response = await fetch(apiConfig.endpoint, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${apiConfig.apiKey}`,
-                // Add cache control headers to prevent caching
-                'Cache-Control': 'no-cache, no-store, must-revalidate',
-                'Pragma': 'no-cache',
-                'Expires': '0'
-            },
-            body: JSON.stringify({
-                model: apiConfig.model,
-                messages: [
-                    { role: "system", content: "Jesteś pomocnym asystentem specjalizującym się w tworzeniu bajek na dobranoc dla kobiet w języku polskim." },
-                    { role: "user", content: promptText }
-                ],
-                max_tokens: apiConfig.maxTokens,
-                temperature: apiConfig.temperature
-            })
-        });
-        
-        // ... reszta funkcji pozostaje bez zmian
+    // Generuje bajkę przy użyciu zewnętrznego API - poprawiona wersja używająca getStoryPrompt()
+    generateStoryWithAPI: async function() {
+        try {
+            const apiConfig = STORY_API_CONFIG.openrouter;
+            
+            // Sprawdź, czy API jest włączone i czy klucz API jest dostępny
+            if (!STORY_API_CONFIG.settings.useExternalApi || !apiConfig.enabled || !apiConfig.apiKey) {
+                console.log('API zewnętrzne wyłączone lub brak klucza API. Używanie generatora lokalnego.');
+                return null;
+            }
+            
+            // Pobierz prompt bezpośrednio z funkcji aby uniknąć cachowania
+            const promptText = getStoryPrompt();
+            
+            // Skonfiguruj zapytanie do OpenRouter API
+            const response = await fetch(apiConfig.endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiConfig.apiKey}`,
+                    // Dodaj nagłówki cache-control aby zapobiec cachowaniu
+                    'Cache-Control': 'no-cache, no-store, must-revalidate',
+                    'Pragma': 'no-cache',
+                    'Expires': '0'
+                },
+                body: JSON.stringify({
+                    model: apiConfig.model,
+                    messages: [
+                        { role: "system", content: "Jesteś pomocnym asystentem specjalizującym się w tworzeniu bajek na dobranoc dla kobiet w języku polskim." },
+                        { role: "user", content: promptText }
+                    ],
+                    max_tokens: apiConfig.maxTokens,
+                    temperature: apiConfig.temperature
+                })
+            });
             
             if (!response.ok) {
                 throw new Error(`Błąd API: ${response.status} ${response.statusText}`);
@@ -2931,6 +3000,16 @@ generateStoryWithAPI: async function() {
     }
 };
 
+// Dodaj inicjalizację UI w funkcji init() generatora bajek
+const originalInit = bajkiGenerator.init;
+bajkiGenerator.init = function() {
+    // Wywołaj oryginalną funkcję init
+    originalInit.call(this);
+    
+    // Dodaj UI do zarządzania kluczem API
+    ApiKeyManager.addApiKeyUI();
+};
+
 // Inicjalizacja generatora bajek po załadowaniu strony
 document.addEventListener('DOMContentLoaded', function() {
     // Dodaj inicjalizację generatora bajek do istniejących inicjalizacji
@@ -2938,204 +3017,7 @@ document.addEventListener('DOMContentLoaded', function() {
         bajkiGenerator.init();
     }, 1500); // Małe opóźnienie, aby upewnić się, że strona jest w pełni załadowana
 });
-// Manager Klucza API dla OpenRouter
-const ApiKeyManager = {
-    // Klucz do przechowywania klucza API w localStorage
-    STORAGE_KEY: 'openrouter-api-key',
-    
-    // Pobierz klucz API z localStorage
-    getApiKey: function() {
-        return localStorage.getItem(this.STORAGE_KEY);
-    },
-    
-    // Zapisz klucz API w localStorage
-    saveApiKey: function(apiKey) {
-        localStorage.setItem(this.STORAGE_KEY, apiKey);
-    },
-    
-    // Usuń klucz API z localStorage
-    removeApiKey: function() {
-        localStorage.removeItem(this.STORAGE_KEY);
-    },
-    
-    // Sprawdź czy klucz API jest zapisany
-    hasApiKey: function() {
-        return !!this.getApiKey();
-    },
-    
-    // Dodaj UI do zarządzania kluczem API w sekcji bajek
-    addApiKeyUI: function() {
-        const storiesContent = document.getElementById('stories-content');
-        if (!storiesContent) return;
-        
-        // Sprawdź czy element istnieje już w DOM
-        if (document.getElementById('api-key-manager')) return;
-        
-        // Utwórz kontener na UI zarządzania kluczem API
-        const apiKeyManager = document.createElement('div');
-        apiKeyManager.id = 'api-key-manager';
-        apiKeyManager.className = 'mb-4 mt-3 p-3';
-        
-        // Dodaj stylizację dostosowaną do ciemnego tła
-        apiKeyManager.style.backgroundColor = 'var(--primary-light)';
-        apiKeyManager.style.borderRadius = 'var(--radius-md)';
-        apiKeyManager.style.boxShadow = 'var(--shadow-sm)';
-        apiKeyManager.style.borderLeft = '4px solid var(--accent)';
-        
-        // Dodaj tytuł
-        const title = document.createElement('h5');
-        title.innerHTML = '<i class="fas fa-key"></i> Klucz API OpenRouter';
-        title.className = 'mb-2';
-        title.style.color = 'var(--accent)'; // Używa koloru akcentowego do lepszej widoczności
-        apiKeyManager.appendChild(title);
-        
-        // Dodaj opis
-        const description = document.createElement('p');
-        description.className = 'small mb-3';
-        description.textContent = 'Aby generować bajki przy użyciu AI, wprowadź swój klucz API OpenRouter. Klucz jest przechowywany tylko na twoim urządzeniu.';
-        description.style.color = 'var(--text-light)';  // Użyj zmiennej koloru tekstu
-        apiKeyManager.appendChild(description);
-        
-        // Utwórz kontener na input i przyciski
-        const inputGroup = document.createElement('div');
-        inputGroup.className = 'd-flex flex-wrap gap-2 align-items-center mb-2';
-        
-        // Input na klucz API
-        const apiKeyInput = document.createElement('input');
-        apiKeyInput.type = 'password';
-        apiKeyInput.id = 'api-key-input';
-        apiKeyInput.className = 'form-control flex-grow-1';
-        apiKeyInput.placeholder = 'Wprowadź klucz API OpenRouter';
-        apiKeyInput.value = this.getApiKey() || '';
-        
-        // Stylizacja pola wprowadzania
-        apiKeyInput.style.backgroundColor = 'var(--primary-medium)';
-        apiKeyInput.style.color = 'var(--text-light)';
-        apiKeyInput.style.border = '2px solid var(--accent-transparent-medium)';
-        apiKeyInput.style.padding = '0.5rem';
-        apiKeyInput.style.borderRadius = 'var(--radius-sm)';
-        
-        inputGroup.appendChild(apiKeyInput);
-        
-        // Przycisk do zapisania klucza
-        const saveButton = document.createElement('button');
-        saveButton.className = 'sound-btn';
-        saveButton.innerHTML = '<i class="fas fa-save"></i> Zapisz';
-        saveButton.addEventListener('click', () => {
-            const apiKey = apiKeyInput.value.trim();
-            if (apiKey) {
-                this.saveApiKey(apiKey);
-                // Aktualizuj konfigurację API
-                STORY_API_CONFIG.openrouter.apiKey = apiKey;
-                // Pokaż powiadomienie
-                const toastEl = document.getElementById('app-toast');
-                if (toastEl) {
-                    document.getElementById('toast-title').textContent = 'Klucz API zapisany';
-                    document.getElementById('toast-message').textContent = 'Twój klucz API został zapisany lokalnie.';
-                    const toast = new bootstrap.Toast(toastEl);
-                    toast.show();
-                }
-                // Aktualizuj status
-                updateStatusIndicator();
-            }
-        });
-        inputGroup.appendChild(saveButton);
-        
-        // Przycisk do usunięcia klucza
-        const removeButton = document.createElement('button');
-        removeButton.className = 'sound-btn';
-        removeButton.innerHTML = '<i class="fas fa-trash"></i> Usuń';
-        removeButton.addEventListener('click', () => {
-            this.removeApiKey();
-            apiKeyInput.value = '';
-            // Aktualizuj konfigurację API
-            STORY_API_CONFIG.openrouter.apiKey = '';
-            // Pokaż powiadomienie
-            const toastEl = document.getElementById('app-toast');
-            if (toastEl) {
-                document.getElementById('toast-title').textContent = 'Klucz API usunięty';
-                document.getElementById('toast-message').textContent = 'Twój klucz API został usunięty.';
-                const toast = new bootstrap.Toast(toastEl);
-                toast.show();
-            }
-            // Aktualizuj status
-            updateStatusIndicator();
-        });
-        inputGroup.appendChild(removeButton);
-        
-        // Przycisk pokaż/ukryj hasło
-        const toggleButton = document.createElement('button');
-        toggleButton.className = 'sound-btn';
-        toggleButton.innerHTML = '<i class="fas fa-eye"></i>';
-        toggleButton.title = 'Pokaż/ukryj klucz API';
-        toggleButton.addEventListener('click', () => {
-            if (apiKeyInput.type === 'password') {
-                apiKeyInput.type = 'text';
-                toggleButton.innerHTML = '<i class="fas fa-eye-slash"></i>';
-            } else {
-                apiKeyInput.type = 'password';
-                toggleButton.innerHTML = '<i class="fas fa-eye"></i>';
-            }
-        });
-        inputGroup.appendChild(toggleButton);
-        
-        apiKeyManager.appendChild(inputGroup);
-        
-        // Dodaj link do OpenRouter i status klucza API
-        const statusContainer = document.createElement('div');
-        statusContainer.className = 'mt-2 d-flex justify-content-between align-items-center';
-        
-        // Link do OpenRouter
-        const linkContainer = document.createElement('div');
-        linkContainer.className = 'small';
-        linkContainer.innerHTML = 'Nie masz klucza API? <a href="https://openrouter.ai" target="_blank" rel="noopener" style="color: var(--accent);">Utwórz konto na OpenRouter</a>';
-        statusContainer.appendChild(linkContainer);
-        
-        // Status klucza API
-        const statusIndicator = document.createElement('div');
-        statusIndicator.id = 'api-key-status';
-        statusIndicator.className = 'small d-flex align-items-center';
-        
-        // Funkcja do aktualizacji wskaźnika statusu
-        const updateStatusIndicator = () => {
-            const hasKey = this.hasApiKey();
-            statusIndicator.innerHTML = '';
-            
-            const statusDot = document.createElement('span');
-            statusDot.style.width = '10px';
-            statusDot.style.height = '10px';
-            statusDot.style.borderRadius = '50%';
-            statusDot.style.marginRight = '6px';
-            statusDot.style.backgroundColor = hasKey ? '#4caf50' : '#f44336'; // zielony/czerwony
-            
-            const statusText = document.createElement('span');
-            statusText.textContent = hasKey ? 'Klucz API skonfigurowany' : 'Brak klucza API';
-            
-            statusIndicator.appendChild(statusDot);
-            statusIndicator.appendChild(statusText);
-        };
-        
-        // Inicjalizacja statusu
-        updateStatusIndicator();
-        
-        statusContainer.appendChild(statusIndicator);
-        
-        apiKeyManager.appendChild(statusContainer);
-        
-        // Dodaj do DOM
-        const bedtimeStories = storiesContent.querySelector('.bedtime-stories');
-        if (bedtimeStories) {
-            storiesContent.insertBefore(apiKeyManager, bedtimeStories);
-        } else {
-            storiesContent.appendChild(apiKeyManager);
-        }
-        
-        // Aktualizuj konfigurację API, jeśli klucz istnieje
-        if (this.hasApiKey()) {
-            STORY_API_CONFIG.openrouter.apiKey = this.getApiKey();
-        }
-    }
-};
+
 
 // Zmodyfikuj konfigurację OpenRouter, aby nie używać zahardkodowanego klucza
 STORY_API_CONFIG.openrouter.apiKey = ApiKeyManager.getApiKey() || '';
