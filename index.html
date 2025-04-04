@@ -2218,25 +2218,24 @@ const STORY_API_CONFIG = {
         fallbackToLocal: true, // Czy używać lokalnego generatora jako awaryjnego
         maxStoriesToKeep: 30, // Maksymalna liczba bajek do przechowywania
         checkNewStoryOnLoad: true, // Czy sprawdzać automatycznie przy ładowaniu strony
-        prompt: `Napisz oryginalną, uspokajającą bajkę na dobranoc, przeznaczoną dla dziewczynki. Bajka powinna składać się z około 8-10 krótkich akapitów i zawierać następujące dwie postacie (w każdej bajce muszą wystąpić obie postacie, najlepiej naturalnie wplecione w fabułę):
-* **Renatka** lub **Słoneczko** – główna bohaterka, dziewczynka.
-* **Dziubasek** – jej przyjaciel i opiekun.
-
-**Charakter bajki:**
-* Nastrój bajki ma być magiczny, kojący i senny, idealny do zasypiania.
-* W treści powinny pojawić się motywy związane z nocnym niebem, gwiazdami, księżycem, snem, przyrodą (np. cichy las, spokojne morze, miękkie chmury).
-* Bajka powinna podkreślać wartości takie jak miłość, przyjaźń, poczucie bezpieczeństwa, troska i opiekuńczość między Renatką a Dziubaskiem.
-* Zakończenie bajki musi być spokojne, pozytywne i dawać poczucie bezpieczeństwa, łagodnie prowadząc do snu.
-* Unikaj wprowadzania strasznych postaci, konfliktów, napięcia oraz elementów budzących niepokój.
-
-**Dodatkowy wymóg:**
-* Tytuł bajki musi zawierać imię „Renatka” lub „Dziubasek”.
-
-**Formatowanie odpowiedzi:**
-Odpowiedź sformatuj jako JSON z polami:
-* title: tytuł bajki
-* icon: wybierz jedną ikonę pasującą do treści spośród: star, moon, cloud, tree, heart
-* content: treść bajki podzielona na akapity (używaj podwójnych znaków nowej linii między akapitami)`
+        prompt: `Napisz oryginalną, uspokajającą bajkę na dobranoc, przeznaczoną dla dziewczyny. Bajka powinna składać się z około 10 akapitów i zawierać następujące dwie postacie (w każdej bajce muszą wystąpić obie postacie, choć mogą być przedstawione w symboliczny sposób):
+ Renatka lub Słoneczko – główna bohaterka, dziewczynka.
+ Sławuś lub Dziubasek – jej przyjaciel i opiekun.
+ 
+ Charakter bajki:
+ Nastrój bajki ma być magiczny i kojący, idealny do zasypiania.
+ W treści powinny pojawić się motywy związane z niebem, gwiazdami, chmurami, lasem lub morzem.
+ Bajka powinna podkreślać wartości takie jak miłość, przyjaźń, troska i opiekuńczość.
+ Zakończenie bajki musi być spokojne i pozytywne.
+ Unikaj wprowadzania strasznych postaci oraz elementów budzących niepokój.
+ 
+ Dodatkowy wymóg:
+ Tytuł bajki musi zawierać imię „Renatka” lub „Dziubasek”.
+         
+         Odpowiedź sformatuj jako JSON z polami:
+         - title: tytuł bajki
+         - icon: wybierz ikonę (star, moon, cloud, tree, heart)
+         - content: treść bajki podzielona na akapity (używaj podwójnych znaków nowej linii między akapitami)`
     }
 };
 
