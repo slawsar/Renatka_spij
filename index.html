@@ -2822,12 +2822,27 @@ const bajkiGenerator = {
             
             // Próbujemy sparsować odpowiedź jako JSON
             try {
-                // Znajdź JSON w odpowiedzi (czasem model może dodać komentarze przed lub po JSON)
-                const jsonMatch = content.match(/\{[\s\S]*\}/);
-                let storyData;
-                
-                if (jsonMatch) {
-                    storyData = JSON.parse(jsonMatch[0]);
+    // Usunięcie znaczników formatowania Markdown, takich jak ```json lub ```
+    let cleanedContent = content;
+    
+    // Usuń początkowe znaczniki formatowania
+    cleanedContent = cleanedContent.replace(/^\s*```(?:json)?\s*/i, '');
+    
+    // Usuń końcowe znaczniki formatowania
+    cleanedContent = cleanedContent.replace(/\s*```\s*$/i, '');
+    
+    // Znajdź JSON w oczyszczonej odpowiedzi
+    const jsonMatch = cleanedContent.match(/\{[\s\S]*\}/);
+    let storyData;
+    
+    if (jsonMatch) {
+        // Spróbuj sparsować JSON
+        try {
+            storyData = JSON.parse(jsonMatch[0]);
+        } catch (jsonSyntaxError) {
+            console.error("Błąd składni JSON:", jsonSyntaxError, "w treści:", jsonMatch[0]);
+            throw jsonSyntaxError;
+        }
                 } else {
                     // Jeśli nie możemy znaleźć JSON, próbujemy przetworzyć odpowiedź w inny sposób
                     const lines = content.split('\n').filter(line => line.trim() !== '');
