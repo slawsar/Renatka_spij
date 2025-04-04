@@ -2206,7 +2206,7 @@ const STORY_API_CONFIG = {
         apiKey: '',
         endpoint: 'https://openrouter.ai/api/v1/chat/completions',
         model: 'deepseek/deepseek-chat-v3-0324:free', // Model DeepSeek dla płynnej generacji bajek
-        maxTokens: 1000,
+        maxTokens: 1600,
         temperature: 0.7,
         referer: window.location.origin, // Dynamiczne pobieranie URL strony
         siteTitle: 'Śpij Słoneczko',
@@ -3012,7 +3012,7 @@ generateButton.addEventListener('click', async () => {
                 console.error('Błąd podczas generowania lokalnej bajki:', e);
             }
         }
-    }, 45000); // 45 sekund
+    }, 55000); // 45 sekund
     
     try {
         // Próbuj wygenerować bajkę z API jeśli jest włączone
