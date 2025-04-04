@@ -2542,109 +2542,111 @@ const bajkiGenerator = {
         return false;
     },
     
-    // Generuje bajkę przy użyciu zewnętrznego API
-    generateStoryWithAPI: async function() {
-        try {
-            const apiConfig = STORY_API_CONFIG.openrouter; // Korzystamy z OpenRouter API
-            
-            // Sprawdź, czy API jest włączone i czy klucz API jest dostępny
-            if (!STORY_API_CONFIG.settings.useExternalApi || !apiConfig.enabled || !apiConfig.apiKey) {
-                console.log('API zewnętrzne wyłączone lub brak klucza API. Używanie generatora lokalnego.');
-                return null;
-            }
-            
-            // Przygotuj zapytanie API
-            const promptText = STORY_API_CONFIG.settings.prompt;
-            
-            // Skonfiguruj zapytanie do OpenRouter API
-            const response = await fetch(apiConfig.endpoint, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${apiConfig.apiKey}`,
-                },
-                body: JSON.stringify({
-                    model: apiConfig.model,
-                    messages: [
-                        { role: "system", content: "Jesteś pomocnym asystentem specjalizującym się w tworzeniu bajek na dobranoc dla kobiet w języku polskim." },
-                        { role: "user", content: promptText }
-                    ],
-                    max_tokens: apiConfig.maxTokens,
-                    temperature: apiConfig.temperature
-                })
-            });
-            
-            if (!response.ok) {
-                throw new Error(`Błąd API: ${response.status} ${response.statusText}`);
-            }
-            
-            const data = await response.json();
-            const content = data.choices && data.choices[0] && data.choices[0].message ? data.choices[0].message.content : null;
-            
-            if (!content) {
-                throw new Error("Otrzymano pustą odpowiedź z API");
-            }
-            
-            // Próbujemy sparsować odpowiedź jako JSON
-            try {
-                // Znajdź JSON w odpowiedzi (czasem model może dodać komentarze przed lub po JSON)
-                const jsonMatch = content.match(/\{[\s\S]*\}/);
-                let storyData;
-                
-                if (jsonMatch) {
-                    storyData = JSON.parse(jsonMatch[0]);
-                } else {
-                    // Jeśli nie możemy znaleźć JSON, próbujemy przetworzyć odpowiedź w inny sposób
-                    // Zakładamy, że pierwsza linia to tytuł, a reszta to treść
-                    const lines = content.split('\n').filter(line => line.trim() !== '');
-                    const title = lines[0].replace(/^#+ /, ''); // Usuń znaczniki Markdown nagłówka
-                    const storyContent = lines.slice(1).join('\n\n');
-                    
-                    storyData = {
-                        title: title,
-                        icon: "star", // Domyślna ikona
-                        content: storyContent
-                    };
-                }
-                
-                // Utwórz obiekt bajki
-                const newStory = {
-                    id: 'story-api-' + Date.now(),
-                    title: storyData.title || `Bajka o Renatce i Dziubasku`,
-                    icon: storyData.icon || "star",
-                    content: storyData.content || content,
-                    dateGenerated: new Date().toISOString(),
-                    source: 'api'
-                };
-                
-                return newStory;
-                
-            } catch (jsonError) {
-                console.error("Błąd parsowania JSON z odpowiedzi API:", jsonError);
-                
-                // Tworzymy bajkę z surowej odpowiedzi
-                return {
-                    id: 'story-api-' + Date.now(),
-                    title: `Bajka o Renatce i Dziubasku`,
-                    icon: "star",
-                    content: content,
-                    dateGenerated: new Date().toISOString(),
-                    source: 'api'
-                };
-            }
-        } catch (error) {
-            console.error('Błąd podczas generowania bajki przez API:', error);
-            
-            // Jeśli włączony jest tryb awaryjny, zwróć null aby uruchomić lokalny generator
-            if (STORY_API_CONFIG.settings.fallbackToLocal) {
-                console.log('Przełączanie na lokalny generator bajek...');
-                return null;
-            }
-            
-            // W przeciwnym wypadku rzuć wyjątek dalej
-            throw error;
+// Zastąp istniejącą funkcję generateStoryWithAPI tym kodem:
+bajkiGenerator.generateStoryWithAPI = async function() {
+    try {
+        const apiConfig = STORY_API_CONFIG.openrouter; // Korzystamy z OpenRouter API
+        
+        // Sprawdź, czy API jest włączone i czy klucz API jest dostępny
+        if (!STORY_API_CONFIG.settings.useExternalApi || !apiConfig.enabled || !apiConfig.apiKey) {
+            console.log('API zewnętrzne wyłączone lub brak klucza API. Używanie generatora lokalnego.');
+            return null;
         }
-    },
+        
+        // KLUCZOWA ZMIANA: Bezpośrednio korzystamy z aktualnej wartości promptu z konfiguracji
+        // zamiast korzystać z jakiejkolwiek zapisanej wersji
+        const promptText = STORY_API_CONFIG.settings.prompt;
+        console.log('Używam aktualnego promptu z konfiguracji:', promptText);
+        
+        // Skonfiguruj zapytanie do OpenRouter API
+        const response = await fetch(apiConfig.endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiConfig.apiKey}`,
+            },
+            body: JSON.stringify({
+                model: apiConfig.model,
+                messages: [
+                    { role: "system", content: "Jesteś pomocnym asystentem specjalizującym się w tworzeniu bajek na dobranoc dla kobiet w języku polskim." },
+                    { role: "user", content: promptText }
+                ],
+                max_tokens: apiConfig.maxTokens,
+                temperature: apiConfig.temperature
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Błąd API: ${response.status} ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        const content = data.choices && data.choices[0] && data.choices[0].message ? data.choices[0].message.content : null;
+        
+        if (!content) {
+            throw new Error("Otrzymano pustą odpowiedź z API");
+        }
+        
+        // Próbujemy sparsować odpowiedź jako JSON
+        try {
+            // Znajdź JSON w odpowiedzi (czasem model może dodać komentarze przed lub po JSON)
+            const jsonMatch = content.match(/\{[\s\S]*\}/);
+            let storyData;
+            
+            if (jsonMatch) {
+                storyData = JSON.parse(jsonMatch[0]);
+            } else {
+                // Jeśli nie możemy znaleźć JSON, próbujemy przetworzyć odpowiedź w inny sposób
+                // Zakładamy, że pierwsza linia to tytuł, a reszta to treść
+                const lines = content.split('\n').filter(line => line.trim() !== '');
+                const title = lines[0].replace(/^#+ /, ''); // Usuń znaczniki Markdown nagłówka
+                const storyContent = lines.slice(1).join('\n\n');
+                
+                storyData = {
+                    title: title,
+                    icon: "star", // Domyślna ikona
+                    content: storyContent
+                };
+            }
+            
+            // Utwórz obiekt bajki
+            const newStory = {
+                id: 'story-api-' + Date.now(),
+                title: storyData.title || `Bajka o Renatce i Dziubasku`,
+                icon: storyData.icon || "star",
+                content: storyData.content || content,
+                dateGenerated: new Date().toISOString(),
+                source: 'api'
+            };
+            
+            return newStory;
+            
+        } catch (jsonError) {
+            console.error("Błąd parsowania JSON z odpowiedzi API:", jsonError);
+            
+            // Tworzymy bajkę z surowej odpowiedzi
+            return {
+                id: 'story-api-' + Date.now(),
+                title: `Bajka o Renatce i Dziubasku`,
+                icon: "star",
+                content: content,
+                dateGenerated: new Date().toISOString(),
+                source: 'api'
+            };
+        }
+    } catch (error) {
+        console.error('Błąd podczas generowania bajki przez API:', error);
+        
+        // Jeśli włączony jest tryb awaryjny, zwróć null aby uruchomić lokalny generator
+        if (STORY_API_CONFIG.settings.fallbackToLocal) {
+            console.log('Przełączanie na lokalny generator bajek...');
+            return null;
+        }
+        
+        // W przeciwnym wypadku rzuć wyjątek dalej
+        throw error;
+    }
+};
     
     // Ogranicza liczbę przechowywanych bajek do maksymalnej wartości
     limitStoredStories: function() {
