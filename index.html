@@ -3018,20 +3018,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 1500); // Małe opóźnienie, aby upewnić się, że strona jest w pełni załadowana
 });
 
-
-// Zmodyfikuj konfigurację OpenRouter, aby nie używać zahardkodowanego klucza
-STORY_API_CONFIG.openrouter.apiKey = ApiKeyManager.getApiKey() || '';
-
-// Dodaj inicjalizację UI w funkcji init() generatora bajek
-const originalInit = bajkiGenerator.init;
-bajkiGenerator.init = function() {
-    // Wywołaj oryginalną funkcję init
-    originalInit.call(this);
-    
-    // Dodaj UI do zarządzania kluczem API
-    ApiKeyManager.addApiKeyUI();
-};
-
 // Zaktualizuj funkcję generowania bajek z API
 const originalGenerateStoryWithAPI = bajkiGenerator.generateStoryWithAPI;
 bajkiGenerator.generateStoryWithAPI = async function() {
