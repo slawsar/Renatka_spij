@@ -2855,11 +2855,14 @@ if (typeof story.content === 'string') {
                         console.error("Błąd składni JSON:", jsonSyntaxError, "w treści:", jsonMatch[0]);
                         
                         // Jeśli nie udało się sparsować JSON, spróbuj naprawić typowe problemy
-                        let fixedJson = jsonMatch[0]
-                                    .replace(/,\s*}/g, '}') // Usuń końcowe przecinki
-        .replace(/,\s*,/g, ',') // Usuń podwójne przecinki
-        .replace(/(['"])?([a-zA-Z0-9_]+)(['"])?:/g, '"$2":') // Napraw klucze bez cudzysłowów
-        .replace(/\n/g, '\\n'); // Prawidłowo obsługuj znaki nowej linii w JSON
+let fixedJson = jsonMatch[0]
+    .replace(/,\s*}/g, '}') // Usuń końcowe przecinki
+    .replace(/,\s*,/g, ',') // Usuń podwójne przecinki
+    .replace(/(['"])?([a-zA-Z0-9_]+)(['"])?:/g, '"$2":') // Napraw klucze bez cudzysłowów
+    .replace(/\n/g, '\\n') // Prawidłowo obsługuj znaki nowej linii w JSON
+    // Dodaj te dwie linie:
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '') // Usuń znaki kontrolne ASCII
+    .replace(/\\u([0-9a-fA-F]{0,3})([^0-9a-fA-F]|$)/g, '\\u0000$2'); // Napraw nieprawidłowe sekwencje Unicode
                             
                         try {
                             storyData = JSON.parse(fixedJson);
