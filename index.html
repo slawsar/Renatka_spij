@@ -2706,7 +2706,7 @@ const bajkiGenerator = {
                 let newStory = null;
                 if (STORY_API_CONFIG.settings.useExternalApi && STORY_API_CONFIG.openrouter.enabled) {
                     console.log('Próba generowania bajki przez API OpenRouter...');
-                    newStory = await this.();
+                    newStory = await this.generateStoryWithAPI();
                 }
                 
                 // Jeśli nie udało się wygenerować bajki z API, użyj lokalnego generatora
