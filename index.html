@@ -2205,8 +2205,8 @@ const STORY_API_CONFIG = {
     openrouter: {
         apiKey: '',
         endpoint: 'https://openrouter.ai/api/v1/chat/completions',
-        model: 'google/gemini-2.0-flash-exp:free',
-        maxTokens: 4000,
+        model: 'deepseek/deepseek-chat-v3-0324:free', // Model DeepSeek dla płynnej generacji bajek
+        maxTokens: 1500,
         temperature: 0.7,
         referer: window.location.origin, // Dynamiczne pobieranie URL strony
         siteTitle: 'Śpij Słoneczko',
@@ -2640,25 +2640,17 @@ const bajkiGenerator = {
         // Podziel treść na akapity i dodaj do kontenera
         // Obsługujemy zarówno \n\n jak i pojedyncze \n (różne formaty z API)
         let paragraphs = [];
-if (typeof story.content === 'string') {
-    // Obsługa zarówno \n\n jak i pojedynczych \n
-    if (story.content.includes('\n\n')) {
-        paragraphs = story.content.split('\n\n');
-    } else {
-        paragraphs = story.content.split('\n').filter(p => p.trim() !== '');
-    }
-    
-    paragraphs.forEach(paragraph => {
-        const p = document.createElement('p');
-        p.textContent = paragraph.trim();
-        storyContent.appendChild(p);
-    });
-} else {
-    // Awaryjne rozwiązanie dla treści nieprzechowywanych jako string
-    const p = document.createElement('p');
-    p.textContent = "Nie można wyświetlić treści bajki.";
-    storyContent.appendChild(p);
-}
+        if (story.content.includes('\n\n')) {
+            paragraphs = story.content.split('\n\n');
+        } else {
+            paragraphs = story.content.split('\n').filter(p => p.trim() !== '');
+        }
+        
+        paragraphs.forEach(paragraph => {
+            const p = document.createElement('p');
+            p.textContent = paragraph.trim();
+            storyContent.appendChild(p);
+        });
         
         // Dodaj nagłówek i treść do głównego kontenera
         storyAccordion.appendChild(storyHeader);
@@ -2757,131 +2749,69 @@ if (typeof story.content === 'string') {
         return false;
     },
     
-    // Generuje bajkę przy użyciu zewnętrznego API
+    // Generuje bajkę przy użyciu zewnętrznego API - poprawiona wersja używająca getStoryPrompt()
     generateStoryWithAPI: async function() {
-    try {
-        const apiConfig = STORY_API_CONFIG.openrouter;
-        
-        // Sprawdź, czy API jest włączone i czy klucz API jest dostępny
-        if (!STORY_API_CONFIG.settings.useExternalApi || !apiConfig.enabled) {
-            console.log('API zewnętrzne wyłączone. Używanie generatora lokalnego.');
-            return null;
-        }
-        
-        // Dokładniejsza walidacja klucza API
-        const apiKey = apiConfig.apiKey;
-        if (!apiKey || apiKey.trim() === '') {
-            console.log('Brak klucza API. Używanie generatora lokalnego.');
+        try {
+            const apiConfig = STORY_API_CONFIG.openrouter;
             
-            // Pokaż powiadomienie o braku klucza API
-            const toastEl = document.getElementById('app-toast');
-            if (toastEl) {
-                document.getElementById('toast-title').textContent = 'Brak klucza API';
-                document.getElementById('toast-message').textContent = 'Wprowadź klucz API OpenRouter, aby generować bajki z AI.';
-                const toast = new bootstrap.Toast(toastEl);
-                toast.show();
+            // Sprawdź, czy API jest włączone i czy klucz API jest dostępny
+            if (!STORY_API_CONFIG.settings.useExternalApi || !apiConfig.enabled || !apiConfig.apiKey) {
+                console.log('API zewnętrzne wyłączone lub brak klucza API. Używanie generatora lokalnego.');
+                return null;
             }
             
-            return null;
-        }
-        
-        // Pobierz prompt bezpośrednio z funkcji
-        const promptText = getStoryPrompt();
-        
-        // SYSTEM PONOWNYCH PRÓB
-        let retries = 0;
-        const maxRetries = 3;
-        let lastError = null;
-        
-        while (retries <= maxRetries) {
+            // Pobierz prompt bezpośrednio z funkcji aby uniknąć cachowania
+            const promptText = getStoryPrompt();
+            
+            // Skonfiguruj zapytanie do OpenRouter API
+const response = await fetch(apiConfig.endpoint, {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiConfig.apiKey}`
+        // Usunięto problematyczne nagłówki
+    },
+    body: JSON.stringify({
+        model: apiConfig.model,
+        messages: [
+            { role: "system", content: "Jesteś pomocnym asystentem specjalizującym się w tworzeniu bajek na dobranoc dla kobiet w języku polskim." },
+            { role: "user", content: promptText }
+        ],
+        max_tokens: apiConfig.maxTokens,
+        temperature: apiConfig.temperature
+    })
+});
+            
+            if (!response.ok) {
+                throw new Error(`Błąd API: ${response.status} ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            const content = data.choices && data.choices[0] && data.choices[0].message ? data.choices[0].message.content : null;
+            
+            if (!content) {
+                throw new Error("Otrzymano pustą odpowiedź z API");
+            }
+            
+            // Próbujemy sparsować odpowiedź jako JSON
             try {
-                // Dodaj timeout do zapytania
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 sekund timeout (skrócony)
-                
-                console.log(`Próba ${retries + 1} z ${maxRetries + 1} łączenia z API...`);
-                
-                // ZMODYFIKOWANE ZAPYTANIE API - BEZ ZBĘDNYCH NAGŁÓWKÓW
-                const response = await fetch(apiConfig.endpoint, {
-                    method: 'POST',
-                    signal: controller.signal,
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${apiKey}`
-                    },
-                    body: JSON.stringify({
-                        model: apiConfig.model,
-                        messages: [
-                            { role: "system", content: "Jesteś pomocnym asystentem specjalizującym się w tworzeniu bajek na dobranoc dla kobiet w języku polskim." },
-                            { role: "user", content: promptText }
-                        ],
-                        max_tokens: 2000, // ZMNIEJSZONO dla szybszej odpowiedzi
-                        temperature: apiConfig.temperature
-                    })
-                });
-                
-                clearTimeout(timeoutId);
-                
-                if (!response.ok) {
-                    const errorText = await response.text().catch(() => 'Nie można odczytać treści błędu');
-                    throw new Error(`Błąd API: ${response.status} ${response.statusText} - ${errorText}`);
-                }
-                
-                const data = await response.json();
-                const content = data.choices && data.choices[0] && data.choices[0].message ? data.choices[0].message.content : null;
-                
-                if (!content) {
-                    throw new Error("Otrzymano pustą odpowiedź z API");
-                }
-                
-                // Przetwarzanie odpowiedzi JSON...
-                // Usunięcie znaczników formatowania Markdown
-                let cleanedContent = content;
-                cleanedContent = cleanedContent.replace(/^\s*```(?:json)?\s*/i, '');
-                cleanedContent = cleanedContent.replace(/\s*```\s*$/i, '');
-                
-                console.log("Oryginalna treść z API:", content);
-                console.log("Oczyszczona treść przed parsowaniem:", cleanedContent);
-                
-                // Znajdź JSON w oczyszczonej odpowiedzi
-                const jsonMatch = cleanedContent.match(/\{[\s\S]*\}/);
+                // Znajdź JSON w odpowiedzi (czasem model może dodać komentarze przed lub po JSON)
+                const jsonMatch = content.match(/\{[\s\S]*\}/);
                 let storyData;
                 
                 if (jsonMatch) {
-                    // Spróbuj sparsować JSON
-                    try {
-                        storyData = JSON.parse(jsonMatch[0]);
-                    } catch (jsonSyntaxError) {
-                        console.error("Błąd składni JSON:", jsonSyntaxError, "w treści:", jsonMatch[0]);
-                        
-                        // Jeśli nie udało się sparsować JSON, spróbuj naprawić typowe problemy
-let fixedJson = jsonMatch[0]
-    .replace(/,\s*}/g, '}') // Usuń końcowe przecinki
-    .replace(/,\s*,/g, ',') // Usuń podwójne przecinki
-    .replace(/(['"])?([a-zA-Z0-9_]+)(['"])?:/g, '"$2":') // Napraw klucze bez cudzysłowów
-    .replace(/\n/g, '\\n') // Prawidłowo obsługuj znaki nowej linii w JSON
-    // Dodaj te dwie linie:
-    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '') // Usuń znaki kontrolne ASCII
-    .replace(/\\u([0-9a-fA-F]{0,3})([^0-9a-fA-F]|$)/g, '\\u0000$2'); // Napraw nieprawidłowe sekwencje Unicode
-                            
-                        try {
-                            storyData = JSON.parse(fixedJson);
-                            console.log("Naprawiono JSON:", fixedJson);
-                        } catch (e) {
-                            // Jeśli nadal nie działa, wykorzystaj alternatywne podejście
-                            throw jsonSyntaxError;
-                        }
-                    }
+                    storyData = JSON.parse(jsonMatch[0]);
                 } else {
-                    // Jeśli nie znaleziono poprawnego JSON, spróbuj przetworzyć odpowiedź w inny sposób
-                    const lines = cleanedContent.split('\n').filter(line => line.trim() !== '');
-                    const title = lines[0].replace(/^#+ /, '').trim(); // Usuń znaczniki Markdown nagłówka
+                    // Jeśli nie możemy znaleźć JSON, próbujemy przetworzyć odpowiedź w inny sposób
+                    // Zakładamy, że pierwsza linia to tytuł, a reszta to treść
+                    const lines = content.split('\n').filter(line => line.trim() !== '');
+                    const title = lines[0].replace(/^#+ /, ''); // Usuń znaczniki Markdown nagłówka
                     const storyContent = lines.slice(1).join('\n\n');
                     
                     storyData = {
-                        title: title || "Bajka o Renatce i Dziubasku",
+                        title: title,
                         icon: "star", // Domyślna ikona
-                        content: storyContent || cleanedContent
+                        content: storyContent
                     };
                 }
                 
@@ -2895,46 +2825,34 @@ let fixedJson = jsonMatch[0]
                     source: 'api'
                 };
                 
-                console.log("Pomyślnie wygenerowano bajkę z API:", newStory.title);
                 return newStory;
                 
-            } catch (fetchError) {
-                lastError = fetchError;
-                retries++;
-                console.error(`Próba ${retries} zakończyła się błędem:`, fetchError);
+            } catch (jsonError) {
+                console.error("Błąd parsowania JSON z odpowiedzi API:", jsonError);
                 
-                if (retries <= maxRetries) {
-                    // Opóźnienie przed kolejną próbą
-                    console.log(`Oczekiwanie ${retries * 2} sekund przed ponowną próbą...`);
-                    await new Promise(resolve => setTimeout(resolve, retries * 2000));
-                }
+                // Tworzymy bajkę z surowej odpowiedzi
+                return {
+                    id: 'story-api-' + Date.now(),
+                    title: `Bajka o Renatce i Dziubasku`,
+                    icon: "star",
+                    content: content,
+                    dateGenerated: new Date().toISOString(),
+                    source: 'api'
+                };
             }
+        } catch (error) {
+            console.error('Błąd podczas generowania bajki przez API:', error);
+            
+            // Jeśli włączony jest tryb awaryjny, zwróć null aby uruchomić lokalny generator
+            if (STORY_API_CONFIG.settings.fallbackToLocal) {
+                console.log('Przełączanie na lokalny generator bajek...');
+                return null;
+            }
+            
+            // W przeciwnym wypadku rzuć wyjątek dalej
+            throw error;
         }
-        
-        // Wszystkie próby nieudane
-        throw lastError || new Error("Nie udało się połączyć z API po wyczerpaniu prób");
-        
-    } catch (error) {
-        console.error('Ostateczny błąd podczas generowania bajki przez API:', error);
-        
-        // Pokaż powiadomienie o problemie
-        const toastEl = document.getElementById('app-toast');
-        if (toastEl) {
-            document.getElementById('toast-title').textContent = 'Problem z generacją bajki';
-            document.getElementById('toast-message').textContent = 'Wystąpił problem z połączeniem do API. Używam lokalnego generatora bajek.';
-            const toast = new bootstrap.Toast(toastEl);
-            toast.show();
-        }
-        
-        // Jeśli włączony jest tryb awaryjny, zwróć null aby uruchomić lokalny generator
-        if (STORY_API_CONFIG.settings.fallbackToLocal) {
-            console.log('Przełączanie na lokalny generator bajek...');
-            return null;
-        }
-        
-        throw error;
-    }
-},
+    },
     
     // Ogranicza liczbę przechowywanych bajek do maksymalnej wartości
     limitStoredStories: function() {
@@ -2981,137 +2899,91 @@ let fixedJson = jsonMatch[0]
                 generateButton.innerHTML = '<i class="fas fa-magic"></i> Wygeneruj nową bajkę';
                 
                 // Obsługa kliknięcia przycisku - generowanie nowej bajki
-                // Obsługa kliknięcia przycisku - generowanie nowej bajki
-generateButton.addEventListener('click', async () => {
-    // Zmień etykietę przycisku podczas generowania
-    generateButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generowanie...';
-    generateButton.disabled = true;
-    
-    // Dodaj timer zabezpieczający przed zawieszeniem
-    const safetyTimeout = setTimeout(() => {
-        // Jeśli generowanie trwa zbyt długo, przerwij je
-        if (generateButton.disabled) {
-            console.log('Przekroczono maksymalny czas generowania bajki (65s)');
-            generateButton.innerHTML = '<i class="fas fa-magic"></i> Wygeneruj nową bajkę';
-            generateButton.disabled = false;
-            
-            // Pokaż komunikat
-            const toastEl = document.getElementById('app-toast');
-            if (toastEl) {
-                document.getElementById('toast-title').textContent = 'Przerwano generowanie';
-                document.getElementById('toast-message').textContent = 'Generowanie bajki trwało zbyt długo i zostało przerwane. Użyto lokalnego generatora.';
-                const toast = new bootstrap.Toast(toastEl);
-                toast.show();
-            }
-            
-            // Wygeneruj bajkę lokalnie
-            try {
-                const localStory = this.generateNewStory();
-                this.saveStory(localStory);
-                
-                // Dodaj bajkę do interfejsu
-                const storyElement = this.createStoryElement(localStory);
-                const storiesContainer = document.querySelector('.bedtime-stories');
-                if (storiesContainer.firstChild) {
-                    storiesContainer.insertBefore(storyElement, storiesContainer.firstChild);
-                } else {
-                    storiesContainer.appendChild(storyElement);
-                }
-                
-                // Zapisz datę wygenerowania bajki
-                localStorage.setItem('lastStoryGenerationDate', new Date().toISOString());
-            } catch (e) {
-                console.error('Błąd podczas generowania lokalnej bajki:', e);
-            }
-        }
-    }, 65000); // 65 sekund
-    
-    try {
-        // Próbuj wygenerować bajkę z API jeśli jest włączone
-        let newStory = null;
-        if (STORY_API_CONFIG.settings.useExternalApi && STORY_API_CONFIG.openrouter.enabled) {
-            newStory = await this.generateStoryWithAPI();
-        }
-        
-        // Jeśli nie udało się wygenerować bajki z API, użyj lokalnego generatora
-        if (!newStory) {
-            newStory = this.generateNewStory();
-        }
-        
-        // Anuluj timer bezpieczeństwa bo generowanie się udało
-        clearTimeout(safetyTimeout);
-        
-        // Zapisz bajkę
-        this.saveStory(newStory);
-        
-        // Limituj liczbę przechowywanych bajek
-        this.limitStoredStories();
-        
-        // Dodaj bajkę do interfejsu
-        const storyElement = this.createStoryElement(newStory);
-        const storiesContainer = document.querySelector('.bedtime-stories');
-        
-        // Dodaj nową bajkę na początek listy
-        if (storiesContainer.firstChild) {
-            storiesContainer.insertBefore(storyElement, storiesContainer.firstChild);
-        } else {
-            storiesContainer.appendChild(storyElement);
-        }
-        
-        // Pokaż powiadomienie
-        const toastEl = document.getElementById('app-toast');
-        if (toastEl) {
-            document.getElementById('toast-title').textContent = 'Nowa bajka!';
-            document.getElementById('toast-message').textContent = `Dodano nową bajkę: "${newStory.title}"`;
-            const toast = new bootstrap.Toast(toastEl);
-            toast.show();
-        }
-        
-        // Zapisz datę wygenerowania bajki
-        localStorage.setItem('lastStoryGenerationDate', new Date().toISOString());
-        
-    } catch (error) {
-        // Anuluj timer bezpieczeństwa bo generowanie już się zakończyło (z błędem)
-        clearTimeout(safetyTimeout);
-        
-        console.error('Błąd podczas generowania bajki:', error);
-        
-        // Wygeneruj bajkę lokalnie w przypadku błędu
-        if (STORY_API_CONFIG.settings.fallbackToLocal) {
-            try {
-                const localStory = this.generateNewStory();
-                this.saveStory(localStory);
-                
-                // Dodaj bajkę do interfejsu
-                const storyElement = this.createStoryElement(localStory);
-                const storiesContainer = document.querySelector('.bedtime-stories');
-                if (storiesContainer.firstChild) {
-                    storiesContainer.insertBefore(storyElement, storiesContainer.firstChild);
-                } else {
-                    storiesContainer.appendChild(storyElement);
-                }
-                
-                // Pokaż powiadomienie o użyciu lokalnego generatora
-                const toastEl = document.getElementById('app-toast');
-                if (toastEl) {
-                    document.getElementById('toast-title').textContent = 'Nowa bajka';
-                    document.getElementById('toast-message').textContent = `Dodano nową bajkę: "${localStory.title}"`;
-                    const toast = new bootstrap.Toast(toastEl);
-                    toast.show();
-                }
-                
-                // Zapisz datę wygenerowania bajki
-                localStorage.setItem('lastStoryGenerationDate', new Date().toISOString());
-            } catch (localError) {
-                console.error('Błąd podczas generowania lokalnej bajki:', localError);
-            }
-        }
-    } finally {
-        // Przywróć etykietę przycisku
-        generateButton.innerHTML = '<i class="fas fa-magic"></i> Wygeneruj nową bajkę';
-        generateButton.disabled = false;
-    }
-});
+                generateButton.addEventListener('click', async () => {
+                    // Zmień etykietę przycisku podczas generowania
+                    generateButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generowanie...';
+                    generateButton.disabled = true;
+                    
+                    try {
+                        // Próbuj wygenerować bajkę z API jeśli jest włączone
+                        let newStory = null;
+                        if (STORY_API_CONFIG.settings.useExternalApi && STORY_API_CONFIG.openrouter.enabled) {
+                            newStory = await this.generateStoryWithAPI();
+                        }
+                        
+                        // Jeśli nie udało się wygenerować bajki z API, użyj lokalnego generatora
+                        if (!newStory) {
+                            newStory = this.generateNewStory();
+                        }
+                        
+                        // Zapisz bajkę
+                        this.saveStory(newStory);
+                        
+                        // Limituj liczbę przechowywanych bajek
+                        this.limitStoredStories();
+                        
+                        // Dodaj bajkę do interfejsu
+                        const storyElement = this.createStoryElement(newStory);
+                        const storiesContainer = document.querySelector('.bedtime-stories');
+                        
+                        // Dodaj nową bajkę na początek listy
+                        if (storiesContainer.firstChild) {
+                            storiesContainer.insertBefore(storyElement, storiesContainer.firstChild);
+                        } else {
+                            storiesContainer.appendChild(storyElement);
+                        }
+                        
+                        // Pokaż powiadomienie
+                        const toastEl = document.getElementById('app-toast');
+                        if (toastEl) {
+                            document.getElementById('toast-title').textContent = 'Nowa bajka!';
+                            document.getElementById('toast-message').textContent = `Dodano nową bajkę: "${newStory.title}"`;
+                            const toast = new bootstrap.Toast(toastEl);
+                            toast.show();
+                        }
+                        
+                        // Zapisz datę wygenerowania bajki
+                        localStorage.setItem('lastStoryGenerationDate', new Date().toISOString());
+                        
+                    } catch (error) {
+                        console.error('Błąd podczas generowania bajki:', error);
+                        
+                        // Wygeneruj bajkę lokalnie w przypadku błędu
+                        if (STORY_API_CONFIG.settings.fallbackToLocal) {
+                            try {
+                                const localStory = this.generateNewStory();
+                                this.saveStory(localStory);
+                                
+                                // Dodaj bajkę do interfejsu
+                                const storyElement = this.createStoryElement(localStory);
+                                const storiesContainer = document.querySelector('.bedtime-stories');
+                                if (storiesContainer.firstChild) {
+                                    storiesContainer.insertBefore(storyElement, storiesContainer.firstChild);
+                                } else {
+                                    storiesContainer.appendChild(storyElement);
+                                }
+                                
+                                // Pokaż powiadomienie o użyciu lokalnego generatora
+                                const toastEl = document.getElementById('app-toast');
+                                if (toastEl) {
+                                    document.getElementById('toast-title').textContent = 'Nowa bajka';
+                                    document.getElementById('toast-message').textContent = `Dodano nową bajkę: "${localStory.title}"`;
+                                    const toast = new bootstrap.Toast(toastEl);
+                                    toast.show();
+                                }
+                                
+                                // Zapisz datę wygenerowania bajki
+                                localStorage.setItem('lastStoryGenerationDate', new Date().toISOString());
+                            } catch (localError) {
+                                console.error('Błąd podczas generowania lokalnej bajki:', localError);
+                            }
+                        }
+                    } finally {
+                        // Przywróć etykietę przycisku
+                        generateButton.innerHTML = '<i class="fas fa-magic"></i> Wygeneruj nową bajkę';
+                        generateButton.disabled = false;
+                    }
+                });
                 
                 // Wstaw przycisk przed kontenerem bajek
                 const bedtimeStories = storiesContent.querySelector('.bedtime-stories');
@@ -3556,16 +3428,5 @@ document.addEventListener('DOMContentLoaded', function() {
             console.warn('Nie udało się zainicjalizować syntezatora mowy.');
         }
     }, 2000);
-});
-        // Dodaj obsługę zdarzenia beforeunload, aby zapobiec utracie połączenia podczas generowania bajki
-window.addEventListener('beforeunload', function(e) {
-    // Sprawdź, czy trwa generowanie bajki
-    const generateButton = document.getElementById('generate-story-btn');
-    if (generateButton && generateButton.disabled && generateButton.innerHTML.includes('Generowanie')) {
-        // Pokaż powiadomienie o trwającej operacji
-        const message = 'Trwa generowanie bajki. Czy na pewno chcesz opuścić stronę?';
-        e.returnValue = message;
-        return message;
-    }
 });
     </script>
